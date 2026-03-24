@@ -1,43 +1,57 @@
-# Nome do executável final (agora fica guardado na pasta build)
+# Nome do executável final
 TARGET = main.exe
 
 # Compilador
 CC = gcc
 
-# Flags de compilação (-I inc diz ao compilador onde estão os ficheiros .h)
+# Flags de compilação
 CFLAGS = -Wall -Wextra -g -I inc
 
-# Localização dos ficheiros fonte
+# Ficheiros fonte
 SRC = src/main.c \
-      src/app/nomimalMode.c \
+      src/app/modeSelecter.c \
       src/app/stateCheck.c \
-      src/app/states.c
+      src/app/states.c \
+      src/hal/hal_i2c.c \
+      src/drivers/i2c_driver.c \
+      src/peripherals/gnss.c
 
-# Mapeamento dos objetos (todos vão diretamente para a pasta build/)
+# Objetos
 OBJ = build/main.o \
-      build/nomimalMode.o \
+      build/modeSelecter.o \
       build/stateCheck.o \
-      build/states.o
+      build/states.o \
+      build/hal_i2c.o \
+      build/i2c_driver.o \
+      build/gnss.o
 
-# Regra principal: Garante que a pasta build existe antes de compilar
+# Regra principal
 all: create_dir $(TARGET)
 
-# Cria a pasta build se ela não existir (comando de Windows)
+# Cria a pasta build
 create_dir:
 	@if not exist build mkdir build
 
-# Linkagem do executável final
+# Linkagem
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
 
-# Regra para compilar o ficheiro na raiz da src (main.c)
+# Regras de compilação por pasta
 build/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra para compilar os ficheiros dentro de src/app/
 build/%.o: src/app/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Limpeza: Agora basta apagar a pasta build inteira!
+build/%.o: src/hal/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/%.o: src/drivers/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/%.o: src/peripherals/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Limpeza
 clean:
 	@if exist build rmdir /s /q build

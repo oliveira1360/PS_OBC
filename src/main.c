@@ -12,7 +12,7 @@ int main(void)
     {
         clock_t tempo_atual = clock();
         unsigned long tempo_passado_ms = ((tempo_atual - tempo_inicial) * 1000) / CLOCKS_PER_SEC;
-        if (tempo_passado_ms > 5000)
+        if (tempo_passado_ms > 4000)
         {
             stateCheck();
             tempo_inicial = clock();
