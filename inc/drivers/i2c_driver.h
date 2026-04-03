@@ -45,11 +45,9 @@ typedef struct {
 } i2c_queue_t;
 
 
-void i2c_start_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len, void (*cb)(int));
 void i2c_tick(i2c_handle_t *h);
 int i2c_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
 int i2c_write(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
-void i2c_request(i2c_handle_t *h, uint8_t addr, uint8_t *buf,uint8_t len, uint8_t rw, void (*cb)(int));
 void i2c_enqueue(uint8_t addr, uint8_t *buf, uint8_t len, uint8_t rw, void (*cb)(int));
 
 
