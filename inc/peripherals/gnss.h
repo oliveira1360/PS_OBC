@@ -3,15 +3,16 @@
 
 #include <stdint.h>
 
-typedef struct {
-    float   latitude;    /* graus decimais, ex: 38.7169 */
-    float   longitude;   /* graus decimais, ex: -9.1390 */
-    float   altitude;    /* metros                      */
-    float   speed;       /* m/s                         */
-    uint8_t fix;         /* 0 = sem fix, 1 = 2D, 2 = 3D */
-    uint8_t satellites;  /* número de satélites em uso  */
+typedef struct
+{
+    float latitude;  /* graus decimais */
+    float longitude; /* graus decimais */
+    float altitude;  /* metros                      */
+    float speed;     /* m/s                         */
 } gnss_data_t;
 
 int gnss_read(gnss_data_t *out);
+void gnss_read_async();
+void gnss_tick(void);
 
 #endif

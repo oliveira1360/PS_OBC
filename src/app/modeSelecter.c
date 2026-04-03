@@ -1,17 +1,10 @@
 #include <stdio.h>
 #include "states.h"
 #include "modes.h"
-#include "peripherals/gnss.h"
+#include "app/mission.h"
 
 
 States nominalMode(void) {
-    static gnss_data_t gnss = {0};
-
-    if (gnss_read(&gnss) == 0) {
-        printf("Lat: %f Lon: %f Alt: %f\n", 
-               gnss.latitude, gnss.longitude, gnss.altitude);
-    }
-
     return getMode(nominal_mode); 
 }
 

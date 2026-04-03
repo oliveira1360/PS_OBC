@@ -10,8 +10,4 @@ extern float PRESSURE_SENSOR;
 extern float IMU_ACCEL_Z;
 extern float GNSS_SATS;
 extern float TT_C_PWR;
-
-extern int COMM_WINDOW_OPEN;
-extern int OTA_REQUESTED;
-extern int MISSION_TIMEOUT;
 #endif 
