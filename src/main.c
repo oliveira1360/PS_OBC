@@ -2,20 +2,25 @@
 #include "modes.h"
 #include "states.h"
 #include "app/sensors.h"
-#include  "app/mission.h"
+#include "app/mission.h"
+#include "app/init.h"
 #include "peripherals/gnss.h"
 #include "peripherals/imu.h"
 #include "peripherals/eps.h"
 #include "peripherals/pressure.h"
 #include "peripherals/temperature.h"
 #include "hal/hal_i2c.h"
+
 #include <time.h>
 
 int main(void)
 {
+
+    if (!system_init())
+        hal_system_reset();
+
     States state = nominal_mode;
     clock_t last_time = clock();
-    hal_i2c_init();
     sensors_read_all();
 
     while (1)

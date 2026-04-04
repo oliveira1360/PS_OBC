@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdint.h>
+
 #include <stdlib.h> // para simulacao apenas !!!
 #include <time.h>   // para simulacao apenas !!!
 #include "hal/hal_i2c.h"
@@ -34,9 +36,10 @@ int hal_i2c_bus_free(void)
     return bus_free;
 }
 
-void hal_i2c_init(void)
+uint8_t hal_i2c_init(void)
 {
     srand((unsigned int)time(NULL));
+    return 1;
 }
 
 static void hal_i2c_randomize(uint8_t i)
