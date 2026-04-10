@@ -21,7 +21,7 @@ static i2c_device_t devices[] = {
                 0x00, 0x0A, 0x00, 0x05, 0x00, 0x0F,                              /* gx=0.10  gy=0.05  gz=0.15  */
                 0x00, 0x01, 0x00, 0x02, 0x00, 0x03},                             /* mx=0.01  my=0.02  mz=0.03  */
      IMU_BUF_LEN},                                                               /* IMU         */
-    {PRES_ADDR, {0x65, 0x00}, PRES_BUF_LEN},                                     /* Pressão     */
+    {PRESS_ADDR, {0x65, 0x00}, PRES_BUF_LEN},                                     /* Pressão     */
     {TEMP_ADDR, {0x19, 0x00}, TEMP_BUF_LEN},                                     /* Temperatura */
     {EPS_ADDR, {0xAA, 0x01}, EPS_BUF_LEN},                                       /* EPS         */
 };
@@ -63,7 +63,7 @@ static void hal_i2c_randomize(uint8_t i)
             devices[i].data[j] = rand() % 256;
         break;
 
-    case PRES_ADDR:
+    case PRESS_ADDR:
     {
         uint16_t hpa = 900 + rand() % 200;
         devices[i].data[0] = (hpa >> 8) & 0xFF;

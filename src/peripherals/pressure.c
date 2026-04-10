@@ -22,7 +22,16 @@ static void on_pressure_done(int result)
 
 void pressure_read_async()
 {
-    i2c_enqueue(PRES_ADDR, buf, PRES_BUF_LEN, 1, on_pressure_done);
+        if (i2c.state != I2C_IDLE)
+        return;  // já está a ler 
+
+    i2c.addr     = PRESS_ADDR;
+    i2c.buf      = buf;
+    i2c.len      = PRES_BUF_LEN;
+    i2c.rw       = 1;
+    i2c.index    = 0;
+    i2c.callback = on_pressure_done;
+    i2c.state    = I2C_STARTING;
 }
 
 void pressure_tick(void)

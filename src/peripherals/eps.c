@@ -18,9 +18,19 @@ static void on_eps_done(int result)
         eps_parse(buf);
 }
 
-void eps_read_async()
+void eps_read_async(void)
 {
-    i2c_enqueue(EPS_ADDR, buf, EPS_BUF_LEN, 1, on_eps_done);
+    if (i2c.state != I2C_IDLE)
+        return;  // já está a ler 
+
+    i2c.addr     = EPS_ADDR;
+    i2c.buf      = buf;
+    i2c.len      = EPS_BUF_LEN;
+    i2c.rw       = 1;
+    i2c.index    = 0;
+    i2c.callback = on_eps_done;
+    i2c.state    = I2C_STARTING;
+    i2c.timeout = 0;
 }
 
 void eps_tick(void)

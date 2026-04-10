@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define I2C_QUEUE_SIZE 25
+#define I2C_TIMEOUT_MAX 10
 
 typedef enum {
     I2C_IDLE,

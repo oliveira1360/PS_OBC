@@ -20,7 +20,16 @@ static void on_temp_done(int result)
 
 void temperature_read_async()
 {
-    i2c_enqueue(TEMP_ADDR, buf, TEMP_BUF_LEN, 1, on_temp_done);
+    if (i2c.state != I2C_IDLE)
+        return; // já está a ler
+
+    i2c.addr = TEMP_ADDR;
+    i2c.buf = buf;
+    i2c.len = TEMP_BUF_LEN;
+    i2c.rw = 1;
+    i2c.index = 0;
+    i2c.callback = on_temp_done;
+    i2c.state = I2C_STARTING;
 }
 
 void temperature_tick(void)

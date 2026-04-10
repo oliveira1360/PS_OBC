@@ -23,11 +23,15 @@ SRC = src/main.c \
       src/hal/hal_usart.c \
       src/hal/hal_system.c \
       src/drivers/i2c_driver.c \
+      src/drivers/usart_driver.c \
+      src/drivers/spi_driver.c \
       src/peripherals/gnss.c \
       src/peripherals/imu.c \
       src/peripherals/eps.c \
       src/peripherals/pressure.c \
-      src/peripherals/temperature.c
+      src/peripherals/propulsor.c \
+      src/peripherals/temperature.c \
+      src/peripherals/ttc.c
 
 TEST_SRC = test/test_main.c \
            test/test_i2c.c \

@@ -22,7 +22,16 @@ static void on_gnss_done(int result)
 
 void gnss_read_async()
 {
-    i2c_enqueue(GNSS_ADDR, buf, GNSS_BUF_LEN, 1, on_gnss_done);
+    if (i2c.state != I2C_IDLE)
+        return; // já está a ler
+
+    i2c.addr = GNSS_ADDR;
+    i2c.buf = buf;
+    i2c.len = GNSS_BUF_LEN;
+    i2c.rw = 1;
+    i2c.index = 0;
+    i2c.callback = on_gnss_done;
+    i2c.state = I2C_STARTING;
 }
 
 void gnss_tick(void)

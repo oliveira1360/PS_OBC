@@ -1,10 +1,6 @@
 #include "drivers/i2c_driver.h"
 #include "hal/hal_i2c.h"
 
-i2c_handle_t i2c_master = {0};
-i2c_queue_t i2c_queue = {0};
-
-
 void i2c_tick(i2c_handle_t *h)
 {
     switch (h->state)
@@ -37,7 +33,18 @@ void i2c_tick(i2c_handle_t *h)
 
     case I2C_WAIT_TX:
         if (!hal_i2c_tx_ready())
+        {
+            if (++h->timeout > I2C_TIMEOUT_MAX)
+            {
+                hal_i2c_stop();
+                h->timeout = 0;
+                h->state = I2C_IDLE;
+                if (h->callback)
+                    h->callback(-1);
+            }
             break;
+        }
+        h->timeout = 0;
         if (!hal_i2c_get_ack())
         {
             hal_i2c_stop();
@@ -57,7 +64,18 @@ void i2c_tick(i2c_handle_t *h)
 
     case I2C_WAIT_RX:
         if (!hal_i2c_rx_ready())
+        {
+            if (++h->timeout > I2C_TIMEOUT_MAX)
+            {
+                hal_i2c_stop();
+                h->timeout = 0;
+                h->state = I2C_IDLE;
+                if (h->callback)
+                    h->callback(-1);
+            }
             break;
+        }
+        h->timeout = 0;
         h->buf[h->index] = hal_i2c_read_byte();
         h->index++;
         if (h->index == h->len)
@@ -70,7 +88,6 @@ void i2c_tick(i2c_handle_t *h)
             hal_i2c_send_ack();
             h->state = I2C_READ;
         }
-        h->timeout = 0;
         break;
 
     case I2C_STOP:
@@ -82,37 +99,6 @@ void i2c_tick(i2c_handle_t *h)
         break;
 
     case I2C_IDLE:
-        if (i2c_queue.count > 0)
-        {
-            i2c_request_t *next = &i2c_queue.requests[i2c_queue.tail];
-            h->addr = next->addr;
-            h->buf = next->buf;
-            h->len = next->len;
-            h->rw = next->rw;
-            h->callback = next->callback;
-            h->index = 0;
-
-            i2c_queue.tail = (i2c_queue.tail + 1) % I2C_QUEUE_SIZE;
-            i2c_queue.count--;
-
-            h->state = I2C_STARTING;
-        }
         break;
     }
-}
-
-void i2c_enqueue(uint8_t addr, uint8_t *buf, uint8_t len, uint8_t rw, void (*cb)(int))
-{
-    if (i2c_queue.count >= I2C_QUEUE_SIZE)
-        return;
-
-    i2c_request_t *req = &i2c_queue.requests[i2c_queue.head];
-    req->addr = addr;
-    req->buf = buf;
-    req->len = len;
-    req->rw = rw;
-    req->callback = cb;
-
-    i2c_queue.head = (i2c_queue.head + 1) % I2C_QUEUE_SIZE;
-    i2c_queue.count++;
 }

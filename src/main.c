@@ -9,7 +9,9 @@
 #include "peripherals/eps.h"
 #include "peripherals/pressure.h"
 #include "peripherals/temperature.h"
+#include "peripherals/ttc.h"
 #include "hal/hal_i2c.h"
+#include "hal/hal_system.h"
 
 #include <time.h>
 
@@ -22,6 +24,8 @@ int main(void)
     States state = nominal_mode;
     clock_t last_time = clock();
     sensors_read_all();
+    ttc_read_async();
+    
 
     while (1)
     {
