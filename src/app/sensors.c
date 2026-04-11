@@ -9,6 +9,7 @@ pressure_data_t pressure = {0};
 temperature_data_t temperature = {0};
 eps_data_t eps = {0};
 ttc_data_t ttc = {0};
+propulsor_data_t propulsor = {0};
 
 float BATTERY_STATUS = 100.0f;
 float EPS_BUS_VOLTAGE = 8.2f;
@@ -22,7 +23,7 @@ void sensors_tick(void)
     pressure_tick();
     temperature_tick();
     ttc_tick();
-    
+    propulsor_tick();
 }
 
 void sensors_read_all(void)
@@ -32,7 +33,6 @@ void sensors_read_all(void)
     pressure_read_async();
     temperature_read_async();
     eps_read_async();
-    
 }
 
 void sensors_print(void)
@@ -60,6 +60,12 @@ void sensors_print(void)
     printf("|  Current:     %-10.2f A                                           |\n", eps.current);
     printf("| --- USART ------------------------------------------------------ |\n");
     printf("|  Doppler:     %-10.2f A                                           |\n", ttc.doppler);
+    printf("| --- Propulsor ------------------------------------------------------ |\n");
+    printf("|  Status:      %-10s                                              |\n", propulsor.status == PROP_STATUS_BURNING ? "BURNING" : propulsor.status == PROP_STATUS_FAULT ? "FAULT"
+                                                                                                                                                                                 : "IDLE");
+    printf("|  Pressure:    %-10.2f bar                                         |\n", propulsor.chamber_pressure);
+    printf("|  Temperature: %-10.2f C                                           |\n", propulsor.temperature);
+    printf("|  Thrust:      %-10.2f N                                           |\n", propulsor.thrust);
     printf("+----------------------------------------------------------------------+\n\n");
     printf("\n\n\n\n\n");
 }

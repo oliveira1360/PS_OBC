@@ -7,6 +7,7 @@
 #include "peripherals/temperature.h"
 #include "peripherals/eps.h"
 #include "peripherals/ttc.h"
+#include "peripherals/propulsor.h"
 
 /* Dados dos sensores */
 extern gnss_data_t gnss;
@@ -15,6 +16,7 @@ extern pressure_data_t pressure;
 extern temperature_data_t temperature;
 extern eps_data_t eps;
 extern ttc_data_t ttc;
+extern propulsor_data_t propulsor;
 
 void sensors_tick(void);
 void sensors_read_all(void);
