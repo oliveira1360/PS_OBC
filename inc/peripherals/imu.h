@@ -3,14 +3,15 @@
 
 #include <stdint.h>
 
-typedef struct {
-    float ax, ay, az; // Acelerómetro
-    float gx, gy, gz; // Giroscópio
-    float mx, my, mz; // Magnetómetro
-} imu_data_t;
+typedef struct
+{
+    float ax, ay, az; /* Acelerometro */
+    float gx, gy, gz; /* Giroscopio   */
+    float mx, my, mz; /* Magnetometro */
+} imu_data_t;         /* 288 bits / 36 bytes */
 
-int imu_read(imu_data_t *out);
-void imu_read_async() ;
-void imu_tick(void) ;
+int  imu_read(imu_data_t *out);
+void imu_read_async(void);
+void imu_tick(void);
 
-#endif
+#endif /* IMU_H */

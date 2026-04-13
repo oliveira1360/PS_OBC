@@ -6,10 +6,10 @@
 typedef struct
 {
     float temperature;
-} temperature_data_t;
+} temperature_data_t; /* 4 bytes */
 
-int temperature_read(temperature_data_t *out);
-void temperature_read_async();
+int  temperature_read(temperature_data_t *out);
+void temperature_read_async(void);
 void temperature_tick(void);
 
-#endif
+#endif /* TEMPERATURE_H */

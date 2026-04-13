@@ -31,16 +31,37 @@ typedef struct
 
 /**
  * @brief Tabela de dispositivos I2C simulados e os seus valores iniciais.
+ *
+ * Valores iniciais representativos de um CubeSat 3U em LEO (~520 km):
+ *
+ *  GNSS   : lat=38.71°N  lon=9.14°W  alt=520 km  speed=7.78 km/s
+ *  IMU    : accel=[0.03,0.02,0.99]g  gyro=[0.08,0.05,0.10]°/s  mag=[0.21,0.14,0.44]G
+ *  Pressão: 1013 hPa (cabin pressure, sealed structure)
+ *  Temp   : 25°C (nominal electronics operating temperature)
+ *  EPS    : 8.10 V  /  1.20 A  (2S LiPo, mid-charge, typical 3U load)
  */
 static i2c_device_t devices[] = {
-    {GNSS_ADDR, {0x15, 0x3F, 0x00, 0x12, 0x00, 0x03, 0x01, 0x02}, GNSS_BUF_LEN}, /* GNSS        */
-    {IMU_ADDR, {0x00, 0x64, 0x00, 0xC8, 0x00, 0x32,                              /* ax=1.00  ay=2.00  az=0.50  */
-                0x00, 0x0A, 0x00, 0x05, 0x00, 0x0F,                              /* gx=0.10  gy=0.05  gz=0.15  */
-                0x00, 0x01, 0x00, 0x02, 0x00, 0x03},                             /* mx=0.01  my=0.02  mz=0.03  */
-     IMU_BUF_LEN},                                                               /* IMU         */
-    {PRESS_ADDR, {0x65, 0x00}, PRES_BUF_LEN},                                    /* Pressão     */
-    {TEMP_ADDR, {0x19, 0x00}, TEMP_BUF_LEN},                                     /* Temperatura */
-    {EPS_ADDR, {0xAA, 0x01}, EPS_BUF_LEN},                                       /* EPS         */
+    /* GNSS: buf = [lat_int, lat_dec, lon_int, lon_dec, alt_hi, alt_lo, spd_int, spd_dec] */
+    /*       lat=38.71°  lon=9.14°  alt=520km  speed=7.78km/s                            */
+    {GNSS_ADDR, {38, 71, 9, 14, 0x02, 0x08, 7, 78}, GNSS_BUF_LEN},
+
+    /* IMU: buf[0..8] = ax,ay,az,gx,gy,gz,mx,my,mz  (val = byte / 100.0)                */
+    /*      accel near 1g on Z (ground test), small noise on X/Y                         */
+    /*      gyro slow rotation, mag typical LEO Earth field in Gauss                     */
+    {IMU_ADDR, { 3,  2, 99,                     /* ax=0.03g  ay=0.02g  az=0.99g  */
+                 8,  5, 10,                     /* gx=0.08°/s gy=0.05°/s gz=0.10°/s */
+                21, 14, 44,                     /* mx=0.21G  my=0.14G  mz=0.44G  */
+                 0,  0,  0,  0,  0,  0,  0,  0, 0},  /* bytes 9-17 unused         */
+     IMU_BUF_LEN},
+
+    /* Pressure: 1013 hPa big-endian  (0x03F5 = 1013)                                   */
+    {PRESS_ADDR, {0x03, 0xF5}, PRES_BUF_LEN},
+
+    /* Temperature: 25°C big-endian  (0x0019 = 25)                                      */
+    {TEMP_ADDR, {0x00, 0x19}, TEMP_BUF_LEN},
+
+    /* EPS: voltage = 81 / 10.0 = 8.10 V  /  current = 120 / 100.0 = 1.20 A            */
+    {EPS_ADDR, {81, 120}, EPS_BUF_LEN},
 };
 
 /**
@@ -84,7 +105,25 @@ uint8_t hal_i2c_init(void)
 }
 
 /**
- * @brief Atualiza os buffers de um dispositivo simulado com valores aleatórios plausíveis.
+ * @brief Contador de passos orbitais para simulação de movimento do CubeSat.
+ *
+ * Incrementado a cada leitura do GNSS. Simula uma órbita LEO com inclinação
+ * de ~51.6° (tipo ISS). Um passo ≈ 1 segundo de telemetria, período orbital
+ * completo ≈ 6000 s (100 min).
+ */
+static uint16_t orbit_step = 0U;
+
+/**
+ * @brief Atualiza os buffers de um dispositivo simulado com valores realistas.
+ *
+ * Todos os valores foram calibrados para um CubeSat 3U em Low Earth Orbit (LEO):
+ *
+ *  GNSS   : movimento orbital contínuo, altitude 515-525 km, v=7.75-7.84 km/s
+ *  IMU    : acelerómetro ~1g (eixo Z, teste em solo), giroscópio baixo ruído,
+ *           magnetómetro com campo terrestre típico de LEO (~0.2-0.5 Gauss)
+ *  Pressão: 1010-1016 hPa (pressão interna de caixa selada, variação térmica)
+ *  Temp   : 22-37°C (temperatura de operação nominal da eletrónica)
+ *  EPS    : 7.60-8.35 V (2S LiPo, ciclo carga/descarga), 0.80-1.60 A (carga típica)
  *
  * @param i Índice do dispositivo no array `devices` a ser atualizado.
  */
@@ -93,41 +132,108 @@ static void hal_i2c_randomize(uint8_t i)
     switch (devices[i].addr)
     {
 
+    /*
+     * GNSS — formato: [lat_int, lat_dec, lon_int, lon_dec, alt_hi, alt_lo, spd_int, spd_dec]
+     *
+     * Latitude : onda triangular 0→51→0 (inclinação 51.6°, tipo ISS)
+     * Longitude: avança 2° por passo (satélite move-se ~500 km/min em solo)
+     * Altitude : 515–525 km LEO, armazenada em km no uint16_t
+     * Velocidade: 7.75–7.84 km/s (velocidade orbital LEO)
+     */
     case GNSS_ADDR:
-        devices[i].data[0] = rand() % 90;  // latitude graus 0-90
-        devices[i].data[1] = rand() % 100; // latitude decimais
-        devices[i].data[2] = rand() % 180; // longitude graus
-        devices[i].data[3] = rand() % 100;
-        devices[i].data[4] = rand() % 4; // altitude high byte 0-1023m
-        devices[i].data[5] = rand() % 256;
-        devices[i].data[6] = rand() % 10; // speed
-        devices[i].data[7] = rand() % 100;
-        break;
+    {
+        /* Passo orbital: período simulado = 512 passos por semi-órbita */
+        orbit_step = (orbit_step + 1U) & 0x3FFU; /* 0..1023 */
 
+        /* Latitude: triângulo 0°→51°→0° em 512 passos */
+        uint16_t half = orbit_step & 0x1FFU;                   /* 0..511 */
+        uint8_t  lat_int = (uint8_t)((half < 256U)
+                           ? (half * 51U / 256U)               /* sobe 0→51 */
+                           : (51U - (half - 256U) * 51U / 256U)); /* desce 51→0 */
+        uint8_t  lat_dec = (uint8_t)(rand() % 100);
+
+        /* Longitude: avança 2° por passo, wrap 0–179° */
+        uint8_t  lon_int = (uint8_t)((orbit_step * 2U) % 180U);
+        uint8_t  lon_dec = (uint8_t)(rand() % 100);
+
+        /* Altitude: 515–525 km em big-endian */
+        uint16_t alt_km  = 518U + (uint16_t)(rand() % 8);
+        uint8_t  alt_hi  = (uint8_t)(alt_km >> 8U);
+        uint8_t  alt_lo  = (uint8_t)(alt_km & 0xFFU);
+
+        /* Velocidade orbital: 7.75–7.84 km/s */
+        uint8_t  spd_dec = (uint8_t)(75U + rand() % 10U);
+
+        devices[i].data[0] = lat_int;
+        devices[i].data[1] = lat_dec;
+        devices[i].data[2] = lon_int;
+        devices[i].data[3] = lon_dec;
+        devices[i].data[4] = alt_hi;
+        devices[i].data[5] = alt_lo;
+        devices[i].data[6] = 7U;      /* km/s inteiro */
+        devices[i].data[7] = spd_dec;
+        break;
+    }
+
+    /*
+     * IMU — formato: buf[0..8] = ax,ay,az,gx,gy,gz,mx,my,mz  (val = byte / 100.0)
+     *
+     * Acelerómetro (g):
+     *   ax,ay : ruído vibração ±0.05 g  → 0–5
+     *   az    : ~1g (teste em solo)     → 97–102
+     * Giroscópio (°/s):
+     *   gx,gy,gz: rotação lenta         → 3–15
+     * Magnetómetro (Gauss, campo terrestre LEO ~0.2–0.5 G):
+     *   mx : 0.18–0.25 G               → 18–25
+     *   my : 0.10–0.16 G               → 10–16
+     *   mz : 0.40–0.48 G               → 40–48
+     */
     case IMU_ADDR:
-        for (uint8_t j = 0; j < IMU_BUF_LEN; j++)
-            devices[i].data[j] = rand() % 256;
+        devices[i].data[0] = (uint8_t)(1U + rand() % 5U);   /* ax: 0.01–0.05 g      */
+        devices[i].data[1] = (uint8_t)(1U + rand() % 4U);   /* ay: 0.01–0.04 g      */
+        devices[i].data[2] = (uint8_t)(97U + rand() % 6U);  /* az: 0.97–1.02 g (1g) */
+        devices[i].data[3] = (uint8_t)(4U + rand() % 8U);   /* gx: 0.04–0.11 °/s   */
+        devices[i].data[4] = (uint8_t)(3U + rand() % 6U);   /* gy: 0.03–0.08 °/s   */
+        devices[i].data[5] = (uint8_t)(6U + rand() % 9U);   /* gz: 0.06–0.14 °/s   */
+        devices[i].data[6] = (uint8_t)(18U + rand() % 8U);  /* mx: 0.18–0.25 G     */
+        devices[i].data[7] = (uint8_t)(10U + rand() % 7U);  /* my: 0.10–0.16 G     */
+        devices[i].data[8] = (uint8_t)(40U + rand() % 9U);  /* mz: 0.40–0.48 G     */
+        /* bytes 9-17 não são parseados pelo imu_parse(), mantêm-se a 0 */
         break;
 
+    /*
+     * Pressure — pressão interna da caixa selada do CubeSat (hPa, big-endian)
+     * Variação térmica ±3 hPa em torno de 1013 hPa atmosférico
+     */
     case PRESS_ADDR:
     {
-        uint16_t hpa = 900 + rand() % 200;
-        devices[i].data[0] = (hpa >> 8) & 0xFF;
-        devices[i].data[1] = hpa & 0xFF;
+        uint16_t hpa = 1010U + (uint16_t)(rand() % 7U); /* 1010–1016 hPa */
+        devices[i].data[0] = (uint8_t)(hpa >> 8U);
+        devices[i].data[1] = (uint8_t)(hpa & 0xFFU);
         break;
     }
 
+    /*
+     * Temperature — temperatura interna da eletrónica (°C, big-endian)
+     * Faixa nominal de operação: 22–37°C
+     */
     case TEMP_ADDR:
     {
-        uint16_t temp = 0 + rand() % 80; // 0-80°C
-        devices[i].data[0] = (temp >> 8) & 0xFF;
-        devices[i].data[1] = temp & 0xFF;
+        uint16_t temp_c = 22U + (uint16_t)(rand() % 16U); /* 22–37°C */
+        devices[i].data[0] = (uint8_t)(temp_c >> 8U);
+        devices[i].data[1] = (uint8_t)(temp_c & 0xFFU);
         break;
     }
 
+    /*
+     * EPS — Electric Power System: bateria 2S LiPo, carga típica de CubeSat 3U
+     *
+     * Tensão  (V)  = byte[0] / 10.0   → 7.60–8.35 V  (75–84, range 2S LiPo)
+     * Corrente(A)  = byte[1] / 100.0  → 0.80–1.60 A  (80–160, carga nominal)
+     */
     case EPS_ADDR:
-        devices[i].data[0] = 60 + rand() % 60; // voltage: 6.0-12.0V (/10)
-        devices[i].data[1] = rand() % 200;     // current: 0-2.0A (/100)
+        devices[i].data[0] = (uint8_t)(33U + rand() % 10U); /* 7.50–8.40 V  */
+        devices[i].data[1] = (uint8_t)(80U + rand() % 81U); /* 0.80–1.60 A  */
         break;
     }
 }

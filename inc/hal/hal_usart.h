@@ -86,4 +86,8 @@ uint8_t hal_usart_data_available(void);
 uint8_t hal_usart_read_char(void);
 void hal_usart_prepare_rx(void);
 
+/* Funções de controlo para simulação/testes */
+void hal_usart_set_tx_ready(uint8_t v);
+void hal_usart_set_rx_auto_regen(uint8_t v);
+
 #endif

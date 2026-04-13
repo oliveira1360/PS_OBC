@@ -5,7 +5,7 @@
 #include "peripherals/pressure.h"
 #include "peripherals/gnss.h"
 #include "peripherals/imu.h"
-#include "modes.h"
+#include "app/modes.h"
 #include <stdbool.h>
 
 

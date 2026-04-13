@@ -9,11 +9,8 @@ pressure_data_t pressure = {0};
 temperature_data_t temperature = {0};
 eps_data_t eps = {0};
 ttc_data_t ttc = {0};
-propulsor_data_t propulsor = {0};
 
 float BATTERY_STATUS = 100.0f;
-float EPS_BUS_VOLTAGE = 8.2f;
-float TEMP_INTERNAL = 25.0f;
 
 void sensors_tick(void)
 {
@@ -23,7 +20,6 @@ void sensors_tick(void)
     pressure_tick();
     temperature_tick();
     ttc_tick();
-    propulsor_tick();
 }
 
 void sensors_read_all(void)
@@ -43,8 +39,8 @@ void sensors_print(void)
     printf("| --- GNSS ----------------------------------------------------------- |\n");
     printf("|  Latitude:    %-10.2f deg                                         |\n", gnss.latitude);
     printf("|  Longitude:   %-10.2f deg                                         |\n", gnss.longitude);
-    printf("|  Altitude:    %-10.2f m                                           |\n", gnss.altitude);
-    printf("|  Speed:       %-10.2f m/s                                         |\n", gnss.speed);
+    printf("|  Altitude:    %-10.2f km                                          |\n", gnss.altitude);
+    printf("|  Speed:       %-10.2f km/s                                       |\n", gnss.speed);
     printf("|                                                                      |\n");
     printf("| --- IMU ------------------------------------------------------------ |\n");
     printf("|  Accel:  X=%-7.2f Y=%-7.2f Z=%-7.2f m/s2                          |\n", imu.ax, imu.ay, imu.az);
@@ -58,14 +54,8 @@ void sensors_print(void)
     printf("| --- EPS ------------------------------------------------------------ |\n");
     printf("|  Voltage:     %-10.2f V                                           |\n", eps.voltage);
     printf("|  Current:     %-10.2f A                                           |\n", eps.current);
-    printf("| --- USART ------------------------------------------------------ |\n");
-    printf("|  Doppler:     %-10.2f A                                           |\n", ttc.doppler);
-    printf("| --- Propulsor ------------------------------------------------------ |\n");
-    printf("|  Status:      %-10s                                              |\n", propulsor.status == PROP_STATUS_BURNING ? "BURNING" : propulsor.status == PROP_STATUS_FAULT ? "FAULT"
-                                                                                                                                                                                 : "IDLE");
-    printf("|  Pressure:    %-10.2f bar                                         |\n", propulsor.chamber_pressure);
-    printf("|  Temperature: %-10.2f C                                           |\n", propulsor.temperature);
-    printf("|  Thrust:      %-10.2f N                                           |\n", propulsor.thrust);
+    printf("| --- USART ------------------------------------------------------     |\n");
+    printf("|  Doppler:     %-10.2f kHz                                         |\n", ttc.doppler);
     printf("+----------------------------------------------------------------------+\n\n");
     printf("\n\n\n\n\n");
 }

@@ -27,6 +27,72 @@ static uint8_t rx_ready = 0U;
  */
 static uint8_t rx_data  = 0x00U;
 
+/* -------------------------------------------------------------------------
+ * Simulação do frame SPI do Propulsor (cold-gas thruster, CubeSat 3U)
+ *
+ * Frame de resposta (9 bytes, veja propulsor.c para documentação completa):
+ *   [0]   STATUS        : PROP_STATUS_IDLE (0x00)
+ *   [1-2] PRESSURE H/L  : pressão câmara /100 = bar  →  1.50–2.50 bar  (tanque frio)
+ *   [3-4] TEMP H/L      : temperatura    /10  = °C   →  22–28°C        (ambiente)
+ *   [5-6] THRUST H/L    : impulso        /10  = N    →  0.0 N          (válvula fechada)
+ *   [7]   VALVE_STATE   : 0 (fechada)
+ *   [8]   CHECKSUM      : XOR de bytes 0..7
+ *
+ * A função prop_generate_frame() é chamada em hal_spi_cs_low() para gerar
+ * um frame fresco a cada transação SPI. O checksum é sempre calculado
+ * corretamente para que propulsor_parse() aceite o frame.
+ * ------------------------------------------------------------------------- */
+
+/** @brief Frame de telemetria do propulsor pré-gerado para a transação atual. */
+static uint8_t prop_frame[9];
+
+/** @brief Índice do próximo byte a devolver em hal_spi_read_byte(). */
+static uint8_t prop_byte_idx = 0U;
+
+/**
+ * @brief Gera um frame de telemetria realista para o propulsor simulado.
+ *
+ * Simula o estado típico de um cold-gas thruster em standby:
+ *   - Status IDLE, válvula fechada, sem impulso
+ *   - Pressão residual do tanque (1.50–2.50 bar)
+ *   - Temperatura de câmara ambiente (22–28°C)
+ *
+ * O checksum XOR é calculado automaticamente para garantir que
+ * propulsor_parse() aceite o frame sem erro.
+ */
+static void prop_generate_frame(void)
+{
+    uint8_t *f = prop_frame;
+
+    /* [0] STATUS: IDLE (0x00 = PROP_STATUS_IDLE) */
+    f[0] = 0x00U;
+
+    /* [1-2] Pressão câmara: 1.50–2.50 bar → raw 150–250 */
+    uint16_t press_raw = 150U + (uint16_t)(rand() % 101U);
+    f[1] = (uint8_t)(press_raw >> 8U);
+    f[2] = (uint8_t)(press_raw & 0xFFU);
+
+    /* [3-4] Temperatura: 22–28°C → raw 220–280 (/10) */
+    uint16_t temp_raw = 220U + (uint16_t)(rand() % 61U);
+    f[3] = (uint8_t)(temp_raw >> 8U);
+    f[4] = (uint8_t)(temp_raw & 0xFFU);
+
+    /* [5-6] Impulso: 0.0 N (válvula fechada, standby) */
+    f[5] = 0x00U;
+    f[6] = 0x00U;
+
+    /* [7] Válvula: fechada */
+    f[7] = 0x00U;
+
+    /* [8] Checksum XOR de bytes 0..7 */
+    uint8_t chk = 0U;
+    for (uint8_t j = 0U; j < 8U; j++)
+        chk ^= f[j];
+    f[8] = chk;
+
+    prop_byte_idx = 0U;
+}
+
 /**
  * @brief Inicializa o periférico SPI (Simulação).
  *
@@ -63,7 +129,9 @@ uint8_t hal_spi_rx_ready(void) { return rx_ready; }
 /**
  * @brief Coloca o pino de Chip Select (CS) em nível lógico baixo (Ativo).
  *
- * Simula a ativação de um dispositivo escravo no barramento SPI.
+ * Na simulação, aproveita o CS_LOW para gerar um frame de telemetria fresco
+ * para o propulsor, de modo a que os bytes devolvidos em hal_spi_read_byte()
+ * formem sempre um frame válido com checksum correto.
  *
  * @param cs_pin O pino/identificador do Chip Select a ser ativado.
  */
@@ -71,6 +139,7 @@ void hal_spi_cs_low(uint8_t cs_pin)
 {
     (void)cs_pin;
     /* hardware: PIO_CODR = (1U << cs_pin) */
+    prop_generate_frame(); /* simulação: prepara frame do propulsor */
 }
 
 /**
@@ -90,8 +159,10 @@ void hal_spi_cs_high(uint8_t cs_pin)
  * @brief Simula o envio de um byte pelo barramento SPI (Full-Duplex).
  *
  * Como o SPI é full-duplex, enviar um byte significa também receber um byte.
- * Esta função ignora o byte enviado na simulação e gera automaticamente
- * um byte aleatório (usando `rand()`) para simular a resposta do escravo.
+ * Na simulação, o byte devolvido corresponde ao byte seguinte do frame de
+ * telemetria do propulsor gerado em hal_spi_cs_low(). Isto garante que o
+ * frame completo tem um checksum XOR válido, passando a verificação em
+ * propulsor_parse().
  *
  * @param data O byte de dados a ser transmitido (ignorado na simulação).
  */
@@ -100,7 +171,13 @@ void hal_spi_send_byte(uint8_t data)
     (void)data;
     /* hardware: SPI0_TDR = data */
     tx_ready = 1U;
-    rx_data  = (uint8_t)(rand() % 256U);  /* simulacao */
+
+    /* simulação: devolve o próximo byte do frame do propulsor */
+    if (prop_byte_idx < sizeof(prop_frame))
+        rx_data = prop_frame[prop_byte_idx++];
+    else
+        rx_data = 0x00U; /* guard: não deve acontecer se PROPULSOR_BUF_LEN == 9 */
+
     rx_ready = 1U;
 }
 

@@ -3,12 +3,12 @@
 
 typedef enum
 {
-    nominal_mode,           
+    nominal_mode,
     communication_mode,
     ota_mode,
     safe_mode,
-    ultra_low_power_mode,   
-    decommissioning_mode,   
+    ultra_low_power_mode,
+    decommissioning_mode,
 } States;
 
 States nominalMode(void);

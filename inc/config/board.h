@@ -15,6 +15,6 @@
 #define TEMP_BUF_LEN 2
 #define EPS_BUF_LEN 2
 #define TTC_BUF_LEN 4U
-#define PROPULSOR_BUF_LEN 2
+#define PROPULSOR_BUF_LEN 9   /* STATUS(1) + PRESS(2) + TEMP(2) + THRUST(2) + VALVE(1) + CHK(1) */
 
 #endif

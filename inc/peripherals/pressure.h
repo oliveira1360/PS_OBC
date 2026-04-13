@@ -5,10 +5,10 @@
 
 typedef struct {
     float pressure;
-} pressure_data_t;
+} pressure_data_t; /* 4 bytes */
 
 int  pressure_read(pressure_data_t *out);
-void pressure_read_async();
+void pressure_read_async(void);
 void pressure_tick(void);
 
-#endif
+#endif /* PRESSURE_H */

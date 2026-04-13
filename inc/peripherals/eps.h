@@ -3,12 +3,13 @@
 
 #include <stdint.h>
 
-typedef struct {
+typedef struct
+{
     float voltage;
     float current;
-} eps_data_t;
+} eps_data_t; /* 64 bits / 8 bytes */
 
-void eps_read_async();
+void eps_read_async(void);
 void eps_tick(void);
 
-#endif
+#endif /* EPS_H */

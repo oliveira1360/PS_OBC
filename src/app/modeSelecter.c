@@ -1,77 +1,140 @@
 #include <stdio.h>
-#include "states.h"
-#include "modes.h"
+#include "app/states.h"
+#include "app/modes.h"
 #include "app/mission.h"
+#include "app/sensors.h"
 
+#include <time.h> // remover no futuro, uso para o clock(tempo)
 
-States nominalMode(void) {
-    return getMode(nominal_mode); 
+States nominalMode(void)
+{
+    static clock_t last_time = 0; 
+    
+    if (last_time == 0) {
+        last_time = clock();
+    }
+
+    clock_t now = clock();
+
+    if (((now - last_time) * 1000) / CLOCKS_PER_SEC > TIME_TO_UPDATE_VALUES)
+    {
+        sensors_print();
+        sensors_read_all();
+        last_time = clock(); 
+    }
+
+    return getMode(nominal_mode);
 }
 
-States communicationMode(void) {
-    return getMode(communication_mode); 
+States communicationMode(void)
+{
+    return getMode(communication_mode);
 }
 
-States otaMode(void) {
-    return getMode(ota_mode); 
+States otaMode(void)
+{
+    return getMode(ota_mode);
 }
 
-States safeMode(void) {
+States safeMode(void)
+{
+    static clock_t last_time = 0; 
+    
+    if (last_time == 0) {
+        last_time = clock();
+    }
+
+    clock_t now = clock();
+
+    if (((now - last_time) * 1000) / CLOCKS_PER_SEC > TIME_TO_UPDATE_VALUES)
+    {
+        sensors_print();
+        sensors_read_all();
+        last_time = clock(); 
+    }
+    
     return getMode(safe_mode);
 }
 
-States ultraLowPowerMode(void) {
+States ultraLowPowerMode(void)
+{
     return getMode(ultra_low_power_mode);
 }
 
-States decommissioningMode(void) {
+States decommissioningMode(void)
+{
     return getMode(decommissioning_mode);
 }
 
-int isSystemSafe(void) {
-    if (BATTERY_STATUS < 30.0f) return 0;
-    if (TEMP_INTERNAL > 60.0f) return 0;
-    if (TEMP_INTERNAL < -10.0f) return 0;
-    if (EPS_BUS_VOLTAGE < 6.5f) return 0;
+/**
+ * @brief verify the system health
+ *
+ * @return 0 if the systema is not in safe mode, returns 1 if everything is right in the system
+ */
+
+int isSystemSafe(void)
+{
+    if (eps.voltage > MAX_SAFE_VOLTAGE || eps.voltage < LOWEST_SAFE_VOLTAGE)
+        return 0;
+    if (eps.current > MAX_SAFE_CURRENT || eps.current < LOWEST_SAFE_CURRENT)
+        return 0;
+    if (temperature.temperature > MAX_SAFE_TEMP || temperature.temperature < LOWEST_SAFE_TEMP)
+        return 0;
+    if (BATTERY_STATUS < LOWEST_SAFE_BATTERY)
+        return 0;
     
+
     return 1;
 }
 
-States getMode(States currentState) {
+States getMode(States currentState)
+{
     int safe = isSystemSafe();
-    int battery_critical = (BATTERY_STATUS < 10.0f);
+    int battery_critical = (BATTERY_STATUS < BATTERY_IN_CRITICAL_LEVEL);
 
-    switch (currentState) {
-        case nominal_mode:
-            if (!safe) return safe_mode;
-            if (COMM_WINDOW_OPEN) return communication_mode;
-            return nominal_mode;
-
-        case communication_mode:
-            if (!safe) return safe_mode;
-            if (OTA_REQUESTED) return ota_mode;
-            if (!COMM_WINDOW_OPEN) return nominal_mode;
+    switch (currentState)
+    {
+    case nominal_mode:
+        if (!safe)
+            return safe_mode;
+        if (COMM_WINDOW_OPEN)
             return communication_mode;
+        return nominal_mode;
 
-        case ota_mode:
-            if (!safe) return safe_mode;
-            if (!OTA_REQUESTED) return communication_mode;
+    case communication_mode:
+        if (!safe)
+            return safe_mode;
+        if (OTA_REQUESTED)
             return ota_mode;
+        if (!COMM_WINDOW_OPEN)
+            return nominal_mode;
+        return communication_mode;
 
-        case safe_mode:
-            if (battery_critical) return ultra_low_power_mode;
-            if (safe) return nominal_mode;
+    case ota_mode:
+        if (!safe)
             return safe_mode;
+        if (!OTA_REQUESTED)
+            return communication_mode;
+        return ota_mode;
 
-        case ultra_low_power_mode:
-            if (MISSION_TIMEOUT) return decommissioning_mode;
-            if (!battery_critical) return safe_mode;
+    case safe_mode:
+        if (battery_critical)
             return ultra_low_power_mode;
+        if (safe)
+            return nominal_mode;
+        return safe_mode;
 
-        case decommissioning_mode:
-            return decommissioning_mode;
-
-        default:
+    case ultra_low_power_mode:
+        if (!battery_critical)
             return safe_mode;
+        if (MISSION_TIMEOUT)
+            return decommissioning_mode;
+        return ultra_low_power_mode;
+
+    case decommissioning_mode:
+        return decommissioning_mode;
+
+    default:
+        return nominal_mode;
     }
 }
