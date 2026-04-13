@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import pdfplumber; print\\('ok'\\)\")",
+      "Bash(py -3 -c \"import pdfplumber; print\\('ok'\\)\")",
+      "Bash(where python3:*)",
+      "Bash(where py:*)",
+      "Bash(cmd /c \"python --version\")",
+      "Bash(cmd /c \"where python\")",
+      "Bash(cmd /c \"C:\\\\Users\\\\diogo\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe --version\")",
+      "Bash(cmd /c \"C:\\\\Users\\\\diogo\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe --version\")",
+      "Bash(cmd /c \"dir C:\\\\Users\\\\diogo\\\\AppData\\\\Local\\\\Programs\\\\Python\")"
+    ]
+  }
+}
