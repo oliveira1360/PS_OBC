@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <executable name="C:\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\out\PS_OBC\default.elf">
+    <memory name="program">
+      <units>bytes</units>
+      <length>2097152</length>
+      <used>14622</used>
+      <free>2082530</free>
+    </memory>
+    <memory name="data">
+      <units>bytes</units>
+      <length>393216</length>
+      <used>630</used>
+      <free>392586</free>
+    </memory>
+  </executable>
+</project>
