@@ -6,6 +6,7 @@
  * recebidos do sensor inercial (Acelerómetro, Giroscópio e Magnetómetro).
  */
 
+#include <stdio.h>
 #include "peripherals/imu.h"
 #include "drivers/i2c_driver.h"
 #include "config/board.h"
@@ -55,6 +56,8 @@ static void imu_parse(uint8_t *buf)
  */
 static void on_imu_done(int result)
 {
+    printf("IMU cb: result=%d buf=%02X %02X %02X %02X %02X %02X\n",
+           result, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
     if (result == 0)
         imu_parse(buf);
 }
@@ -66,19 +69,21 @@ static void on_imu_done(int result)
  * os dados dos sensores. Se já existir uma leitura em curso, a função
  * retorna silenciosamente.
  */
-void imu_read_async()
+void imu_read_async(void)
 {
     if (i2c.state != I2C_IDLE)
-        return; // já está a ler
+        return;
 
-    i2c.addr = IMU_ADDR;
-    i2c.buf = buf;
-    i2c.len = IMU_BUF_LEN;
-    i2c.rw = 1;
-    i2c.index = 0;
-    i2c.timeout = 0;
+    i2c.addr     = IMU_ADDR;
+    i2c.buf      = buf;
+    i2c.len      = 6;        /* accel: 6 bytes a partir de 0x3B */
+    i2c.rw       = 1;
+    i2c.reg      = 0x3B;
+    i2c.use_reg  = 1;
+    i2c.index    = 0;
+    i2c.timeout  = 0;
     i2c.callback = on_imu_done;
-    i2c.state = I2C_STARTING;
+    i2c.state    = I2C_STARTING;
 }
 
 /**

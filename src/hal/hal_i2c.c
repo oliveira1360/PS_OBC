@@ -20,46 +20,58 @@
 #endif
 
 #if USE_REAL_HW
+
 /* ============================================================
- * Definições adicionais para hardware real (não presentes no .h)
+ * Definições adicionais para hardware real
  *
  * PA03 = TWD0  (SDA) — Peripheral A
  * PA04 = TWCK0 (SCL) — Peripheral A
  * ============================================================ */
 
 /* PMC */
-#define PMC_BASE 0x400E0600UL
-#define PMC_PCER0 (*(volatile uint32_t *)(PMC_BASE + 0x10U))
+#define PMC_BASE        0x400E0600UL
+#define PMC_PCER0       (*(volatile uint32_t *)(PMC_BASE + 0x10U))
 
 /* PIOA */
-#define PIOA_BASE 0x400E0E00UL
-#define PIOA_PDR (*(volatile uint32_t *)(PIOA_BASE + 0x04U))
-#define PIOA_ABCDSR0 (*(volatile uint32_t *)(PIOA_BASE + 0x70U))
-#define PIOA_ABCDSR1 (*(volatile uint32_t *)(PIOA_BASE + 0x74U))
+#define PIOA_BASE       0x400E0E00UL
+#define PIOA_PER        (*(volatile uint32_t *)(PIOA_BASE + 0x00U))
+#define PIOA_PDR        (*(volatile uint32_t *)(PIOA_BASE + 0x04U))
+#define PIOA_OER        (*(volatile uint32_t *)(PIOA_BASE + 0x10U))
+#define PIOA_SODR       (*(volatile uint32_t *)(PIOA_BASE + 0x30U))
+#define PIOA_CODR       (*(volatile uint32_t *)(PIOA_BASE + 0x34U))
+#define PIOA_ABCDSR0    (*(volatile uint32_t *)(PIOA_BASE + 0x70U))
+#define PIOA_ABCDSR1    (*(volatile uint32_t *)(PIOA_BASE + 0x74U))
 
 /* Pin masks */
-#define PIO_PA3 (1UL << 3)
-#define PIO_PA4 (1UL << 4)
+#define PIO_SDA         (1UL << 3)   /* PA03 */
+#define PIO_SCL         (1UL << 4)   /* PA04 */
 
-/* TWIHS_MMR helper */
-#define TWI_MMR_DADR_SHIFT 16U
-#define TWI_MMR_MREAD (1UL << 12)
+/* TWIHS_MMR */
+#define TWI_MMR_DADR_SHIFT  16U
+#define TWI_MMR_MREAD       (1UL << 12)
 
-/* TWIHS_CWGR helper */
-#define TWI_CWGR_CLDIV_SHIFT 0U
-#define TWI_CWGR_CHDIV_SHIFT 8U
-#define TWI_CWGR_CKDIV_SHIFT 16U
+/* TWIHS_CWGR */
+#define TWI_CWGR_CKDIV_SHIFT  16U
+#define TWI_CWGR_CHDIV_SHIFT   8U
+#define TWI_CWGR_CLDIV_SHIFT   0U
 
-/* MCK do SAM V71 Xplained Ultra sem PLL = ~4 MHz */
-#define MCK_HZ 4000000UL
+/* Clock: MCK ~4 MHz, CKDIV=0, CLDIV=CHDIV=39 → ~50 kHz */
+#define MCK_HZ              4000000UL
+#define I2C_SPEED_HZ        ((uint32_t)I2C_SPEED_KHZ * 1000UL)
+#define TWI_CKDIV           0UL
+#define TWI_CLDIV           ((MCK_HZ / I2C_SPEED_HZ) - 3UL)
+#define TWI_CHDIV           TWI_CLDIV
+
+#define TWI_CWGR_VALUE      ((TWI_CKDIV << TWI_CWGR_CKDIV_SHIFT) | \
+                             (TWI_CHDIV << TWI_CWGR_CHDIV_SHIFT) | \
+                             (TWI_CLDIV << TWI_CWGR_CLDIV_SHIFT))
+
+/* Timeouts */
+#define TWI_STOP_TIMEOUT    100000UL
+#define BUS_RECOVERY_DELAY  100
 
 #endif /* USE_REAL_HW */
-
-/* ==========================================================================
- * SECÇÃO SIMULAÇÃO (só compilada quando USE_REAL_HW == 0)
- * ========================================================================== */
-#if !USE_REAL_HW
-
+#if !USE_REAL_HW 
 #define NUM_DEVICES (sizeof(devices) / sizeof(devices[0]))
 
 typedef struct
@@ -155,35 +167,18 @@ static void hal_i2c_randomize(uint8_t i)
 uint8_t hal_i2c_init(void)
 {
 #if USE_REAL_HW
-    /* 1. Habilita clock do TWIHS0 no PMC (peripheral ID 19) */
     PMC_PCER0 = (1UL << ID_TWI0);
 
-    /* 2. Configura PA03 (SDA) e PA04 (SCL) como Peripheral A (TWD0/TWCK0) */
-    PIOA_PDR = PIO_PA3 | PIO_PA4;         /* desativa PIO, cede ao periferico */
-    PIOA_ABCDSR0 &= ~(PIO_PA3 | PIO_PA4); /* Peripheral A: bit0=0             */
-    PIOA_ABCDSR1 &= ~(PIO_PA3 | PIO_PA4); /* Peripheral A: bit1=0             */
+    PIOA_PDR = PIO_SDA | PIO_SCL;
+    PIOA_ABCDSR0 &= ~(PIO_SDA | PIO_SCL);
+    PIOA_ABCDSR1 &= ~(PIO_SDA | PIO_SCL);
 
-    /* 3. Software reset do TWIHS */
     TWI0_CR = TWI_CR_SWRST;
-
-    /* 4. Configura como master, desabilita slave */
     TWI0_CR = TWI_CR_MSEN | TWI_CR_SVDIS;
-
-    /* 4.5 Limpa flags do SR lendo-o */
     (void)TWI0_SR;
 
-    /* 5. Calcula divisores para 400 kHz
-     *    Fórmula: F_scl = MCK / (CLDIV * 2^CKDIV + 3)
-     *    Com CKDIV=1, MCK=150MHz:
-     *    CLDIV = 150e6 / (400000 * 2) - 3 ≈ 184
-     */
-    /* 5. Clock: valores confirmados empiricamente
-     *    MCK ~4MHz, CKDIV=0, CLDIV=CHDIV=17 → ~108 kHz
-     */
-    TWI0_CWGR = (0UL << TWI_CWGR_CKDIV_SHIFT) | (17UL << TWI_CWGR_CHDIV_SHIFT) | (17UL << TWI_CWGR_CLDIV_SHIFT);
-
+    TWI0_CWGR = TWI_CWGR_VALUE;
     return 1U;
-
 #else
     srand((unsigned int)time(NULL));
     return 1U;
@@ -218,9 +213,9 @@ void hal_i2c_start(void)
     (void)(TWI0_RHR);
     (void)(TWI0_SR);
 #else
-    bus_free    = 0U;
+    bus_free = 0U;
     active_addr = 0xFFU;
-    read_index  = 0U;
+    read_index = 0U;
 #endif
 }
 
@@ -231,12 +226,11 @@ void hal_i2c_stop(void)
 {
 #if USE_REAL_HW
     TWI0_CR = TWI_CR_STOP;
-    uint32_t timeout = 100000UL;
+    uint32_t timeout = TWI_STOP_TIMEOUT;
     while ((TWI0_SR & TWI_SR_TXCOMP) == 0U)
     {
         if (--timeout == 0U)
         {
-            // bus preso — força reset do TWI
             TWI0_CR = TWI_CR_SWRST;
             TWI0_CR = TWI_CR_MSEN | TWI_CR_SVDIS;
             break;
@@ -416,7 +410,7 @@ void hal_i2c_restart_read(uint8_t addr)
 #if USE_REAL_HW
     /* Limpa qualquer byte residual no RHR */
     (void)(TWI0_RHR);
-    
+
     /* Reconfigura MMR para leitura e gera novo START */
     TWI0_MMR = ((uint32_t)addr << TWI_MMR_DADR_SHIFT) | TWI_MMR_MREAD;
     TWI0_CR = TWI_CR_START;
@@ -431,5 +425,30 @@ void hal_i2c_restart_read(uint8_t addr)
             break;
         }
     }
+#endif
+}
+
+void hal_i2c_bus_recovery(void)
+{
+#if USE_REAL_HW
+    TWI0_CR = TWI_CR_SWRST;
+
+    PIOA_PER = PIO_SCL;
+    PIOA_OER = PIO_SCL;
+
+    for (int i = 0; i < 9; i++)
+    {
+        PIOA_CODR = PIO_SCL;
+        for (volatile int d = 0; d < BUS_RECOVERY_DELAY; d++) {}
+        PIOA_SODR = PIO_SCL;
+        for (volatile int d = 0; d < BUS_RECOVERY_DELAY; d++) {}
+    }
+
+    PIOA_PDR = PIO_SDA | PIO_SCL;
+
+    TWI0_CR = TWI_CR_SWRST;
+    TWI0_CR = TWI_CR_MSEN | TWI_CR_SVDIS;
+    (void)TWI0_SR;
+    TWI0_CWGR = TWI_CWGR_VALUE;
 #endif
 }

@@ -22,13 +22,14 @@ void sensors_tick(void)
     //ttc_tick();
 }
 
+
 void sensors_read_all(void)
 {
+    eps_read_async();
     gnss_read_async();
     imu_read_async();
     pressure_read_async();
     temperature_read_async();
-    eps_read_async();
 }
 
 void sensors_print(void)

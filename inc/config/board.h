@@ -2,12 +2,13 @@
 #define BOARD_H
 
 /* I2C */
-#define I2C_MASTER_FREQ 100000U
 #define GNSS_ADDR 0x42
 #define IMU_ADDR 0x68
 #define PRESS_ADDR 0x77
 #define TEMP_ADDR 0x48
-#define EPS_ADDR 0x62
+#define EPS_ADDR 0x60
+#define I2C_SPEED_KHZ  25
+
 
 /* Buffer Sizes */
 #define GNSS_BUF_LEN 18

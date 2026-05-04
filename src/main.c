@@ -24,6 +24,7 @@ int main(void)
         hal_system_reset();
     }
 
+    printf("TWI0_SR: 0x%08X\n", (unsigned int)(*(volatile uint32_t *)0x40018020));
     States state = nominal_mode;
 
     sensors_read_all();

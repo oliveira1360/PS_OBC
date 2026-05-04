@@ -23,8 +23,10 @@ static int init_all(void)
     if (!init_status.gpio)
         init_status.gpio = hal_gpio_init(); 
 
-    if (!init_status.i2c)
+    if (!init_status.i2c){
         init_status.i2c = hal_i2c_init();
+        hal_i2c_bus_recovery();
+    }
 
     if (!init_status.spi)
         init_status.spi = hal_spi_init();

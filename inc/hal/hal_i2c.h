@@ -80,5 +80,6 @@ int hal_i2c_tx_ready(void);
 int hal_i2c_rx_ready(void);
 void hal_i2c_request_byte(void);
 void hal_i2c_restart_read(uint8_t addr);
+void hal_i2c_bus_recovery(void);
 
 #endif

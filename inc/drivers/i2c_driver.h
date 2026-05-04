@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define I2C_QUEUE_SIZE 25
-#define I2C_TIMEOUT_MAX 10
+#define I2C_TIMEOUT_MAX 1000
 
 typedef enum {
     I2C_IDLE,
@@ -27,10 +27,11 @@ typedef struct
     uint8_t len;
     uint8_t index;
     uint8_t rw;
-    uint8_t reg;        /* registo a enviar antes da leitura */
-    uint8_t use_reg;    /* 1 = write reg + restart + read    */
+    uint8_t reg;
+    uint8_t use_reg;
     void (*callback)(int);
     uint16_t timeout;
+    uint8_t error_count;
 } i2c_handle_t;
 
 typedef struct

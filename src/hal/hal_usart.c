@@ -1,199 +1,206 @@
 /**
  * @file hal_usart.c
- * @brief Simulação da Hardware Abstraction Layer (HAL) para o periférico USART.
+ * @brief Hardware Abstraction Layer para USART.
  *
- * Este módulo não interage com hardware real. Em vez disso, simula o 
- * comportamento de uma porta série bidirecional, gerando pacotes de dados 
- * fictícios (comandos da "Ground Station") para efeitos de teste do 
- * subsistema de Telemetria, Rastreio e Comando (TT&C).
+ * Usa USE_REAL_HW em board.h:
+ *   0 → dados simulados (Ground Station fictícia)
+ *   1 → hardware real via USART0 do ATSAMV71Q21 (EXT1: PB00=RXD0, PB01=TXD0)
  */
 
 #include "hal/hal_usart.h"
 #include "config/board.h"
-#include <stdlib.h>  /* para simulacao apenas !!! */
-#include <time.h>    /* para simulacao apenas !!! */
 
-/**
- * @brief Estrutura do buffer de receção simulado.
- *
- * Contém os dados fictícios recebidos via USART e o respetivo comprimento.
- */
+#if !USE_REAL_HW
+#include <stdlib.h>
+#include <time.h>
+#endif
+
+#if USE_REAL_HW
+
+/* PMC */
+#define PMC_BASE        0x400E0600UL
+#define PMC_PCER0       (*(volatile uint32_t *)(PMC_BASE + 0x10U))
+
+/* PIOB */
+#define PIOB_BASE       0x400E1000UL
+#define PIOB_PDR        (*(volatile uint32_t *)(PIOB_BASE + 0x04U))
+#define PIOB_ABCDSR0    (*(volatile uint32_t *)(PIOB_BASE + 0x70U))
+#define PIOB_ABCDSR1    (*(volatile uint32_t *)(PIOB_BASE + 0x74U))
+
+/* Pin masks — PB00=RXD0, PB01=TXD0 */
+#define PIO_RXD0        (1UL << 0)   /* PB00 */
+#define PIO_TXD0        (1UL << 1)   /* PB01 */
+
+/* USART0 Mode Register bits */
+#define US_MR_USART_MODE_NORMAL  (0x0UL << 0)
+#define US_MR_USCLKS_MCK         (0x0UL << 4)
+#define US_MR_CHRL_8_BIT         (0x3UL << 6)
+#define US_MR_PAR_NO             (0x4UL << 9)
+#define US_MR_NBSTOP_1_BIT       (0x0UL << 12)
+#define US_MR_CHMODE_NORMAL      (0x0UL << 14)
+
+/* Baud rate: MCK / (16 × BRGR) = baudrate → BRGR = MCK / (16 × baudrate) */
+#define MCK_HZ                   4000000UL
+#define USART_BRGR_VALUE         (MCK_HZ / (16UL * USART_BAUDRATE))
+
+/* Macros de acesso — USART0 */
+#define USART0_CR     (*(volatile uint32_t *)(USART0_BASE + US_CR_OFFSET))
+#define USART0_MR     (*(volatile uint32_t *)(USART0_BASE + US_MR_OFFSET))
+#define USART0_CSR    (*(volatile uint32_t *)(USART0_BASE + US_CSR_OFFSET))
+#define USART0_RHR    (*(volatile uint32_t *)(USART0_BASE + US_RHR_OFFSET))
+#define USART0_THR    (*(volatile uint32_t *)(USART0_BASE + US_THR_OFFSET))
+#define USART0_BRGR   (*(volatile uint32_t *)(USART0_BASE + US_BRGR_OFFSET))
+
+#endif /* USE_REAL_HW */
+
+/* ==========================================================================
+ * SECÇÃO SIMULAÇÃO (só compilada quando USE_REAL_HW == 0)
+ * ========================================================================== */
+#if !USE_REAL_HW
+
+#define SIM_BUF_LEN  TTC_BUF_LEN
+
 typedef struct
 {
-    uint8_t data[TTC_BUF_LEN]; /**< Array de dados recebidos */
-    uint8_t len;               /**< Comprimento total da mensagem */
+    uint8_t data[SIM_BUF_LEN];
+    uint8_t len;
 } usart_sim_t;
 
-/**
- * @brief Variável estática que armazena o estado do pacote simulado atual.
- * Inicializada com um pacote padrão que simula um comando `CMD_REQUEST_DATA` (0x20).
- */
 static usart_sim_t sim = {
-    {0x20, 0x01, 0x00, 0x00},  /* 0x20 = CMD_REQUEST_DATA */
+    {0x20, 0x01, 0x00, 0x00},
     4U
 };
 
-/**
- * @brief Índice de leitura atual do buffer de receção simulado.
- */
-static uint8_t rx_index  = 0;
-
-/**
- * @brief Flag que indica se o bus de escrita esta livre.
- *
- */
-static uint8_t tx_ready  = 1;
-
-/**
- * @brief Flag que indica se o bus de leitura esta livre.
- */
-static uint8_t rx_ready  = 0;
-
-/**
- * @brief Controla se o RX auto-regenera dados ao esgotar o buffer.
- * 1 = comportamento normal (dados contínuos da Ground Station).
- * 0 = desativado — útil para testar timeout de receção.
- */
+static uint8_t rx_index      = 0;
+static uint8_t tx_ready_flag = 1;
+static uint8_t rx_ready_flag = 0;
 static uint8_t rx_auto_regen = 1;
 
-/**
- * @brief Gera pacotes de comandos simulados da Ground Station (GS) com
- *        distribuição de probabilidade realista para uma missão CubeSat.
- *
- * Distribuição simulada (por 100 uplinks):
- *   85% CMD_REQUEST_DATA (0x20) — telemetria periódica normal
- *    8% CMD_ENTER_SAFE   (0x01) — operador entra em safe mode
- *    4% CMD_START_OTA    (0x10) — início de atualização OTA
- *    2% CMD_REMOTE_CTRL  (0x02) — controlo remoto manual
- *    1% CMD_END_OTA      (0x11) — fim/confirmação de OTA
- *
- * Formato do frame de 4 bytes por comando:
- *
- *  CMD_REQUEST_DATA : [0x20][doppler_x10 kHz][timestamp_hi][timestamp_lo]
- *    doppler_x10: efeito Doppler em décimas de kHz (5–35 → 0.5–3.5 kHz)
- *    timestamp  : contador de ciclos de telemetria (big-endian 16-bit)
- *
- *  CMD_ENTER_SAFE   : [0x01][0x00][0x00][0x00]
- *
- *  CMD_START_OTA    : [0x10][ver_major][ver_minor][0x00]
- *    ver_major/minor: versão do firmware proposto (ex: 1.3)
- *
- *  CMD_REMOTE_CTRL  : [0x02][0x00][0x00][0x00]
- *
- *  CMD_END_OTA      : [0x11][0x00][0x00][0x00]
- */
 static void hal_usart_randomize(void)
 {
-    static uint16_t tlm_timestamp = 0U; /* contador de ciclos de telemetria */
+    static uint16_t tlm_timestamp = 0U;
     int roll = rand() % 100;
 
     if (roll < 85)
     {
-        /* ---- CMD_REQUEST_DATA (85%) ---- */
         tlm_timestamp++;
-        sim.data[0] = 0x20U;                             /* CMD_REQUEST_DATA       */
-        sim.data[1] = (uint8_t)(5U + rand() % 31U);     /* Doppler: 0.5–3.5 kHz  */
-        sim.data[2] = (uint8_t)(tlm_timestamp >> 8U);   /* timestamp high byte    */
-        sim.data[3] = (uint8_t)(tlm_timestamp & 0xFFU); /* timestamp low byte     */
+        sim.data[0] = 0x20U;
+        sim.data[1] = (uint8_t)(5U + rand() % 31U);
+        sim.data[2] = (uint8_t)(tlm_timestamp >> 8U);
+        sim.data[3] = (uint8_t)(tlm_timestamp & 0xFFU);
     }
     else if (roll < 93)
     {
-        /* ---- CMD_ENTER_SAFE (8%) ---- */
-        sim.data[0] = 0x01U; /* CMD_ENTER_SAFE */
-        sim.data[1] = 0x00U;
-        sim.data[2] = 0x00U;
-        sim.data[3] = 0x00U;
+        sim.data[0] = 0x01U; sim.data[1] = 0; sim.data[2] = 0; sim.data[3] = 0;
     }
     else if (roll < 97)
     {
-        /* ---- CMD_START_OTA (4%) ---- */
-        sim.data[0] = 0x10U;                         /* CMD_START_OTA     */
-        sim.data[1] = 0x01U;                         /* ver_major = 1     */
-        sim.data[2] = (uint8_t)(rand() % 10U);       /* ver_minor = 0–9   */
-        sim.data[3] = 0x00U;
+        sim.data[0] = 0x10U; sim.data[1] = 0x01U;
+        sim.data[2] = (uint8_t)(rand() % 10U); sim.data[3] = 0;
     }
     else if (roll < 99)
     {
-        /* ---- CMD_REMOTE_CTRL (2%) ---- */
-        sim.data[0] = 0x02U; /* CMD_REMOTE_CTRL */
-        sim.data[1] = 0x00U;
-        sim.data[2] = 0x00U;
-        sim.data[3] = 0x00U;
+        sim.data[0] = 0x02U; sim.data[1] = 0; sim.data[2] = 0; sim.data[3] = 0;
     }
     else
     {
-        /* ---- CMD_END_OTA (1%) ---- */
-        sim.data[0] = 0x11U; /* CMD_END_OTA */
-        sim.data[1] = 0x00U;
-        sim.data[2] = 0x00U;
-        sim.data[3] = 0x00U;
+        sim.data[0] = 0x11U; sim.data[1] = 0; sim.data[2] = 0; sim.data[3] = 0;
     }
 
     rx_index = 0U;
-    rx_ready = 1U;
+    rx_ready_flag = 1U;
 }
 
-/**
- * @brief Inicializa o periférico USART (Simulação).
- *
- * Em hardware real, configuraria os pinos, baud rate e interrupções.
- * Na simulação, gera o primeiro pacote aleatório para testes.
- *
- * @return 1U indicando sucesso na inicialização.
- */
+#endif /* !USE_REAL_HW */
+
+/* ==========================================================================
+ * IMPLEMENTAÇÕES DAS FUNÇÕES HAL
+ * ========================================================================== */
+
 uint8_t hal_usart_init(void)
 {
+#if USE_REAL_HW
+    /* 1. Ativa clock do USART0 no PMC (peripheral ID 13) */
+    PMC_PCER0 = (1UL << ID_USART0);
+
+    /* 2. Configura PB00(RXD0) e PB01(TXD0) como Peripheral C
+     *    Peripheral C: ABCDSR0=0, ABCDSR1=1 */
+    PIOB_PDR = PIO_RXD0 | PIO_TXD0;
+    PIOB_ABCDSR0 &= ~(PIO_RXD0 | PIO_TXD0);  /* bit0 = 0 */
+    PIOB_ABCDSR1 |=  (PIO_RXD0 | PIO_TXD0);   /* bit1 = 1 */
+
+    /* 3. Reset e desativa TX/RX */
+    USART0_CR = US_CR_RSTRX | US_CR_RSTTX | US_CR_RXDIS | US_CR_TXDIS;
+
+    /* 4. Configura modo: normal, MCK, 8 bits, sem paridade, 1 stop bit */
+    USART0_MR = US_MR_USART_MODE_NORMAL
+              | US_MR_USCLKS_MCK
+              | US_MR_CHRL_8_BIT
+              | US_MR_PAR_NO
+              | US_MR_NBSTOP_1_BIT
+              | US_MR_CHMODE_NORMAL;
+
+    /* 5. Baud rate */
+    USART0_BRGR = USART_BRGR_VALUE;
+
+    /* 6. Ativa TX e RX */
+    USART0_CR = US_CR_RXEN | US_CR_TXEN;
+
+    /* 7. Limpa flags */
+    (void)USART0_CSR;
+
+    return 1U;
+
+#else
+    srand((unsigned int)time(NULL));
     hal_usart_randomize();
     return 1U;
+#endif
 }
 
-
-uint8_t hal_rx_data_availible(){
-    return rx_ready;
+uint8_t hal_rx_data_availible(void)
+{
+#if USE_REAL_HW
+    return ((USART0_CSR & US_CSR_RXRDY) != 0U) ? 1U : 0U;
+#else
+    return rx_ready_flag;
+#endif
 }
 
-void hal_set_rx_set_one(){
-    rx_ready = 1;
-}
-
-/**
- * @brief Verifica se o TX register está pronto para enviar.
- * @return 1 se pronto, 0 se ocupado.
- */
 uint8_t hal_usart_tx_ready(void)
 {
-    return tx_ready;
+#if USE_REAL_HW
+    return ((USART0_CSR & US_CSR_TXRDY) != 0U) ? 1U : 0U;
+#else
+    return tx_ready_flag;
+#endif
 }
 
-/**
- * @brief Escreve um byte no TX register (simulação).
- * @param byte Byte a enviar.
- */
 void hal_usart_write_byte(uint8_t byte)
 {
-    /* Em simulação, apenas consume o byte */
-    tx_ready = 1U;
+#if USE_REAL_HW
+    USART0_THR = (uint32_t)byte;
+#else
+    tx_ready_flag = 1U;
     (void)byte;
+#endif
 }
 
-/**
- * @brief Lê um byte do RX register (simulação).
- * @return Próximo byte do buffer simulado.
- */
 uint8_t hal_usart_read_byte(void)
 {
+#if USE_REAL_HW
+    return (uint8_t)(USART0_RHR & 0xFFU);
+#else
     uint8_t byte = sim.data[rx_index];
     rx_index++;
 
     if (rx_index >= sim.len)
     {
-        rx_ready = 0U;
-
+        rx_ready_flag = 0U;
         if (rx_auto_regen)
-        {
             hal_usart_randomize();
-        }
     }
 
     return byte;
+#endif
 }
