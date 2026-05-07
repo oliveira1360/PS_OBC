@@ -61,11 +61,11 @@ static void propulsor_parse(const uint8_t *data)
         return;
     }
 
-    propulsor.status   = data[0];
+    propulsor.status = data[0];
     propulsor.pressure = (float)((data[1] << 8) | data[2]) / 100.0f;
-    propulsor.temp     = (float)((data[3] << 8) | data[4]) / 10.0f;
-    propulsor.thrust   = (float)((data[5] << 8) | data[6]) / 10.0f;
-    propulsor.valve    = data[7];
+    propulsor.temp = (float)((data[3] << 8) | data[4]) / 10.0f;
+    propulsor.thrust = (float)((data[5] << 8) | data[6]) / 10.0f;
+    propulsor.valve = data[7];
 }
 
 /* ==========================================================================
@@ -90,7 +90,6 @@ static void on_propulsor_done(int result)
         propulsor_parse(&rx_buf[1]);
 }
 
-
 /* ==========================================================================
  * API PÚBLICA
  * ========================================================================== */
@@ -103,9 +102,10 @@ void propulsor_read_async(void)
     if (spi.state != SPI_IDLE)
         return;
 
-    tx_buf[0] = 0x01U; /* CMD_READ */
+    /* Só envia o comando (1 byte) + lê 9 bytes = 10 bytes total */
+    tx_buf[0] = 0x01U;
     for (uint8_t i = 1U; i < sizeof(tx_buf); i++)
-        tx_buf[i] = 0xFFU;
+        tx_buf[i] = 0x00U; /* envia 0x00 em vez de 0xFF como dummy */
 
     spi_transfer_async(&spi, PROPULSOR_CS_PIN,
                        tx_buf, rx_buf,
