@@ -21,7 +21,9 @@ target_link_libraries(cubesat_slave
     pico_stdlib
     hardware_irq
     hardware_pio
+    hardware_spi 
     hardware_i2c
+    pico_multicore
 )
 
 pico_enable_stdio_usb(cubesat_slave 1)

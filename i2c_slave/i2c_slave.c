@@ -28,7 +28,7 @@ static inline void finish_transfer(i2c_slave_t *slave)
 static void __not_in_flash_func(i2c_slave_irq_handler)(i2c_slave_t *slave)
 {
     i2c_inst_t *i2c = slave->i2c;
-    i2c_hw_t *hw = i2c_get_hw(i2c);
+    i2c_hw_t *hw = i2c_get_hw(i2c); 
 
     uint32_t intr_stat = hw->intr_stat;
     if (intr_stat == 0)
