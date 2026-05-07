@@ -9,6 +9,9 @@
 #include <stdbool.h>
 
 
+#define TTC_CMD_LEN  4U
+
+
 typedef enum
 {
     CMD_NONE = 0x00,

@@ -47,7 +47,7 @@ static void eps_parse(uint8_t *buf)
  */
 static void on_eps_done(int result)
 {
-    printf("EPS cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
+    //printf("EPS cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
     if (result == 0)
         eps_parse(buf);
 }
@@ -63,11 +63,11 @@ void eps_read_async(void)
 {
     if (i2c.state != I2C_IDLE)
     {
-        printf("EPS: busy state=%d\n", i2c.state);
+       // printf("EPS: busy state=%d\n", i2c.state);
         return;
     }
 
-    printf("EPS: starting read addr=0x%02X reg=0x%02X\n", EPS_ADDR, 0x09);
+    //printf("EPS: starting read addr=0x%02X reg=0x%02X\n", EPS_ADDR, 0x09);
 
     i2c.addr     = EPS_ADDR;
     i2c.buf      = buf;

@@ -56,8 +56,7 @@ static void imu_parse(uint8_t *buf)
  */
 static void on_imu_done(int result)
 {
-    printf("IMU cb: result=%d buf=%02X %02X %02X %02X %02X %02X\n",
-           result, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+    // printf("IMU cb: result=%d buf=%02X %02X %02X %02X %02X %02X\n", result, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
     if (result == 0)
         imu_parse(buf);
 }
@@ -74,16 +73,16 @@ void imu_read_async(void)
     if (i2c.state != I2C_IDLE)
         return;
 
-    i2c.addr     = IMU_ADDR;
-    i2c.buf      = buf;
-    i2c.len      = 6;        /* accel: 6 bytes a partir de 0x3B */
-    i2c.rw       = 1;
-    i2c.reg      = 0x3B;
-    i2c.use_reg  = 1;
-    i2c.index    = 0;
-    i2c.timeout  = 0;
+    i2c.addr = IMU_ADDR;
+    i2c.buf = buf;
+    i2c.len = 6; /* accel: 6 bytes a partir de 0x3B */
+    i2c.rw = 1;
+    i2c.reg = 0x3B;
+    i2c.use_reg = 1;
+    i2c.index = 0;
+    i2c.timeout = 0;
     i2c.callback = on_imu_done;
-    i2c.state    = I2C_STARTING;
+    i2c.state = I2C_STARTING;
 }
 
 /**

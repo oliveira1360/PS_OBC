@@ -1,90 +1,99 @@
 /**
  * @file hal_spi.c
- * @brief Simulação da Hardware Abstraction Layer (HAL) para o barramento SPI.
+ * @brief Hardware Abstraction Layer para SPI.
  *
- * Este módulo não interage com o hardware físico SPI. Serve apenas para simular
- * o comportamento do barramento para efeitos de teste (gerando dados aleatórios
- * na receção). O código para o hardware real encontra-se comentado dentro
- * das funções como referência.
+ * Usa USE_REAL_HW em board.h:
+ *   0 → dados simulados (propulsor fictício)
+ *   1 → hardware real via SPI0 do ATSAMV71Q21
+ *         MOSI = PD21 (SPI0_MOSI)
+ *         MISO = PD20 (SPI0_MISO)
+ *         SCK  = PD22 (SPI0_SPCK)
+ *         CS   = PD25 (SPI0_NPCS1)
  */
 
 #include "hal/hal_spi.h"
 #include "config/board.h"
-#include <stdlib.h>  /* simulacao apenas !!! */
 
-/**
- * @brief Flag que indica se o barramento SPI está pronto para transmitir (Tx).
+#if !USE_REAL_HW
+#include <stdlib.h>
+#include <time.h>
+#endif
+
+#if USE_REAL_HW
+
+/* PMC */
+#define PMC_BASE     0x400E0600UL
+#define PMC_PCER0    (*(volatile uint32_t *)(PMC_BASE + 0x10U))
+
+/* PIOD — pinos SPI0 estão no Port D */
+#define PIOD_BASE    0x400E1400UL
+#define PIOD_PDR     (*(volatile uint32_t *)(PIOD_BASE + 0x04U))
+#define PIOD_ABCDSR0 (*(volatile uint32_t *)(PIOD_BASE + 0x70U))
+#define PIOD_ABCDSR1 (*(volatile uint32_t *)(PIOD_BASE + 0x74U))
+#define PIOD_PER     (*(volatile uint32_t *)(PIOD_BASE + 0x00U))
+#define PIOD_OER     (*(volatile uint32_t *)(PIOD_BASE + 0x10U))
+#define PIOD_SODR    (*(volatile uint32_t *)(PIOD_BASE + 0x30U))
+#define PIOD_CODR    (*(volatile uint32_t *)(PIOD_BASE + 0x34U))
+
+/* SPI0 pin masks no Port D
+ * PD20 = MISO (SPI0_MISO)  — Peripheral B
+ * PD21 = MOSI (SPI0_MOSI)  — Peripheral B
+ * PD22 = SCK  (SPI0_SPCK)  — Peripheral B
+ * PD25 = CS   (SPI0_NPCS1) — Peripheral B
+ *
+ * Peripheral B no SAMV71: ABCDSR0=1, ABCDSR1=0
  */
+#define PIO_MISO    (1UL << 20)
+#define PIO_MOSI    (1UL << 21)
+#define PIO_SCK     (1UL << 22)
+#define PIO_CS1     (1UL << 25)
+#define SPI_PIN_MASK (PIO_MISO | PIO_MOSI | PIO_SCK)
+
+/* SPI0 Mode Register — peripheral select via PCS field */
+#define SPI_MR_PCS_NPCS1  (0x01UL << 16)  /* Select NPCS1 (PD25) */
+
+/* SPI0 CSR1 bits (Chip Select Register for NPCS1) */
+#define SPI_CSR1_OFFSET   0x34U
+#define SPI0_CSR1         REG(SPI0_BASE + SPI_CSR1_OFFSET)
+
+/* Baud rate divider: SCK = MCK / SCBR
+ * With MCK=12MHz, SCBR=12 → SCK=1MHz */
+#define SPI_BAUD_DIV     12U
+
+#define ID_PIOD          16U  /* Peripheral ID for PIOD — Página 57 */
+
+#endif /* USE_REAL_HW */
+
+/* ==========================================================================
+ * SIMULAÇÃO (USE_REAL_HW == 0)
+ * ========================================================================== */
+#if !USE_REAL_HW
+
 static uint8_t tx_ready = 1U;
-
-/**
- * @brief Flag que indica se há dados prontos a ser lidos na receção (Rx).
- */
 static uint8_t rx_ready = 0U;
-
-/**
- * @brief Buffer interno para guardar o byte simulado recebido via SPI.
- */
 static uint8_t rx_data  = 0x00U;
 
-/* -------------------------------------------------------------------------
- * Simulação do frame SPI do Propulsor (cold-gas thruster, CubeSat 3U)
- *
- * Frame de resposta (9 bytes, veja propulsor.c para documentação completa):
- *   [0]   STATUS        : PROP_STATUS_IDLE (0x00)
- *   [1-2] PRESSURE H/L  : pressão câmara /100 = bar  →  1.50–2.50 bar  (tanque frio)
- *   [3-4] TEMP H/L      : temperatura    /10  = °C   →  22–28°C        (ambiente)
- *   [5-6] THRUST H/L    : impulso        /10  = N    →  0.0 N          (válvula fechada)
- *   [7]   VALVE_STATE   : 0 (fechada)
- *   [8]   CHECKSUM      : XOR de bytes 0..7
- *
- * A função prop_generate_frame() é chamada em hal_spi_cs_low() para gerar
- * um frame fresco a cada transação SPI. O checksum é sempre calculado
- * corretamente para que propulsor_parse() aceite o frame.
- * ------------------------------------------------------------------------- */
-
-/** @brief Frame de telemetria do propulsor pré-gerado para a transação atual. */
 static uint8_t prop_frame[9];
-
-/** @brief Índice do próximo byte a devolver em hal_spi_read_byte(). */
 static uint8_t prop_byte_idx = 0U;
 
-/**
- * @brief Gera um frame de telemetria realista para o propulsor simulado.
- *
- * Simula o estado típico de um cold-gas thruster em standby:
- *   - Status IDLE, válvula fechada, sem impulso
- *   - Pressão residual do tanque (1.50–2.50 bar)
- *   - Temperatura de câmara ambiente (22–28°C)
- *
- * O checksum XOR é calculado automaticamente para garantir que
- * propulsor_parse() aceite o frame sem erro.
- */
 static void prop_generate_frame(void)
 {
     uint8_t *f = prop_frame;
 
-    /* [0] STATUS: IDLE (0x00 = PROP_STATUS_IDLE) */
-    f[0] = 0x00U;
+    f[0] = 0x00U; /* STATUS: IDLE */
 
-    /* [1-2] Pressão câmara: 1.50–2.50 bar → raw 150–250 */
     uint16_t press_raw = 150U + (uint16_t)(rand() % 101U);
     f[1] = (uint8_t)(press_raw >> 8U);
     f[2] = (uint8_t)(press_raw & 0xFFU);
 
-    /* [3-4] Temperatura: 22–28°C → raw 220–280 (/10) */
     uint16_t temp_raw = 220U + (uint16_t)(rand() % 61U);
     f[3] = (uint8_t)(temp_raw >> 8U);
     f[4] = (uint8_t)(temp_raw & 0xFFU);
 
-    /* [5-6] Impulso: 0.0 N (válvula fechada, standby) */
     f[5] = 0x00U;
     f[6] = 0x00U;
-
-    /* [7] Válvula: fechada */
     f[7] = 0x00U;
 
-    /* [8] Checksum XOR de bytes 0..7 */
     uint8_t chk = 0U;
     for (uint8_t j = 0U; j < 8U; j++)
         chk ^= f[j];
@@ -93,114 +102,122 @@ static void prop_generate_frame(void)
     prop_byte_idx = 0U;
 }
 
-/**
- * @brief Inicializa o periférico SPI (Simulação).
- *
- * Na versão simulada, esta função apenas retorna sucesso. Na versão real,
- * configuraria os registos do microcontrolador (Power Management, Baud Rate, etc.).
- *
- * @return 1U indicando sucesso na inicialização.
- */
+#endif /* !USE_REAL_HW */
+
+/* ==========================================================================
+ * IMPLEMENTAÇÕES HAL
+ * ========================================================================== */
+
 uint8_t hal_spi_init(void)
 {
-    /* hardware real:
-       PMC_PCER0 |= (1U << ID_SPI0);
-       SPI0_CR   = SPI_CR_SWRST;
-       SPI0_MR   = SPI_MR_MSTR | SPI_MR_MODFDIS;
-       SPI0_CSR0 = (SPI_BAUD_DIV8 << 8U);
-       SPI0_CR   = SPI_CR_SPIEN; */
+#if USE_REAL_HW
+    /* 1. Ativa clock do SPI0 (ID 21) e PIOD (ID 16) no PMC */
+    PMC_PCER0 = (1UL << ID_SPI0) | (1UL << ID_PIOD);
+
+    /* 2. Configura pinos PD20/21/22 como Peripheral B (SPI0)
+     *    Peripheral B: ABCDSR0=1, ABCDSR1=0 */
+    PIOD_PDR = SPI_PIN_MASK;  /* Desativa GPIO, entrega ao periférico */
+    PIOD_ABCDSR0 |= SPI_PIN_MASK;   /* Seta bit → 1 */
+    PIOD_ABCDSR1 &= ~SPI_PIN_MASK;  /* Limpa bit → 0 */
+
+    /* 3. CS (PD25) — controlo manual via GPIO (não via peripheral select)
+     *    Isto dá controlo explícito sobre o CS, alinhado com a FSM do driver */
+    PIOD_PER  = PIO_CS1;     /* PD25 como GPIO */
+    PIOD_OER  = PIO_CS1;     /* Output */
+    PIOD_SODR = PIO_CS1;     /* CS HIGH (inativo) */
+
+    /* 4. Software reset */
+    SPI0_CR = SPI_CR_SWRST;
+
+    /* 5. Mode Register: Master, Mode Fault Detect disabled */
+    SPI0_MR = SPI_MR_MSTR | SPI_MR_MODFDIS;
+
+    /* 6. Chip Select Register 0: baud rate, Mode 0 (CPOL=0, CPHA=0), 8-bit */
+    SPI0_CSR0 = (SPI_BAUD_DIV << 8U);  /* SCBR field is bits [15:8] */
+
+    /* 7. Enable SPI */
+    SPI0_CR = SPI_CR_SPIEN;
+
     return 1U;
+
+#else
+    srand((unsigned int)time(NULL));
+    return 1U;
+#endif
 }
 
-/**
- * @brief Verifica se o SPI está pronto para transmitir um novo byte.
- *
- * @return 1U se estiver pronto para transmitir, 0U caso contrário.
- */
-uint8_t hal_spi_tx_ready(void) { return tx_ready; }
+uint8_t hal_spi_tx_ready(void)
+{
+#if USE_REAL_HW
+    return ((SPI0_SR & SPI_SR_TDRE) != 0U) ? 1U : 0U;
+#else
+    return tx_ready;
+#endif
+}
 
-/**
- * @brief Verifica se o SPI tem um byte recebido pronto a ser lido.
- *
- * @return 1U se houver dados disponíveis, 0U caso contrário.
- */
-uint8_t hal_spi_rx_ready(void) { return rx_ready; }
+uint8_t hal_spi_rx_ready(void)
+{
+#if USE_REAL_HW
+    return ((SPI0_SR & SPI_SR_RDRF) != 0U) ? 1U : 0U;
+#else
+    return rx_ready;
+#endif
+}
 
-/**
- * @brief Coloca o pino de Chip Select (CS) em nível lógico baixo (Ativo).
- *
- * Na simulação, aproveita o CS_LOW para gerar um frame de telemetria fresco
- * para o propulsor, de modo a que os bytes devolvidos em hal_spi_read_byte()
- * formem sempre um frame válido com checksum correto.
- *
- * @param cs_pin O pino/identificador do Chip Select a ser ativado.
- */
 void hal_spi_cs_low(uint8_t cs_pin)
 {
+#if USE_REAL_HW
     (void)cs_pin;
-    /* hardware: PIO_CODR = (1U << cs_pin) */
-    prop_generate_frame(); /* simulação: prepara frame do propulsor */
+    PIOD_CODR = PIO_CS1;  /* PD25 LOW — ativa CS */
+#else
+    (void)cs_pin;
+    prop_generate_frame();
+#endif
 }
 
-/**
- * @brief Coloca o pino de Chip Select (CS) em nível lógico alto (Inativo).
- *
- * Simula a desativação de um dispositivo escravo no barramento SPI.
- *
- * @param cs_pin O pino/identificador do Chip Select a ser desativado.
- */
 void hal_spi_cs_high(uint8_t cs_pin)
 {
+#if USE_REAL_HW
     (void)cs_pin;
-    /* hardware: PIO_SODR = (1U << cs_pin) */
+    PIOD_SODR = PIO_CS1;  /* PD25 HIGH — desativa CS */
+#else
+    (void)cs_pin;
+#endif
 }
 
-/**
- * @brief Simula o envio de um byte pelo barramento SPI (Full-Duplex).
- *
- * Como o SPI é full-duplex, enviar um byte significa também receber um byte.
- * Na simulação, o byte devolvido corresponde ao byte seguinte do frame de
- * telemetria do propulsor gerado em hal_spi_cs_low(). Isto garante que o
- * frame completo tem um checksum XOR válido, passando a verificação em
- * propulsor_parse().
- *
- * @param data O byte de dados a ser transmitido (ignorado na simulação).
- */
 void hal_spi_send_byte(uint8_t data)
 {
+#if USE_REAL_HW
+    /* Espera que TX esteja pronto — na prática o driver verifica antes */
+    SPI0_TDR = (uint32_t)data;
+#else
     (void)data;
-    /* hardware: SPI0_TDR = data */
     tx_ready = 1U;
 
-    /* simulação: devolve o próximo byte do frame do propulsor */
     if (prop_byte_idx < sizeof(prop_frame))
         rx_data = prop_frame[prop_byte_idx++];
     else
-        rx_data = 0x00U; /* guard: não deve acontecer se PROPULSOR_BUF_LEN == 9 */
+        rx_data = 0x00U;
 
     rx_ready = 1U;
+#endif
 }
 
-/**
- * @brief Lê o último byte recebido pelo barramento SPI.
- *
- * Limpa a flag de receção (`rx_ready`) e retorna o valor gerado internamente
- * pela função de envio.
- *
- * @return O byte lido do registo de dados (simulado).
- */
 uint8_t hal_spi_read_byte(void)
 {
+#if USE_REAL_HW
+    return (uint8_t)(SPI0_RDR & 0xFFU);
+#else
     rx_ready = 0U;
     return rx_data;
-    /* hardware: return (uint8_t)(SPI0_RDR & 0xFFU) */
+#endif
 }
 
-/**
- * @brief Prepara o periférico SPI para uma transferência.
- *
- * Esta função atua como um "stub" (função vazia) na simulação, podendo ser
- * útil em hardware real para esvaziar FIFOs ou limpar flags de erro antes 
- * de iniciar uma nova comunicação.
- */
-void hal_spi_prepare_transfer(void) { }
+void hal_spi_prepare_transfer(void)
+{
+#if USE_REAL_HW
+    /* Limpa overrun/erros lendo RDR e SR */
+    (void)SPI0_SR;
+    (void)SPI0_RDR;
+#endif
+}

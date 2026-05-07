@@ -5,6 +5,7 @@
 
 #include "drivers/usart_driver.h"
 #include "hal/hal_usart.h"
+#include <stdio.h>
 
 /**
  * @brief Inicia uma transmissão assíncrona.
@@ -20,13 +21,13 @@ void usart_send_async(usart_handle_t *h, uint8_t *data, uint8_t len)
 {
     if (h->tx_state != UART_TX_IDLE)
     {
-        return;  /* já está a transmitir, ignora */
+        return; /* já está a transmitir, ignora */
     }
 
-    h->tx_buf   = data;
-    h->tx_len   = len;
+    h->tx_buf = data;
+    h->tx_len = len;
     h->tx_index = 0U;
-    h->timeout  = 0U;
+    h->timeout = 0U;
     h->tx_state = UART_TX_TRANSMITTING;
 }
 
@@ -45,13 +46,13 @@ void usart_recv_async(usart_handle_t *h, uint8_t *buf, uint8_t len, void (*cb)(i
 {
     if (h->rx_state != UART_RX_IDLE)
     {
-        return;  /* já está a receber, ignora */
+        return; /* já está a receber, ignora */
     }
 
-    h->rx_buf   = buf;
-    h->rx_len   = len;
+    h->rx_buf = buf;
+    h->rx_len = len;
     h->rx_index = 0U;
-    h->timeout  = 0U;
+    h->timeout = 0U;
     h->callback = cb;
     h->rx_state = UART_RX_RECEIVING;
 }
@@ -102,8 +103,8 @@ void usart_tx_tick(usart_handle_t *h)
     case UART_TX_ERROR:
         /* Limpa erro e volta ao idle */
         h->tx_index = 0U;
-        h->tx_len   = 0U;
-        h->timeout  = 0U;
+        h->tx_len = 0U;
+        h->timeout = 0U;
         h->tx_state = UART_TX_IDLE;
         break;
 
@@ -130,9 +131,8 @@ void usart_rx_tick(usart_handle_t *h)
     case UART_RX_IDLE:
         if (hal_rx_data_availible())
         {
-            /* Dados disponíveis — começa a receber */
             h->rx_index = 0U;
-            h->timeout  = 0U;
+            h->timeout = 0U;
             h->rx_state = UART_RX_RECEIVING;
         }
         break;
@@ -140,30 +140,30 @@ void usart_rx_tick(usart_handle_t *h)
     case UART_RX_RECEIVING:
         if (hal_rx_data_availible())
         {
-            /* Lê byte e armazena no buffer */
             h->rx_buf[h->rx_index] = hal_usart_read_byte();
             h->rx_index++;
             h->timeout = 0U;
 
             if (h->rx_index >= h->rx_len)
             {
-                /* Frame completo — notifica e volta ao idle */
                 h->rx_state = UART_RX_IDLE;
-
                 if (h->callback != (void *)0)
-                {
-                    h->callback(1);  /* 1 = sucesso */
-                }
+                    h->callback(1);
             }
         }
         else
         {
-            /* Sem dados — verifica timeout */
-            h->timeout++;
-            if (h->timeout >= USART_TIMEOUT_MAX)
+            // IMPORTANT: Only count the timeout if we already received the FIRST byte
+            // and are waiting for bytes 2, 3, or 4.
+            if (h->rx_index > 0) 
             {
-                h->rx_state = UART_RX_ERROR;
+                h->timeout++;
+                if (h->timeout >= USART_TIMEOUT_MAX)
+                {
+                    h->rx_state = UART_RX_ERROR;
+                }
             }
+            // If rx_index == 0, it just loops safely forever until the Pico sends data.
         }
         break;
 
@@ -171,12 +171,12 @@ void usart_rx_tick(usart_handle_t *h)
         /* Notifica erro e limpa estado */
         if (h->callback != (void *)0)
         {
-            h->callback(0);  /* 0 = erro */
+            h->callback(0); /* 0 = erro */
         }
 
         h->rx_index = 0U;
-        h->rx_len   = 0U;
-        h->timeout  = 0U;
+        h->rx_len = 0U;
+        h->timeout = 0U;
         h->rx_state = UART_RX_IDLE;
         break;
 

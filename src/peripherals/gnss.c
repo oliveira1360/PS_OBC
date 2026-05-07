@@ -42,10 +42,11 @@ static float bytes_to_float(uint8_t *b)
  */
 static void gnss_parse(uint8_t *buf)
 {
-    printf("GNSS raw:");
+    /*printf("GNSS raw:");
     for (int i = 0; i < 18; i++)
         printf(" %02X", buf[i]);
-    printf("\n");
+    //printf("\n");
+    */
 
     gnss.latitude  = bytes_to_float(&buf[0]);
     gnss.longitude = bytes_to_float(&buf[4]);
@@ -66,12 +67,11 @@ static void on_gnss_done(int result)
     if (result == 0)
     {
         gnss_parse(buf);
-        printf("GNSS: lat=%.2f lon=%.2f alt=%.2f spd=%.2f\n",
-               gnss.latitude, gnss.longitude, gnss.altitude, gnss.speed);
+        // printf("GNSS: lat=%.2f lon=%.2f alt=%.2f spd=%.2f\n", gnss.latitude, gnss.longitude, gnss.altitude, gnss.speed);
     }
     else
     {
-        printf("GNSS: I2C erro=%d\n", result);
+        // printf("GNSS: I2C erro=%d\n", result);
     }
 }
 

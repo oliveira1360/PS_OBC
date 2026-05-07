@@ -2,6 +2,8 @@
 #include "app/sensors.h"
 #include "drivers/i2c_driver.h"
 #include "drivers/usart_driver.h"
+#include "peripherals/propulsor.h"  
+
 
 gnss_data_t gnss = {0};
 imu_data_t imu = {0};
@@ -9,6 +11,7 @@ pressure_data_t pressure = {0};
 temperature_data_t temperature = {0};
 eps_data_t eps = {0};
 ttc_data_t ttc = {0};
+propulsor_data_t propulsor = {0};
 
 float BATTERY_STATUS = 100.0f;
 
@@ -19,7 +22,8 @@ void sensors_tick(void)
     imu_tick();
     pressure_tick();
     temperature_tick();
-    //ttc_tick();
+    ttc_tick();
+    //propulsor_tick();
 }
 
 
@@ -30,6 +34,8 @@ void sensors_read_all(void)
     imu_read_async();
     pressure_read_async();
     temperature_read_async();
+    //propulsor_read_async();
+    
 }
 
 void sensors_print(void)

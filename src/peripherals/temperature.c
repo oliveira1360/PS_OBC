@@ -33,7 +33,7 @@ static uint8_t buf[TEMP_BUF_LEN];
  */
 static void temperature_parse(uint8_t *buf)
 {
-    printf("raw temperature: %02X", *buf);
+    // printf("raw temperature: %02X", *buf);
     temperature.temperature = (float)((buf[0] << 8) | buf[1]);
 }
 
@@ -47,7 +47,7 @@ static void temperature_parse(uint8_t *buf)
  */
 static void on_temp_done(int result)
 {
-    printf("TEMP cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
+    //printf("TEMP cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
     if (result == 0)
         temperature_parse(buf);
 }

@@ -8,10 +8,9 @@
 #include "hal/hal_usart.h"
 #include "hal/hal_system.h"
 #include "hal/hal_systick.h"
-
+#include <stdio.h>
 
 static uint8_t self_test(void);
-
 
 init_status_t init_status = {0};
 
@@ -19,11 +18,11 @@ static int init_all(void)
 {
     hal_systick_init();
 
-
     if (!init_status.gpio)
-        init_status.gpio = hal_gpio_init(); 
+        init_status.gpio = hal_gpio_init();
 
-    if (!init_status.i2c){
+    if (!init_status.i2c)
+    {
         init_status.i2c = hal_i2c_init();
         hal_i2c_bus_recovery();
     }
@@ -34,8 +33,14 @@ static int init_all(void)
     if (!init_status.qspi)
         init_status.qspi = hal_qspi_init();
 
+    printf("init_status.usart before init code: %d", init_status.usart);
+
     if (!init_status.usart)
+    {
         init_status.usart = hal_usart_init();
+        printf("init_status.usart code after init:  %d", init_status.usart);
+
+    }
 
     if (!init_status.gnss)
         init_status.gnss = hal_gnss_init();
@@ -69,17 +74,18 @@ int system_init(void)
     {
         attempts++;
         if (attempts >= MAX_INIT_RETRIES)
-            return 0;   /* falha crítica */
+            return 0; /* falha crítica */
     }
 
-    return self_test();  /* 1=pass, 0=fail → reinicia */
+    return self_test(); /* 1=pass, 0=fail → reinicia */
 }
 
-static uint8_t self_test(void){
-     return hal_self_test_gpio()   &&
-           hal_self_test_i2c()    &&
-           hal_self_test_spi()    &&
-           hal_self_test_qspi()   &&
-           hal_self_test_usart()  &&
+static uint8_t self_test(void)
+{
+    return hal_self_test_gpio() &&
+           hal_self_test_i2c() &&
+           hal_self_test_spi() &&
+           hal_self_test_qspi() &&
+           hal_self_test_usart() &&
            hal_self_test_memory();
 }

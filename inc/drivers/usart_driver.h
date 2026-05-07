@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define USART_TIMEOUT_MAX 200
+#define USART_TIMEOUT_MAX 1000000UL
 
 // Os estados agora gerem o fluxo de dados, não os bits físicos!
 typedef enum {
@@ -35,10 +35,10 @@ typedef struct {
     uint8_t tx_index; // Quantos bytes já foram enviados
     
     uint8_t *rx_buf;
-    uint8_t rx_len;
-    uint8_t rx_index; // Quantos bytes já foram recebidos
+    uint16_t  rx_len;
+    uint16_t  rx_index; 
     
-    uint8_t timeout;
+    uint32_t timeout;
     void (*callback)(int status);
 } usart_handle_t;
 

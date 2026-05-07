@@ -47,7 +47,7 @@ static void pressure_parse(uint8_t *buf)
  */
 static void on_pressure_done(int result)
 {
-    printf("pressure done status: %d", result);
+    //printf("pressure done status: %d", result);
     if (result == 0)
         pressure_parse(buf);
 }
