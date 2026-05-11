@@ -42,11 +42,14 @@ static float bytes_to_float(uint8_t *b)
  */
 static void gnss_parse(uint8_t *buf)
 {
-    /*printf("GNSS raw:");
+    /*
+    printf("GNSS raw:");
     for (int i = 0; i < 18; i++)
         printf(" %02X", buf[i]);
-    //printf("\n");
+    printf("\n");
     */
+    
+    
 
     gnss.latitude  = bytes_to_float(&buf[0]);
     gnss.longitude = bytes_to_float(&buf[4]);

@@ -27,8 +27,10 @@ static int init_all(void)
         hal_i2c_bus_recovery();
     }
 
+    
     if (!init_status.spi)
         init_status.spi = hal_spi_init();
+        
 
     if (!init_status.qspi)
         init_status.qspi = hal_qspi_init();

@@ -27,7 +27,7 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len);
 
 static void on_ttc_tx_done(int result)
 {
-    printf("result %d \n", result);
+    // printf("result %d \n", result);
     waiting_tx = 0U;
     ttc_read_async();
 }
@@ -51,7 +51,7 @@ static void on_ota_drain_done(int result)
 
 static void on_ttc_done(int result)
 {
-    printf("result ttc %d", result);
+    //printf("result ttc %d", result);
     if (result == 1)
     {
         if (ota_data_started)
@@ -69,7 +69,7 @@ static void on_ttc_done(int result)
 }
 static void ttc_parse(uint8_t *buf)
 {
-    printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
+    //printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
 
     ground_command_t cmd = (ground_command_t)buf[0];
     ttc.last_command = cmd;
@@ -77,7 +77,7 @@ static void ttc_parse(uint8_t *buf)
     switch (cmd)
     {
     case CMD_REQUEST_DATA:
-        printf("cmd0\n");
+        //printf("cmd0\n");
         ttc.doppler = (float)buf[1] / 10.0f;
         ttc_send_telemetry();
         break;
@@ -126,7 +126,7 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len)
     uint16_t sync = ((uint16_t)buf[0] << 8) | buf[1];
     if (sync != OTA_SYNC_WORD)
     {
-        printf("[OTA] Bad sync word: 0x%04X\n", sync);
+        // printf("[OTA] Bad sync word: 0x%04X\n", sync);
         return;
     }
 
@@ -134,7 +134,7 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len)
 
     if (seq == 0xFFFF)
     {
-        printf("[OTA] END marker received — transfer complete\n");
+        // printf("[OTA] END marker received — transfer complete\n");
         ota_receiving = 0U;
         ota_data_started = 0U;
         ttc.ota_active = false;
@@ -143,7 +143,7 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len)
     }
 
     uint16_t payload_len = ((uint16_t)buf[4] << 8) | buf[5];
-    printf("[OTA] Packet seq=%d, payload=%d bytes\n", seq, payload_len);
+    // printf("[OTA] Packet seq=%d, payload=%d bytes\n", seq, payload_len);
     ttc.cmd_status = ACK_SUCCESS;
 }
 
@@ -171,7 +171,7 @@ void ttc_tick(void)
 
     if (waiting_tx && usart.tx_state == UART_TX_IDLE && usart.tx_index >= usart.tx_len && usart.tx_len > 0)
     {
-        printf("[TTC TX] ACK sent (%d bytes)\n", usart.tx_len);
+        // printf("[TTC TX] ACK sent (%d bytes)\n", usart.tx_len);
         waiting_tx = 0U;
         ttc_read_async();
     }

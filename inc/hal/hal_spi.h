@@ -64,4 +64,5 @@ void    hal_spi_send_byte(uint8_t data);
 uint8_t hal_spi_read_byte(void);
 void    hal_spi_prepare_transfer(void);
 
+
 #endif

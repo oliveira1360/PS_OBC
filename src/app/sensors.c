@@ -15,6 +15,8 @@ propulsor_data_t propulsor = {0};
 
 float BATTERY_STATUS = 100.0f;
 
+static uint8_t spi_turn = 0U;
+
 void sensors_tick(void)
 {
     eps_tick();
@@ -23,19 +25,25 @@ void sensors_tick(void)
     pressure_tick();
     temperature_tick();
     ttc_tick();
-    //propulsor_tick();
+    propulsor_tick();
 }
-
 
 void sensors_read_all(void)
 {
-    eps_read_async();
-    gnss_read_async();
-    imu_read_async();
-    pressure_read_async();
-    temperature_read_async();
-    //propulsor_read_async();
-    
+    if (spi_turn)
+    {
+        propulsor_read_async();
+        spi_turn = 0U;
+    }
+    else
+    {
+        eps_read_async();
+        gnss_read_async();
+        imu_read_async();
+        pressure_read_async();
+        temperature_read_async();
+        spi_turn = 1U;
+    }
 }
 
 void sensors_print(void)

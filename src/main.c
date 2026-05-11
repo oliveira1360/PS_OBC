@@ -15,6 +15,7 @@
 #include "hal/hal_debug_uart.h"
 #include "hal/hal_systick.h"
 #include "hal/hal_usart.h"
+#include "hal/hal_spi.h"
 #include "config/board.h"
 
 int main(void)
@@ -28,22 +29,16 @@ int main(void)
     States state = nominal_mode;
 
     sensors_read_all();
-    printf("sensors_read_all OK\n");
     ttc_read_async();
-
-    uint32_t prop_divider = 0U;
+    for (size_t i = 0; i < 10; i++)
+    {
+        printf("\n");
+    }
+    
 
     while (1)
     {
         sensors_tick();
-        propulsor_tick();
-
-        prop_divider++;
-        if (prop_divider >= 500000U)  /* ~1 leitura por segundo */
-        {
-            prop_divider = 0U;
-            propulsor_read_async();
-        }
 
         switch (state)
         {

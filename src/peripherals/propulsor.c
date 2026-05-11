@@ -57,7 +57,7 @@ static void propulsor_parse(const uint8_t *data)
 {
     if (!propulsor_verify_checksum(data))
     {
-        printf("[PROP] Checksum error\n");
+        // printf("[PROP] Checksum error\n");
         return;
     }
 
@@ -81,10 +81,7 @@ static void propulsor_parse(const uint8_t *data)
  */
 static void on_propulsor_done(int result)
 {
-    printf("[PROP] result=%d RX: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
-           result,
-           rx_buf[0], rx_buf[1], rx_buf[2], rx_buf[3], rx_buf[4],
-           rx_buf[5], rx_buf[6], rx_buf[7], rx_buf[8], rx_buf[9]);
+    printf("[PROP] result=%d RX: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", result, rx_buf[0], rx_buf[1], rx_buf[2], rx_buf[3], rx_buf[4], rx_buf[5], rx_buf[6], rx_buf[7], rx_buf[8], rx_buf[9]);
 
     if (result == 0)
         propulsor_parse(&rx_buf[1]);
@@ -102,7 +99,6 @@ void propulsor_read_async(void)
     if (spi.state != SPI_IDLE)
         return;
 
-    /* Só envia o comando (1 byte) + lê 9 bytes = 10 bytes total */
     tx_buf[0] = 0x01U;
     for (uint8_t i = 1U; i < sizeof(tx_buf); i++)
         tx_buf[i] = 0x00U; /* envia 0x00 em vez de 0xFF como dummy */

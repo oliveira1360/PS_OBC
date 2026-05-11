@@ -16,7 +16,7 @@
 #define TEMP_BUF_LEN 2
 #define EPS_BUF_LEN 2
 #define TTC_BUF_LEN 16U
-#define PROPULSOR_BUF_LEN 9 /* STATUS(1) + PRESS(2) + TEMP(2) + THRUST(2) + VALVE(1) + CHK(1) */
+#define PROPULSOR_BUF_LEN 8
 
 /* OTA */
 #define OTA_PACKET_SIZE 128

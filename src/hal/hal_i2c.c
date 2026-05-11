@@ -37,8 +37,10 @@
 #define PIOA_PER        (*(volatile uint32_t *)(PIOA_BASE + 0x00U))
 #define PIOA_PDR        (*(volatile uint32_t *)(PIOA_BASE + 0x04U))
 #define PIOA_OER        (*(volatile uint32_t *)(PIOA_BASE + 0x10U))
+#define PIOA_ODR        (*(volatile uint32_t *)(PIOA_BASE + 0x14U)) /* <-- ADICIONAR ESTA LINHA */
 #define PIOA_SODR       (*(volatile uint32_t *)(PIOA_BASE + 0x30U))
 #define PIOA_CODR       (*(volatile uint32_t *)(PIOA_BASE + 0x34U))
+#define PIOA_PDSR       (*(volatile uint32_t *)(PIOA_BASE + 0x3CU)) /* <-- E ADICIONAR ESTA LINHA */
 #define PIOA_ABCDSR0    (*(volatile uint32_t *)(PIOA_BASE + 0x70U))
 #define PIOA_ABCDSR1    (*(volatile uint32_t *)(PIOA_BASE + 0x74U))
 
@@ -431,21 +433,57 @@ void hal_i2c_restart_read(uint8_t addr)
 void hal_i2c_bus_recovery(void)
 {
 #if USE_REAL_HW
+    /* Desativa o hardware TWI temporariamente */
     TWI0_CR = TWI_CR_SWRST;
 
-    PIOA_PER = PIO_SCL;
+    /* Toma controlo dos pinos SCL e SDA como GPIOs manuais */
+    PIOA_PER = PIO_SCL | PIO_SDA;
+    
+    /* Configura SCL como saída e SDA como entrada (para lermos o que o Slave está a fazer) */
     PIOA_OER = PIO_SCL;
+    PIOA_ODR = PIO_SDA; // Input
 
+    /* Um delay decente para gerar ~10kHz a 50kHz (Aumenta este valor se necessário) */
+    #define SLOW_DELAY 10000 
+
+    /* Passo 1: Enviar até 9 clocks para o Slave largar a linha */
     for (int i = 0; i < 9; i++)
     {
+        /* SCL LOW */
         PIOA_CODR = PIO_SCL;
-        for (volatile int d = 0; d < BUS_RECOVERY_DELAY; d++) {}
+        for (volatile int d = 0; d < SLOW_DELAY; d++) {}
+        
+        /* SCL HIGH */
         PIOA_SODR = PIO_SCL;
-        for (volatile int d = 0; d < BUS_RECOVERY_DELAY; d++) {}
+        for (volatile int d = 0; d < SLOW_DELAY; d++) {}
+
+        /* Verifica se o Slave já largou a linha (SDA = HIGH) */
+        /* PIOA_PDSR é o registo que lê o estado atual do pino */
+        if ((PIOA_PDSR & PIO_SDA) != 0) 
+        {
+            break; /* A linha SDA já está em 3.3V, podemos parar os clocks! */
+        }
     }
 
+    /* Passo 2: Gerar Condição de STOP manual */
+    /* 1. SCL e SDA a LOW */
+    PIOA_OER = PIO_SDA;       /* Passa SDA a saída */
+    PIOA_CODR = PIO_SCL;
+    PIOA_CODR = PIO_SDA;
+    for (volatile int d = 0; d < SLOW_DELAY; d++) {}
+    
+    /* 2. SCL sobe para HIGH (mantendo SDA a LOW) */
+    PIOA_SODR = PIO_SCL;
+    for (volatile int d = 0; d < SLOW_DELAY; d++) {}
+    
+    /* 3. SDA sobe para HIGH ENQUANTO SCL está a HIGH (Isto é a definição de STOP!) */
+    PIOA_SODR = PIO_SDA;
+    for (volatile int d = 0; d < SLOW_DELAY; d++) {}
+
+    /* Passo 3: Devolver os pinos ao Hardware TWIHS */
     PIOA_PDR = PIO_SDA | PIO_SCL;
 
+    /* Reinicia o hardware TWIHS */
     TWI0_CR = TWI_CR_SWRST;
     TWI0_CR = TWI_CR_MSEN | TWI_CR_SVDIS;
     (void)TWI0_SR;

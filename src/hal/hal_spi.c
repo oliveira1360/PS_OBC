@@ -22,18 +22,18 @@
 #if USE_REAL_HW
 
 /* PMC */
-#define PMC_BASE     0x400E0600UL
-#define PMC_PCER0    (*(volatile uint32_t *)(PMC_BASE + 0x10U))
+#define PMC_BASE 0x400E0600UL
+#define PMC_PCER0 (*(volatile uint32_t *)(PMC_BASE + 0x10U))
 
 /* PIOD — pinos SPI0 estão no Port D */
-#define PIOD_BASE    0x400E1400UL
-#define PIOD_PDR     (*(volatile uint32_t *)(PIOD_BASE + 0x04U))
+#define PIOD_BASE 0x400E1400UL
+#define PIOD_PDR (*(volatile uint32_t *)(PIOD_BASE + 0x04U))
 #define PIOD_ABCDSR0 (*(volatile uint32_t *)(PIOD_BASE + 0x70U))
 #define PIOD_ABCDSR1 (*(volatile uint32_t *)(PIOD_BASE + 0x74U))
-#define PIOD_PER     (*(volatile uint32_t *)(PIOD_BASE + 0x00U))
-#define PIOD_OER     (*(volatile uint32_t *)(PIOD_BASE + 0x10U))
-#define PIOD_SODR    (*(volatile uint32_t *)(PIOD_BASE + 0x30U))
-#define PIOD_CODR    (*(volatile uint32_t *)(PIOD_BASE + 0x34U))
+#define PIOD_PER (*(volatile uint32_t *)(PIOD_BASE + 0x00U))
+#define PIOD_OER (*(volatile uint32_t *)(PIOD_BASE + 0x10U))
+#define PIOD_SODR (*(volatile uint32_t *)(PIOD_BASE + 0x30U))
+#define PIOD_CODR (*(volatile uint32_t *)(PIOD_BASE + 0x34U))
 
 /* SPI0 pin masks no Port D
  * PD20 = MISO (SPI0_MISO)  — Peripheral B
@@ -43,24 +43,25 @@
  *
  * Peripheral B no SAMV71: ABCDSR0=1, ABCDSR1=0
  */
-#define PIO_MISO    (1UL << 20)
-#define PIO_MOSI    (1UL << 21)
-#define PIO_SCK     (1UL << 22)
-#define PIO_CS1     (1UL << 25)
+#define PIO_MISO (1UL << 20)
+#define PIO_MOSI (1UL << 21)
+#define PIO_SCK (1UL << 22)
+#define PIO_CS1 (1UL << 25)
 #define SPI_PIN_MASK (PIO_MISO | PIO_MOSI | PIO_SCK)
 
 /* SPI0 Mode Register — peripheral select via PCS field */
-#define SPI_MR_PCS_NPCS1  (0x01UL << 16)  /* Select NPCS1 (PD25) */
+#define SPI_MR_PCS_NPCS1 (0x01UL << 16) /* Select NPCS1 (PD25) */
 
 /* SPI0 CSR1 bits (Chip Select Register for NPCS1) */
-#define SPI_CSR1_OFFSET   0x34U
-#define SPI0_CSR1         REG(SPI0_BASE + SPI_CSR1_OFFSET)
+#define SPI_CSR1_OFFSET 0x34U
+#define SPI0_CSR1 REG(SPI0_BASE + SPI_CSR1_OFFSET)
 
 /* Baud rate divider: SCK = MCK / SCBR
  * With MCK=12MHz, SCBR=12 → SCK=1MHz */
-#define SPI_BAUD_DIV     12U
+#define SPI_BAUD_DIV 255U
 
-#define ID_PIOD          16U  /* Peripheral ID for PIOD — Página 57 */
+
+#define ID_PIOD 16U /* Peripheral ID for PIOD — Página 57 */
 
 #endif /* USE_REAL_HW */
 
@@ -71,7 +72,7 @@
 
 static uint8_t tx_ready = 1U;
 static uint8_t rx_ready = 0U;
-static uint8_t rx_data  = 0x00U;
+static uint8_t rx_data = 0x00U;
 
 static uint8_t prop_frame[9];
 static uint8_t prop_byte_idx = 0U;
@@ -111,35 +112,28 @@ static void prop_generate_frame(void)
 uint8_t hal_spi_init(void)
 {
 #if USE_REAL_HW
-    /* 1. Ativa clock do SPI0 (ID 21) e PIOD (ID 16) no PMC */
     PMC_PCER0 = (1UL << ID_SPI0) | (1UL << ID_PIOD);
 
-    /* 2. Configura pinos PD20/21/22 como Peripheral B (SPI0)
-     *    Peripheral B: ABCDSR0=1, ABCDSR1=0 */
-    PIOD_PDR = SPI_PIN_MASK;  /* Desativa GPIO, entrega ao periférico */
-    PIOD_ABCDSR0 |= SPI_PIN_MASK;   /* Seta bit → 1 */
-    PIOD_ABCDSR1 &= ~SPI_PIN_MASK;  /* Limpa bit → 0 */
+    /* Pinos SPI como Peripheral B (MISO, MOSI, SCK) */
+    PIOD_PDR = SPI_PIN_MASK;          /* só PD20/21/22 */
+    PIOD_ABCDSR0 |= SPI_PIN_MASK;
+    PIOD_ABCDSR1 &= ~SPI_PIN_MASK;
 
-    /* 3. CS (PD25) — controlo manual via GPIO (não via peripheral select)
-     *    Isto dá controlo explícito sobre o CS, alinhado com a FSM do driver */
-    PIOD_PER  = PIO_CS1;     /* PD25 como GPIO */
-    PIOD_OER  = PIO_CS1;     /* Output */
-    PIOD_SODR = PIO_CS1;     /* CS HIGH (inativo) */
+    /* CS (PD25) como GPIO — controlo manual */
+    PIOD_PER  = PIO_CS1;
+    PIOD_OER  = PIO_CS1;
+    PIOD_SODR = PIO_CS1;   /* CS HIGH (inativo) */
 
-    /* 4. Software reset */
     SPI0_CR = SPI_CR_SWRST;
 
-    /* 5. Mode Register: Master, Mode Fault Detect disabled */
+    /* Master, MODFDIS, fixed peripheral NPCS0 */
     SPI0_MR = SPI_MR_MSTR | SPI_MR_MODFDIS;
 
-    /* 6. Chip Select Register 0: baud rate, Mode 0 (CPOL=0, CPHA=0), 8-bit */
-    SPI0_CSR0 = (SPI_BAUD_DIV << 8U);  /* SCBR field is bits [15:8] */
+    /* CSR0: baud rate — PCS=NPCS0 usa CSR0 */
+    SPI0_CSR0 = (SPI_BAUD_DIV << 8U);
 
-    /* 7. Enable SPI */
     SPI0_CR = SPI_CR_SPIEN;
-
     return 1U;
-
 #else
     srand((unsigned int)time(NULL));
     return 1U;
@@ -168,7 +162,8 @@ void hal_spi_cs_low(uint8_t cs_pin)
 {
 #if USE_REAL_HW
     (void)cs_pin;
-    PIOD_CODR = PIO_CS1;  /* PD25 LOW — ativa CS */
+    hal_spi_prepare_transfer();
+    PIOD_CODR = PIO_CS1;  /* ativa CS */
 #else
     (void)cs_pin;
     prop_generate_frame();
@@ -179,7 +174,7 @@ void hal_spi_cs_high(uint8_t cs_pin)
 {
 #if USE_REAL_HW
     (void)cs_pin;
-    PIOD_SODR = PIO_CS1;  /* PD25 HIGH — desativa CS */
+    PIOD_SODR = PIO_CS1;
 #else
     (void)cs_pin;
 #endif
@@ -188,17 +183,14 @@ void hal_spi_cs_high(uint8_t cs_pin)
 void hal_spi_send_byte(uint8_t data)
 {
 #if USE_REAL_HW
-    /* Espera que TX esteja pronto — na prática o driver verifica antes */
-    SPI0_TDR = (uint32_t)data;
+    SPI0_TDR = (uint32_t)data | (0x0EUL << 16);
 #else
     (void)data;
     tx_ready = 1U;
-
     if (prop_byte_idx < sizeof(prop_frame))
         rx_data = prop_frame[prop_byte_idx++];
     else
         rx_data = 0x00U;
-
     rx_ready = 1U;
 #endif
 }
