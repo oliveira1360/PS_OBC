@@ -10,6 +10,11 @@
 #include "drivers/i2c_driver.h"
 #include "config/board.h"
 #include "app/sensors.h"
+<<<<<<< HEAD
+=======
+#include <stdio.h>
+
+>>>>>>> origin/OBC_board
 
 /**
  * @brief Handle de controlo para a comunicação I2C com o EPS.
@@ -45,6 +50,10 @@ static void eps_parse(uint8_t *buf)
  */
 static void on_eps_done(int result)
 {
+<<<<<<< HEAD
+=======
+    //printf("EPS cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
+>>>>>>> origin/OBC_board
     if (result == 0)
         eps_parse(buf);
 }
@@ -59,16 +68,34 @@ static void on_eps_done(int result)
 void eps_read_async(void)
 {
     if (i2c.state != I2C_IDLE)
+<<<<<<< HEAD
         return;  // já está a ler 
+=======
+    {
+       // printf("EPS: busy state=%d\n", i2c.state);
+        return;
+    }
+
+    //printf("EPS: starting read addr=0x%02X reg=0x%02X\n", EPS_ADDR, 0x09);
+>>>>>>> origin/OBC_board
 
     i2c.addr     = EPS_ADDR;
     i2c.buf      = buf;
     i2c.len      = EPS_BUF_LEN;
     i2c.rw       = 1;
+<<<<<<< HEAD
     i2c.index    = 0;
     i2c.callback = on_eps_done;
     i2c.state    = I2C_STARTING;
     i2c.timeout  = 0;
+=======
+    i2c.reg      = 0x09;
+    i2c.use_reg  = 1;
+    i2c.index    = 0;
+    i2c.timeout  = 0;
+    i2c.callback = on_eps_done;
+    i2c.state    = I2C_STARTING;
+>>>>>>> origin/OBC_board
 }
 
 /**

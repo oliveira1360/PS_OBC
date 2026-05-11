@@ -15,7 +15,11 @@
 #define BATTERY_IN_CRITICAL_LEVEL 10
 
 #define SAFE_DATA_NOMINAL_MODE 10000 // 10 segundos 
+<<<<<<< HEAD
 #define SAFE_DATA_SAFE_MODE 2500 // 2,5 segundos 
+=======
+#define zSAFE_DATA_SAFE_MODE 2500 // 2,5 segundos 
+>>>>>>> origin/OBC_board
 
 extern int COMM_WINDOW_OPEN;
 extern int OTA_REQUESTED;

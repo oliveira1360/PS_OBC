@@ -9,6 +9,12 @@
 #include <stdbool.h>
 
 
+<<<<<<< HEAD
+=======
+#define TTC_CMD_LEN  4U
+
+
+>>>>>>> origin/OBC_board
 typedef enum
 {
     CMD_NONE = 0x00,
@@ -29,6 +35,7 @@ typedef enum
 
 typedef struct
 {
+<<<<<<< HEAD
     eps_data_t eps;
     temperature_data_t temp;
     pressure_data_t press;
@@ -41,6 +48,20 @@ typedef struct
     ground_command_t last_command;
     cmd_status_t cmd_status;
 } ttc_data_t;
+=======
+    eps_data_t eps; // 8 bytes
+    temperature_data_t temp; // 4 bytes
+    pressure_data_t press; // 4 bytes
+    gnss_data_t gnss; // 16 bytes
+    imu_data_t imu;   // 36 bytes
+    float doppler;   // Efeito Doppler // 4 bytes
+    uint16_t raging; // Medição de Distância // 2 bytes
+    uint8_t current_state; // 1 byte
+    bool ota_active; // 1 bytes
+    ground_command_t last_command; // 4 bytes
+    cmd_status_t cmd_status; // 4 bytes
+} ttc_data_t; // 84 bytes
+>>>>>>> origin/OBC_board
 
 
 int ttc_read(ttc_data_t *out);

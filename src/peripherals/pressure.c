@@ -2,7 +2,11 @@
  * @file pressure.c
  * @brief Driver para o sensor de pressão.
  *
+<<<<<<< HEAD
  * Gere a comunicação I2C assíncrona com o sensor de pressão e a 
+=======
+ * Gere a comunicação I2C assíncrona com o sensor de pressão e a
+>>>>>>> origin/OBC_board
  * conversão dos dados brutos em valores de pressão reais.
  */
 
@@ -26,7 +30,11 @@ static uint8_t buf[PRES_BUF_LEN];
  * @brief Analisa os dados brutos recebidos do sensor de pressão.
  *
  * Junta os dois bytes lidos (o byte mais significativo e o menos significativo)
+<<<<<<< HEAD
  * num valor de 16 bits, e converte-o para `float`, atualizando a 
+=======
+ * num valor de 16 bits, e converte-o para `float`, atualizando a
+>>>>>>> origin/OBC_board
  * estrutura global `pressure`.
  *
  * @param buf Ponteiro para o buffer de dados a ser analisado.
@@ -47,6 +55,10 @@ static void pressure_parse(uint8_t *buf)
  */
 static void on_pressure_done(int result)
 {
+<<<<<<< HEAD
+=======
+    //printf("pressure done status: %d", result);
+>>>>>>> origin/OBC_board
     if (result == 0)
         pressure_parse(buf);
 }
@@ -55,12 +67,17 @@ static void on_pressure_done(int result)
  * @brief Inicia uma leitura assíncrona do sensor de pressão via I2C.
  *
  * Configura o handle I2C e inicia a máquina de estados para ler
+<<<<<<< HEAD
  * os dados do sensor. Se já existir uma leitura em curso, a função 
+=======
+ * os dados do sensor. Se já existir uma leitura em curso, a função
+>>>>>>> origin/OBC_board
  * retorna silenciosamente.
  */
 void pressure_read_async()
 {
     if (i2c.state != I2C_IDLE)
+<<<<<<< HEAD
         return;  // já está a ler 
 
     i2c.addr     = PRESS_ADDR;
@@ -70,12 +87,30 @@ void pressure_read_async()
     i2c.index    = 0;
     i2c.callback = on_pressure_done;
     i2c.state    = I2C_STARTING;
+=======
+        return; // já está a ler
+
+    i2c.addr = PRESS_ADDR;
+    i2c.buf = buf;
+    i2c.len = PRES_BUF_LEN;
+    i2c.rw = 1;
+    i2c.reg = 0xF7;
+    i2c.use_reg = 1;
+    i2c.index = 0;
+    i2c.timeout = 0;
+    i2c.callback = on_pressure_done;
+    i2c.state = I2C_STARTING;
+>>>>>>> origin/OBC_board
 }
 
 /**
  * @brief Atualiza a máquina de estados I2C do sensor de pressão.
  *
+<<<<<<< HEAD
  * Esta função deve ser chamada periodicamente (por exemplo, no loop 
+=======
+ * Esta função deve ser chamada periodicamente (por exemplo, no loop
+>>>>>>> origin/OBC_board
  * principal) para processar os eventos I2C em background.
  */
 void pressure_tick(void)

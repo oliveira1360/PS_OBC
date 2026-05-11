@@ -5,7 +5,11 @@
  * Gere a comunicação I2C assíncrona com o sensor GNSS e a conversão dos 
  * dados brutos recebidos (coordenadas, altitude e velocidade).
  */
+<<<<<<< HEAD
 
+=======
+#include <stdio.h>
+>>>>>>> origin/OBC_board
 #include "peripherals/gnss.h"
 #include "drivers/i2c_driver.h"
 #include "config/board.h"
@@ -21,6 +25,20 @@ static i2c_handle_t i2c = {0};
  */
 static uint8_t buf[GNSS_BUF_LEN];
 
+<<<<<<< HEAD
+=======
+
+static float bytes_to_float(uint8_t *b)
+{
+    union { float f; uint8_t bytes[4]; } u;
+    u.bytes[3] = b[0];  /* big-endian → little-endian */
+    u.bytes[2] = b[1];
+    u.bytes[1] = b[2];
+    u.bytes[0] = b[3];
+    return u.f;
+}
+
+>>>>>>> origin/OBC_board
 /**
  * @brief Analisa os dados brutos recebidos do GNSS.
  *
@@ -31,10 +49,26 @@ static uint8_t buf[GNSS_BUF_LEN];
  */
 static void gnss_parse(uint8_t *buf)
 {
+<<<<<<< HEAD
     gnss.latitude = (float)buf[0] + (float)buf[1] / 100.0f;
     gnss.longitude = (float)buf[2] + (float)buf[3] / 100.0f;
     gnss.altitude = (float)((buf[4] << 8) | buf[5]);
     gnss.speed = (float)buf[6] + (float)buf[7] / 100.0f;
+=======
+    /*
+    printf("GNSS raw:");
+    for (int i = 0; i < 18; i++)
+        printf(" %02X", buf[i]);
+    printf("\n");
+    */
+    
+    
+
+    gnss.latitude  = bytes_to_float(&buf[0]);
+    gnss.longitude = bytes_to_float(&buf[4]);
+    gnss.altitude  = bytes_to_float(&buf[8]);
+    gnss.speed     = bytes_to_float(&buf[12]);
+>>>>>>> origin/OBC_board
 }
 
 /**
@@ -48,7 +82,18 @@ static void gnss_parse(uint8_t *buf)
 static void on_gnss_done(int result)
 {
     if (result == 0)
+<<<<<<< HEAD
         gnss_parse(buf);
+=======
+    {
+        gnss_parse(buf);
+        // printf("GNSS: lat=%.2f lon=%.2f alt=%.2f spd=%.2f\n", gnss.latitude, gnss.longitude, gnss.altitude, gnss.speed);
+    }
+    else
+    {
+        // printf("GNSS: I2C erro=%d\n", result);
+    }
+>>>>>>> origin/OBC_board
 }
 
 /**
@@ -58,16 +103,30 @@ static void on_gnss_done(int result)
  * os dados do sensor GNSS. Se já existir uma leitura em curso, 
  * a função retorna silenciosamente.
  */
+<<<<<<< HEAD
 void gnss_read_async()
 {
     if (i2c.state != I2C_IDLE)
         return; // já está a ler
+=======
+void gnss_read_async(void)
+{
+    if (i2c.state != I2C_IDLE)
+        return;
+>>>>>>> origin/OBC_board
 
     i2c.addr = GNSS_ADDR;
     i2c.buf = buf;
     i2c.len = GNSS_BUF_LEN;
     i2c.rw = 1;
+<<<<<<< HEAD
     i2c.index = 0;
+=======
+    i2c.reg = 0xFF;      /* registo default = leitura completa */
+    i2c.use_reg = 1;     /* ativa write-restart-read */
+    i2c.index = 0;
+    i2c.timeout = 0;
+>>>>>>> origin/OBC_board
     i2c.callback = on_gnss_done;
     i2c.state = I2C_STARTING;
 }

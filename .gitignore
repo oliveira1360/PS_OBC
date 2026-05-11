@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 build/
 *.o
 *.exe
 .claude/
 *.json
+=======
+._build
+!.vscode/*
+!.generated_files/*
+>>>>>>> origin/OBC_board

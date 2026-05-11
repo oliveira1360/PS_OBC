@@ -4,16 +4,28 @@
 #include <stdint.h>
 
 #define I2C_QUEUE_SIZE 25
+<<<<<<< HEAD
 #define I2C_TIMEOUT_MAX 10
+=======
+#define I2C_TIMEOUT_MAX 1000
+>>>>>>> origin/OBC_board
 
 typedef enum {
     I2C_IDLE,
     I2C_STARTING,
     I2C_SELECT_MODE,
     I2C_WRITE,
+<<<<<<< HEAD
     I2C_WAIT_TX,    
     I2C_READ,
     I2C_WAIT_RX,    
+=======
+    I2C_WAIT_TX,
+    I2C_RESTART,
+    I2C_WAIT_RESTART,
+    I2C_READ,
+    I2C_WAIT_RX,
+>>>>>>> origin/OBC_board
     I2C_STOP
 } i2c_state_t;
 
@@ -25,8 +37,16 @@ typedef struct
     uint8_t len;
     uint8_t index;
     uint8_t rw;
+<<<<<<< HEAD
     void (*callback)(int);
     uint16_t timeout;
+=======
+    uint8_t reg;
+    uint8_t use_reg;
+    void (*callback)(int);
+    uint16_t timeout;
+    uint8_t error_count;
+>>>>>>> origin/OBC_board
 } i2c_handle_t;
 
 typedef struct
@@ -45,6 +65,7 @@ typedef struct {
     uint8_t       count;
 } i2c_queue_t;
 
+<<<<<<< HEAD
 
 void i2c_tick(i2c_handle_t *h);
 int i2c_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
@@ -54,5 +75,10 @@ void i2c_enqueue(uint8_t addr, uint8_t *buf, uint8_t len, uint8_t rw, void (*cb)
 
 extern i2c_handle_t i2c_master;
 extern i2c_queue_t  i2c_queue;
+=======
+void i2c_tick(i2c_handle_t *h);
+int i2c_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
+int i2c_write(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
+>>>>>>> origin/OBC_board
 
 #endif

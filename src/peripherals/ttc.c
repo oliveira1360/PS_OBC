@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+=======
+/**
+ * @file ttc.c
+ * @brief Subsistema de Telemetria, Rastreio e Comando (TT&C).
+ *
+ * Utiliza o driver USART com FSMs separadas de TX e RX.
+ */
+
+>>>>>>> origin/OBC_board
 #include <stdio.h>
 #include "hal/hal_usart.h"
 #include "drivers/usart_driver.h"
@@ -5,6 +15,7 @@
 #include "app/sensors.h"
 
 static usart_handle_t usart = {0};
+<<<<<<< HEAD
 static uint8_t rx_buf[TTC_BUF_LEN];
 static uint8_t tx_buf[TTC_BUF_LEN];
 
@@ -16,27 +27,87 @@ void        ttc_read_async(void);
 static void on_ttc_tx_done(int result)
 {
     (void)result;
+=======
+static uint8_t rx_buf[OTA_FULL_PACKET];
+static uint8_t tx_buf[TTC_BUF_LEN];
+static uint8_t ota_ack_buf[TTC_CMD_LEN];
+
+static uint8_t waiting_tx = 0U;
+static uint8_t ota_receiving = 0U;
+static uint8_t ota_data_started = 0U; /* primeiro pacote OTA real recebido */
+static uint8_t ota_partial = 0U;      /* bytes já recebidos do primeiro pacote OTA */
+
+static void ttc_parse(uint8_t *buf);
+void ttc_read_async(void);
+static void ttc_parse_ota(uint8_t *buf, uint8_t len);
+
+static void on_ttc_tx_done(int result)
+{
+    // printf("result %d \n", result);
+>>>>>>> origin/OBC_board
     waiting_tx = 0U;
     ttc_read_async();
 }
 
+<<<<<<< HEAD
 static void on_ttc_done(int result)
 {
     if (result == 0)
         ttc_parse(rx_buf);
+=======
+static void on_ota_drain_done(int result)
+{
+    if (result == 1)
+    {
+        printf("[OTA] First packet drained (%d bytes discarded) — ready for full packets\n",
+               OTA_FULL_PACKET - TTC_CMD_LEN);
+    }
+    else
+    {
+        printf("[OTA] Drain failed — continuing anyway\n");
+    }
+
+    /* Agora sim, pede o próximo pacote completo de 134 bytes */
+>>>>>>> origin/OBC_board
     if (!waiting_tx)
         ttc_read_async();
 }
 
+<<<<<<< HEAD
 
 static void ttc_parse(uint8_t *buf)
 {
+=======
+static void on_ttc_done(int result)
+{
+    //printf("result ttc %d", result);
+    if (result == 1)
+    {
+        if (ota_data_started)
+        {
+            ttc_parse_ota(rx_buf, OTA_FULL_PACKET);
+        }
+        else
+        {
+            ttc_parse(rx_buf);
+        }
+    }
+
+    if (!waiting_tx)
+        ttc_read_async();
+}
+static void ttc_parse(uint8_t *buf)
+{
+    //printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
+
+>>>>>>> origin/OBC_board
     ground_command_t cmd = (ground_command_t)buf[0];
     ttc.last_command = cmd;
 
     switch (cmd)
     {
     case CMD_REQUEST_DATA:
+<<<<<<< HEAD
         ttc.doppler = (float)buf[1] / 10.0f; /* payload[1] = doppler */
         ttc_send_telemetry();
         break;
@@ -61,15 +132,56 @@ static void ttc_parse(uint8_t *buf)
         break;
 
     case CMD_REMOTE_CTRL:
+=======
+        //printf("cmd0\n");
+        ttc.doppler = (float)buf[1] / 10.0f;
+        ttc_send_telemetry();
+        break;
+
+    case CMD_ENTER_SAFE:
+        printf("cmd1\n");
+        ttc.cmd_status = ACK_SUCCESS;
+        break;
+
+    case CMD_START_OTA:
+        printf("[TTC] START_OTA received — sending ACK\n");
+        ttc.ota_active = true;
+        ttc.cmd_status = ACK_SUCCESS;
+        ota_receiving = 1U;
+        ota_data_started = 1U;
+
+        ota_ack_buf[0] = 0x10;
+        ota_ack_buf[1] = 0xAC;
+        ota_ack_buf[2] = 0x4B;
+        ota_ack_buf[3] = 0x00;
+        waiting_tx = 1U;
+        usart_send_async(&usart, ota_ack_buf, TTC_CMD_LEN);
+        break;
+
+    case CMD_END_OTA:
+        printf("cmd3 — OTA mode OFF\n");
+        ttc.ota_active = false;
+        ttc.cmd_status = ACK_SUCCESS;
+        ota_receiving = 0U;
+        break;
+
+    case CMD_REMOTE_CTRL:
+        printf("cmd5\n");
+>>>>>>> origin/OBC_board
         ttc.cmd_status = ACK_SUCCESS;
         break;
 
     case CMD_NONE:
+<<<<<<< HEAD
+=======
+        break;
+>>>>>>> origin/OBC_board
     default:
         ttc.cmd_status = ACK_FAILED;
         break;
     }
 }
+<<<<<<< HEAD
 
 void ttc_read_async(void)
 {
@@ -91,15 +203,83 @@ void ttc_tick()
     usart_tick(&usart);
 }
 
+=======
+static void ttc_parse_ota(uint8_t *buf, uint8_t len)
+{
+    uint16_t sync = ((uint16_t)buf[0] << 8) | buf[1];
+    if (sync != OTA_SYNC_WORD)
+    {
+        // printf("[OTA] Bad sync word: 0x%04X\n", sync);
+        return;
+    }
+
+    uint16_t seq = ((uint16_t)buf[2] << 8) | buf[3];
+
+    if (seq == 0xFFFF)
+    {
+        // printf("[OTA] END marker received — transfer complete\n");
+        ota_receiving = 0U;
+        ota_data_started = 0U;
+        ttc.ota_active = false;
+        ttc.cmd_status = ACK_SUCCESS;
+        return;
+    }
+
+    uint16_t payload_len = ((uint16_t)buf[4] << 8) | buf[5];
+    // printf("[OTA] Packet seq=%d, payload=%d bytes\n", seq, payload_len);
+    ttc.cmd_status = ACK_SUCCESS;
+}
+
+/**
+ * @brief Inicia receção assíncrona de um comando da Ground Station.
+ */
+void ttc_read_async(void)
+{
+    if (usart.rx_state != UART_RX_IDLE)
+        return;
+
+    uint8_t expected_len = ota_data_started ? OTA_FULL_PACKET : TTC_CMD_LEN;
+    usart_recv_async(&usart, rx_buf, expected_len, on_ttc_done);
+}
+
+/**
+ * @brief Tick do TT&C — chama as duas FSMs (TX e RX).
+ *
+ * Deve ser chamado em cada iteração do super-loop.
+ */
+void ttc_tick(void)
+{
+    usart_tx_tick(&usart);
+    usart_rx_tick(&usart);
+
+    if (waiting_tx && usart.tx_state == UART_TX_IDLE && usart.tx_index >= usart.tx_len && usart.tx_len > 0)
+    {
+        // printf("[TTC TX] ACK sent (%d bytes)\n", usart.tx_len);
+        waiting_tx = 0U;
+        ttc_read_async();
+    }
+}
+
+/**
+ * @brief Envia frame de telemetria para a Ground Station.
+ */
+>>>>>>> origin/OBC_board
 void ttc_send_telemetry(void)
 {
     uint8_t i = 0U;
 
     tx_buf[i++] = CMD_REQUEST_DATA;
+<<<<<<< HEAD
     tx_buf[i++] = (uint8_t)(eps.voltage  * 10.0f);
     tx_buf[i++] = (uint8_t)(eps.current * 100.0f);
     tx_buf[i++] = (uint8_t)gnss.latitude;
     tx_buf[i++] = (uint8_t)((gnss.latitude  - (uint8_t)gnss.latitude)  * 100.0f);
+=======
+    tx_buf[i++] = (uint8_t)(eps.voltage * 10.0f);
+    tx_buf[i++] = (uint8_t)(eps.current * 100.0f);
+    tx_buf[i++] = (uint8_t)gnss.latitude;
+    tx_buf[i++] = (uint8_t)((gnss.latitude - (uint8_t)gnss.latitude) * 100.0f);
+>>>>>>> origin/OBC_board
     tx_buf[i++] = (uint8_t)gnss.longitude;
     tx_buf[i++] = (uint8_t)((gnss.longitude - (uint8_t)gnss.longitude) * 100.0f);
 
@@ -120,5 +300,8 @@ void ttc_send_telemetry(void)
 
     waiting_tx = 1U;
     usart_send_async(&usart, tx_buf, i);
+<<<<<<< HEAD
     usart.callback = on_ttc_tx_done;  
+=======
+>>>>>>> origin/OBC_board
 }

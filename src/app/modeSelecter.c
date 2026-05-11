@@ -3,7 +3,13 @@
 #include "app/modes.h"
 #include "app/mission.h"
 #include "app/sensors.h"
+<<<<<<< HEAD
 
+=======
+#include "hal/hal_systick.h"
+
+/*
+>>>>>>> origin/OBC_board
 #include <time.h> // remover no futuro, uso para o clock(tempo)
 
 States nominalMode(void)
@@ -24,6 +30,25 @@ States nominalMode(void)
     }
 
     return getMode(nominal_mode);
+<<<<<<< HEAD
+=======
+}*/
+
+States nominalMode(void)
+{
+    static uint32_t last_ms = 0U;
+
+    uint32_t now = hal_systick_get_ms();
+
+    if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
+    {
+        //sensors_print();
+        sensors_read_all();
+        last_ms = now;
+    }
+
+    return getMode(nominal_mode);
+>>>>>>> origin/OBC_board
 }
 
 States communicationMode(void)
@@ -38,6 +63,7 @@ States otaMode(void)
 
 States safeMode(void)
 {
+<<<<<<< HEAD
     static clock_t last_time = 0; 
     
     if (last_time == 0) {
@@ -53,6 +79,19 @@ States safeMode(void)
         last_time = clock(); 
     }
     
+=======
+    static uint32_t last_ms = 0U;
+
+    uint32_t now = hal_systick_get_ms();
+
+    if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
+    {
+        //sensors_print();
+        sensors_read_all();
+        last_ms = now;
+    }
+
+>>>>>>> origin/OBC_board
     return getMode(safe_mode);
 }
 

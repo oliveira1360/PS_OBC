@@ -33,6 +33,10 @@ static uint8_t buf[TEMP_BUF_LEN];
  */
 static void temperature_parse(uint8_t *buf)
 {
+<<<<<<< HEAD
+=======
+    // printf("raw temperature: %02X", *buf);
+>>>>>>> origin/OBC_board
     temperature.temperature = (float)((buf[0] << 8) | buf[1]);
 }
 
@@ -46,6 +50,10 @@ static void temperature_parse(uint8_t *buf)
  */
 static void on_temp_done(int result)
 {
+<<<<<<< HEAD
+=======
+    //printf("TEMP cb: result=%d buf=%02X %02X\n", result, buf[0], buf[1]);
+>>>>>>> origin/OBC_board
     if (result == 0)
         temperature_parse(buf);
 }
@@ -57,6 +65,7 @@ static void on_temp_done(int result)
  * os dados do sensor. Se já existir uma leitura em curso, a função 
  * retorna silenciosamente.
  */
+<<<<<<< HEAD
 void temperature_read_async()
 {
     if (i2c.state != I2C_IDLE)
@@ -69,6 +78,23 @@ void temperature_read_async()
     i2c.index = 0;
     i2c.callback = on_temp_done;
     i2c.state = I2C_STARTING;
+=======
+void temperature_read_async(void)
+{
+    if (i2c.state != I2C_IDLE)
+        return;
+
+    i2c.addr     = TEMP_ADDR;
+    i2c.buf      = buf;
+    i2c.len      = TEMP_BUF_LEN;
+    i2c.rw       = 1;
+    i2c.reg      = 0;
+    i2c.use_reg  = 1;
+    i2c.index    = 0;
+    i2c.timeout  = 0;
+    i2c.callback = on_temp_done;
+    i2c.state    = I2C_STARTING;
+>>>>>>> origin/OBC_board
 }
 
 /**
