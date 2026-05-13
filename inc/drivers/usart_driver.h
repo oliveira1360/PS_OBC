@@ -3,11 +3,7 @@
 
 #include <stdint.h>
 
-<<<<<<< HEAD
-#define USART_TIMEOUT_MAX 200
-=======
 #define USART_TIMEOUT_MAX 1000000UL
->>>>>>> origin/OBC_board
 
 // Os estados agora gerem o fluxo de dados, não os bits físicos!
 typedef enum {
@@ -17,10 +13,6 @@ typedef enum {
     SERIAL_ERROR
 } usart_state_t;
 
-<<<<<<< HEAD
-typedef struct {
-    usart_state_t state;
-=======
 
 typedef enum {
     UART_TX_IDLE,
@@ -37,23 +29,12 @@ typedef enum {
 typedef struct {
     uart_rx_state_t rx_state;
     uart_tx_state_t tx_state;
->>>>>>> origin/OBC_board
     
     uint8_t *tx_buf;
     uint8_t tx_len;
     uint8_t tx_index; // Quantos bytes já foram enviados
     
     uint8_t *rx_buf;
-<<<<<<< HEAD
-    uint8_t rx_len;
-    uint8_t rx_index; // Quantos bytes já foram recebidos
-    
-    uint8_t timeout;
-    void (*callback)(int status);
-} usart_handle_t;
-
-void usart_tick(usart_handle_t *h);
-=======
     uint16_t  rx_len;
     uint16_t  rx_index; 
     
@@ -67,7 +48,6 @@ void usart_tick(usart_handle_t *h);
 
 void usart_tx_tick(usart_handle_t *h);
 void usart_rx_tick(usart_handle_t *h);
->>>>>>> origin/OBC_board
 void usart_send_async(usart_handle_t *h, uint8_t *data, uint8_t len);
 void usart_recv_async(usart_handle_t *h, uint8_t *buf, uint8_t len, void (*cb)(int));
 

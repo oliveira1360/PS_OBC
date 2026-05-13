@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-#include "hal/hal_qspi.h"
-#include <stdint.h>
-
-
-uint8_t hal_qspi_init(void){
-    return 1;
-}
-=======
 /**
  * @file hal_qspi.c
  * @brief Hardware Abstraction Layer para QSPI + W25Q128.
@@ -367,4 +358,3 @@ void hal_qspi_write_memory(uint32_t addr, const uint8_t *buf, uint32_t len)
     }
 #endif
 }
->>>>>>> origin/OBC_board

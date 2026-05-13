@@ -4,28 +4,18 @@
 #include <stdint.h>
 
 #define I2C_QUEUE_SIZE 25
-<<<<<<< HEAD
-#define I2C_TIMEOUT_MAX 10
-=======
 #define I2C_TIMEOUT_MAX 1000
->>>>>>> origin/OBC_board
 
 typedef enum {
     I2C_IDLE,
     I2C_STARTING,
     I2C_SELECT_MODE,
     I2C_WRITE,
-<<<<<<< HEAD
-    I2C_WAIT_TX,    
-    I2C_READ,
-    I2C_WAIT_RX,    
-=======
     I2C_WAIT_TX,
     I2C_RESTART,
     I2C_WAIT_RESTART,
     I2C_READ,
     I2C_WAIT_RX,
->>>>>>> origin/OBC_board
     I2C_STOP
 } i2c_state_t;
 
@@ -37,16 +27,11 @@ typedef struct
     uint8_t len;
     uint8_t index;
     uint8_t rw;
-<<<<<<< HEAD
-    void (*callback)(int);
-    uint16_t timeout;
-=======
     uint8_t reg;
     uint8_t use_reg;
     void (*callback)(int);
     uint16_t timeout;
     uint8_t error_count;
->>>>>>> origin/OBC_board
 } i2c_handle_t;
 
 typedef struct

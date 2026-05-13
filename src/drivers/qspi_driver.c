@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-#include "drivers/qspi_driver.h"
-
-void qspi_tick(qspi_handle_t *h)
-{
-    switch(h->state)
-    {
-        case QSPI_STARTING:
-        case QSPI_TRANSFER:
-        case QSPI_WAIT_TX:
-        case QSPI_STOP:
-        case QSPI_IDLE:
-    }
-}
-=======
 /**
  * @file qspi_driver.c
  * @brief Driver QSPI com FSM non-blocking para W25Q128.
@@ -312,4 +297,3 @@ void qspi_tick(qspi_handle_t *h)
         break;
     }
 }
->>>>>>> origin/OBC_board

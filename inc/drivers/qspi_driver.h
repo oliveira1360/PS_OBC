@@ -3,28 +3,6 @@
 
 #include <stdint.h>
 
-<<<<<<< HEAD
-typedef enum {
-    QSPI_IDLE,
-    QSPI_STARTING,
-    QSPI_TRANSFER,
-    QSPI_WAIT_TX,
-    QSPI_STOP
-} qspi_state_t;
-
-typedef struct {
-    qspi_state_t  state;
-    uint8_t      *buf;
-    uint32_t      addr;   
-    uint32_t      len;     
-    uint32_t      index;
-    uint8_t       timeout;
-    void        (*callback)(int);
-} qspi_handle_t;
-
-void spi_tick(qspi_handle_t *h);
-
-=======
 /* =========================================================================
    Estados da FSM QSPI — seguem o diagrama de estados
    ========================================================================= */
@@ -115,6 +93,5 @@ void qspi_write_async(qspi_handle_t *h, uint32_t addr,
  */
 void qspi_erase_sector_async(qspi_handle_t *h, uint32_t addr,
                               void (*cb)(int));
->>>>>>> origin/OBC_board
 
 #endif

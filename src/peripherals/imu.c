@@ -2,18 +2,11 @@
  * @file imu.c
  * @brief Driver para a IMU (Inertial Measurement Unit).
  *
-<<<<<<< HEAD
- * Gere a comunicação I2C assíncrona e a conversão de dados brutos 
- * recebidos do sensor inercial (Acelerómetro, Giroscópio e Magnetómetro).
- */
-
-=======
  * Gere a comunicação I2C assíncrona e a conversão de dados brutos
  * recebidos do sensor inercial (Acelerómetro, Giroscópio e Magnetómetro).
  */
 
 #include <stdio.h>
->>>>>>> origin/OBC_board
 #include "peripherals/imu.h"
 #include "drivers/i2c_driver.h"
 #include "config/board.h"
@@ -32,13 +25,8 @@ static uint8_t buf[IMU_BUF_LEN];
 /**
  * @brief Analisa os dados brutos recebidos da IMU.
  *
-<<<<<<< HEAD
- * Converte o array de bytes em valores físicos (float) para os eixos X, Y e Z 
- * do acelerómetro (ax, ay, az), giroscópio (gx, gy, gz) e magnetómetro (mx, my, mz), 
-=======
  * Converte o array de bytes em valores físicos (float) para os eixos X, Y e Z
  * do acelerómetro (ax, ay, az), giroscópio (gx, gy, gz) e magnetómetro (mx, my, mz),
->>>>>>> origin/OBC_board
  * atualizando a estrutura global `imu`.
  *
  * @param buf Ponteiro para o buffer de dados a ser analisado.
@@ -68,10 +56,7 @@ static void imu_parse(uint8_t *buf)
  */
 static void on_imu_done(int result)
 {
-<<<<<<< HEAD
-=======
     // printf("IMU cb: result=%d buf=%02X %02X %02X %02X %02X %02X\n", result, buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
->>>>>>> origin/OBC_board
     if (result == 0)
         imu_parse(buf);
 }
@@ -80,21 +65,6 @@ static void on_imu_done(int result)
  * @brief Inicia uma leitura assíncrona da IMU via I2C.
  *
  * Configura o handle I2C e inicia a máquina de estados para ler
-<<<<<<< HEAD
- * os dados dos sensores. Se já existir uma leitura em curso, a função 
- * retorna silenciosamente.
- */
-void imu_read_async()
-{
-    if (i2c.state != I2C_IDLE)
-        return; // já está a ler
-
-    i2c.addr = IMU_ADDR;
-    i2c.buf = buf;
-    i2c.len = IMU_BUF_LEN;
-    i2c.rw = 1;
-    i2c.index = 0;
-=======
  * os dados dos sensores. Se já existir uma leitura em curso, a função
  * retorna silenciosamente.
  */
@@ -111,7 +81,6 @@ void imu_read_async(void)
     i2c.use_reg = 1;
     i2c.index = 0;
     i2c.timeout = 0;
->>>>>>> origin/OBC_board
     i2c.callback = on_imu_done;
     i2c.state = I2C_STARTING;
 }
@@ -119,11 +88,7 @@ void imu_read_async(void)
 /**
  * @brief Atualiza a máquina de estados I2C da IMU.
  *
-<<<<<<< HEAD
- * Esta função deve ser chamada periodicamente (por exemplo, no loop 
-=======
  * Esta função deve ser chamada periodicamente (por exemplo, no loop
->>>>>>> origin/OBC_board
  * principal) para processar os eventos I2C em background.
  */
 void imu_tick(void)

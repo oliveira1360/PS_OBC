@@ -7,32 +7,15 @@
 #include "hal/hal_spi.h"
 #include "hal/hal_usart.h"
 #include "hal/hal_system.h"
-<<<<<<< HEAD
-
-static uint8_t self_test(void);
-
-
-=======
 #include "hal/hal_systick.h"
 #include <stdio.h>
 
 static uint8_t self_test(void);
 
->>>>>>> origin/OBC_board
 init_status_t init_status = {0};
 
 static int init_all(void)
 {
-<<<<<<< HEAD
-    if (!init_status.gpio)
-        init_status.gpio = hal_gpio_init(); 
-
-    if (!init_status.i2c)
-        init_status.i2c = hal_i2c_init();
-
-    if (!init_status.spi)
-        init_status.spi = hal_spi_init();
-=======
     hal_systick_init();
 
     if (!init_status.gpio)
@@ -48,15 +31,10 @@ static int init_all(void)
     if (!init_status.spi)
         init_status.spi = hal_spi_init();
         
->>>>>>> origin/OBC_board
 
     if (!init_status.qspi)
         init_status.qspi = hal_qspi_init();
 
-<<<<<<< HEAD
-    if (!init_status.usart)
-        init_status.usart = hal_usart_init();
-=======
     printf("init_status.usart before init code: %d", init_status.usart);
 
     if (!init_status.usart)
@@ -65,7 +43,6 @@ static int init_all(void)
         printf("init_status.usart code after init:  %d", init_status.usart);
 
     }
->>>>>>> origin/OBC_board
 
     if (!init_status.gnss)
         init_status.gnss = hal_gnss_init();
@@ -99,20 +76,6 @@ int system_init(void)
     {
         attempts++;
         if (attempts >= MAX_INIT_RETRIES)
-<<<<<<< HEAD
-            return 0;   /* falha crítica */
-    }
-
-    return self_test();  /* 1=pass, 0=fail → reinicia */
-}
-
-static uint8_t self_test(void){
-     return hal_self_test_gpio()   &&
-           hal_self_test_i2c()    &&
-           hal_self_test_spi()    &&
-           hal_self_test_qspi()   &&
-           hal_self_test_usart()  &&
-=======
             return 0; /* falha crítica */
     }
 
@@ -126,6 +89,5 @@ static uint8_t self_test(void)
            hal_self_test_spi() &&
            hal_self_test_qspi() &&
            hal_self_test_usart() &&
->>>>>>> origin/OBC_board
            hal_self_test_memory();
 }

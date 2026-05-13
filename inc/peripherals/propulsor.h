@@ -1,8 +1,6 @@
 #ifndef PROPULSOR_H
 #define PROPULSOR_H
 
-<<<<<<< HEAD
-=======
 #include <stdint.h>
 
 #define PROP_CMD_READ         0x01U
@@ -45,6 +43,5 @@ void propulsor_set_thrust(uint16_t thrust_raw);
  */
 void propulsor_tick(void);
  
->>>>>>> origin/OBC_board
 
 #endif
