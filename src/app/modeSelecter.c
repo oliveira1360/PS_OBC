@@ -41,7 +41,7 @@ States nominalMode(void)
 
     if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
     {
-        // sensors_print();
+        sensors_print();
         sensors_read_all();
         last_ms = now;
     }
@@ -343,7 +343,7 @@ States safeMode(void)
 
     if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
     {
-        // sensors_print();
+        sensors_print();
         sensors_read_all();
         last_ms = now;
     }

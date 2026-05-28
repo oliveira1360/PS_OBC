@@ -60,7 +60,12 @@ static bool app_is_valid(void)
 boot_result_t bootloader_run(void)
 {
     /* --- 1. Inicializa QSPI -------------------------------------------- */
-    qspi_boot_init();
+    if (qspi_boot_init() != QSPI_BOOT_OK)
+    {
+        /* QSPI não respondeu — arranca aplicação existente sem OTA */
+        bootloader_jump_to_app();
+        return BOOT_OTA_READ_ERR;  /* Nunca chega aqui */
+    }
 
     /* --- 2. Lê metadados OTA ------------------------------------------- */
     static ota_metadata_t meta;  /* Estático — evita stack overflow          */

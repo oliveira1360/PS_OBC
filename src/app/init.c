@@ -74,7 +74,7 @@ int system_init(void)
             return 0;
     }
 
-    while (self_test())
+    while (!self_test())
     {
         attempts++;
         if (attempts >= MAX_INIT_RETRIES)

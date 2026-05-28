@@ -13,7 +13,7 @@
 /* =========================================================================
  * qspi_boot_init
  * ========================================================================= */
-void qspi_boot_init(void)
+qspi_boot_result_t qspi_boot_init(void)
 {
     /* 1. Configura pinos QSPI como Peripheral A (PA11/12/13/14/17) */
     PIOA_PDR     = QSPI_PIN_MASK;
@@ -32,12 +32,18 @@ void qspi_boot_init(void)
     /* 4. Clock: Mode 0 (CPOL=0, CPHA=0), SCK = MCK / (SCBR+1) = MCK/3 */
     QSPI_SCR = QSPI_SCR_SCBR(QSPI_CLK_DIV);
 
-    /* 5. Activa QSPI e aguarda enable */
+    /* 5. Activa QSPI e aguarda enable com timeout */
     QSPI_CR = QSPI_CR_QSPIEN;
+    uint32_t timeout = QSPI_BOOT_TIMEOUT;
     while (!(QSPI_SR & QSPI_SR_QSPIENS))
     {
-        /* espera QSPI ficar activo */
+        if (--timeout == 0U)
+        {
+            return QSPI_BOOT_TIMEOUT_ERR;  /* Hardware não respondeu */
+        }
     }
+
+    return QSPI_BOOT_OK;
 }
 
 /* =========================================================================

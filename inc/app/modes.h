@@ -19,4 +19,6 @@ States ultraLowPowerMode(void);
 States decommissioningMode(void);
 
 States getMode(States currentState);
+int    isSystemSafe(void);
+
 #endif

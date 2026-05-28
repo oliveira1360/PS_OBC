@@ -113,8 +113,11 @@ typedef enum {
 
 /**
  * @brief Inicializa o QSPI em Serial Memory Mode para W25Q128.
+ *
+ * @return QSPI_BOOT_OK se o QSPI ficou activo.
+ *         QSPI_BOOT_TIMEOUT_ERR se o hardware não respondeu dentro do timeout.
  */
-void qspi_boot_init(void);
+qspi_boot_result_t qspi_boot_init(void);
 
 /**
  * @brief Lê len bytes da flash externa a partir de addr.

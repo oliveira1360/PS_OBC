@@ -1,9 +1,9 @@
 Archive member included to satisfy reference by file (symbol)
 
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
-                              C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o (__pic32c_data_initialization)
+                              C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o (__pic32c_data_initialization)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o)
-                              C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o (__libc_init_array)
+                              C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o (__libc_init_array)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(libc.o)
                               C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o) (__progname_full)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__environ.o)
@@ -37,9 +37,9 @@ Microchip PIC32 Memory-Usage Report By Module
 --------------------------------------------------------------------------------
         1164           0         256        1420         58c    ota_verify.o           build/default/production/_ext/1191379593/ota_verify.o
          512           0         512        1024         400    flash_efc.o            build/default/production/_ext/1191379593/flash_efc.o
-         252           0         256         508         1fc    bootloader.o           build/default/production/_ext/1191379593/bootloader.o
+         256           0         256         512         200    bootloader.o           build/default/production/_ext/1191379593/bootloader.o
          458           0           0         458         1ca    startup_samv71.o       build/default/production/_ext/1191379593/startup_samv71.o
-         432           0           0         432         1b0    qspi_boot.o            build/default/production/_ext/1191379593/qspi_boot.o
+         452           0           0         452         1c4    qspi_boot.o            build/default/production/_ext/1191379593/qspi_boot.o
          166           0           0         166          a6    system_samv71.o        build/default/production/_ext/1191379593/system_samv71.o
          128           0           0         128          80    data_init              data_init
           64           8          28         100          64    crtbegin.o             C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
@@ -49,7 +49,7 @@ Microchip PIC32 Memory-Usage Report By Module
            0           0        4100        4100        1004    misc                   misc
            0           0           0           4           4    padding                padding
 --------------------------------------------------------------------------------
-        3212           8        5152        8376        20b8    dist/default/production/PS_OBC_BOOT.X.production.elf
+        3236           8        5152        8400        20d0    dist/default/production/PS_OBC_BOOT.X.production.elf
 
 
 Discarded input sections
@@ -92,20 +92,20 @@ Discarded input sections
  .text          0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
  .data          0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
  .bss           0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
- .text          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
- .data          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
- .bss           0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+ .text          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
+ .data          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
+ .bss           0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .text.TCM_Disable
-                0x00000000       0x88 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+                0x00000000       0x88 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .text.Dummy_Handler
-                0x00000000        0x2 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+                0x00000000        0x2 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .text.Reset_Handler
-                0x00000000      0x128 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+                0x00000000      0x128 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .vectors.default
-                0x00000000      0x168 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
- .comment       0x00000000       0x36 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+                0x00000000      0x168 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
+ .comment       0x00000000       0x36 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .ARM.attributes
-                0x00000000       0x32 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+                0x00000000       0x32 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .text          0x00000000        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .data          0x00000000        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .bss           0x00000000        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
@@ -267,7 +267,7 @@ LOAD build/default/production/_ext/1191379593/startup_samv71.o
 LOAD build/default/production/_ext/1191379593/system_samv71.o
                 0x00000001                        __MPLAB_BUILD = 0x1
                 0x00000000                        _min_heap_size = 0x0
-LOAD C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+LOAD C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
 START GROUP
 LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a
 LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-size-musl.a
@@ -281,7 +281,7 @@ LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/t
 LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtn.o
                 0x00001000                        _stack_size = 0x1000
                 0x20410000                        _estack = (ORIGIN (RAM) + LENGTH (RAM))
-                0x00400c98                        PROVIDE (_sidata = LOADADDR (.data))
+                0x00400cb0                        PROVIDE (_sidata = LOADADDR (.data))
 
 .isr_vector     0x00400000      0x168
                 0x00400000                        . = ALIGN (0x4)
@@ -293,7 +293,7 @@ LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/t
 .dinit          0x00400168       0x80
  .dinit         0x00400168       0x80 data_init
 
-.text           0x004001e8      0xaa8
+.text           0x004001e8      0xac0
                 0x004001e8                        . = ALIGN (0x4)
  *(.text)
  .text          0x004001e8       0x40 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
@@ -302,139 +302,139 @@ LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/t
                 0x00400228       0x34 build/default/production/_ext/1191379593/bootloader.o
                 0x00400228                bootloader_jump_to_app
  .text.bootloader_run
-                0x0040025c       0xc8 build/default/production/_ext/1191379593/bootloader.o
+                0x0040025c       0xcc build/default/production/_ext/1191379593/bootloader.o
                 0x0040025c                bootloader_run
  .text.flash_efc_wait_ready
-                0x00400324       0x40 build/default/production/_ext/1191379593/flash_efc.o
-                0x00400324                flash_efc_wait_ready
+                0x00400328       0x40 build/default/production/_ext/1191379593/flash_efc.o
+                0x00400328                flash_efc_wait_ready
  .text.flash_efc_unlock
-                0x00400364       0x44 build/default/production/_ext/1191379593/flash_efc.o
-                0x00400364                flash_efc_unlock
+                0x00400368       0x44 build/default/production/_ext/1191379593/flash_efc.o
+                0x00400368                flash_efc_unlock
  .text.flash_efc_erase_sector
-                0x004003a8       0x38 build/default/production/_ext/1191379593/flash_efc.o
-                0x004003a8                flash_efc_erase_sector
+                0x004003ac       0x38 build/default/production/_ext/1191379593/flash_efc.o
+                0x004003ac                flash_efc_erase_sector
  .text.flash_efc_erase_region
-                0x004003e0       0x3c build/default/production/_ext/1191379593/flash_efc.o
-                0x004003e0                flash_efc_erase_region
+                0x004003e4       0x3c build/default/production/_ext/1191379593/flash_efc.o
+                0x004003e4                flash_efc_erase_region
  .text.flash_efc_write_page
-                0x0040041c       0x58 build/default/production/_ext/1191379593/flash_efc.o
-                0x0040041c                flash_efc_write_page
+                0x00400420       0x58 build/default/production/_ext/1191379593/flash_efc.o
+                0x00400420                flash_efc_write_page
  .text.flash_efc_write_firmware
-                0x00400474       0xb0 build/default/production/_ext/1191379593/flash_efc.o
-                0x00400474                flash_efc_write_firmware
- .text.main     0x00400524        0xc build/default/production/_ext/1191379593/main.o
-                0x00400524                main
+                0x00400478       0xb0 build/default/production/_ext/1191379593/flash_efc.o
+                0x00400478                flash_efc_write_firmware
+ .text.main     0x00400528        0xc build/default/production/_ext/1191379593/main.o
+                0x00400528                main
  .text.crc32_update
-                0x00400530       0x2c build/default/production/_ext/1191379593/ota_verify.o
-                0x00400530                crc32_update
+                0x00400534       0x2c build/default/production/_ext/1191379593/ota_verify.o
+                0x00400534                crc32_update
  .text.ota_verify_crc
-                0x0040055c       0x60 build/default/production/_ext/1191379593/ota_verify.o
-                0x0040055c                ota_verify_crc
+                0x00400560       0x60 build/default/production/_ext/1191379593/ota_verify.o
+                0x00400560                ota_verify_crc
  .text.qspi_boot_init
-                0x004005bc       0x4c build/default/production/_ext/1191379593/qspi_boot.o
-                0x004005bc                qspi_boot_init
+                0x004005c0       0x60 build/default/production/_ext/1191379593/qspi_boot.o
+                0x004005c0                qspi_boot_init
  .text.qspi_boot_read
-                0x00400608       0x60 build/default/production/_ext/1191379593/qspi_boot.o
-                0x00400608                qspi_boot_read
+                0x00400620       0x60 build/default/production/_ext/1191379593/qspi_boot.o
+                0x00400620                qspi_boot_read
  .text.qspi_boot_wren
-                0x00400668       0x7c build/default/production/_ext/1191379593/qspi_boot.o
-                0x00400668                qspi_boot_wren
+                0x00400680       0x7c build/default/production/_ext/1191379593/qspi_boot.o
+                0x00400680                qspi_boot_wren
  .text.qspi_boot_wait_busy
-                0x004006e4       0x48 build/default/production/_ext/1191379593/qspi_boot.o
-                0x004006e4                qspi_boot_wait_busy
+                0x004006fc       0x48 build/default/production/_ext/1191379593/qspi_boot.o
+                0x004006fc                qspi_boot_wait_busy
  .text.qspi_boot_erase_sector
-                0x0040072c       0x40 build/default/production/_ext/1191379593/qspi_boot.o
-                0x0040072c                qspi_boot_erase_sector
+                0x00400744       0x40 build/default/production/_ext/1191379593/qspi_boot.o
+                0x00400744                qspi_boot_erase_sector
  .text.Default_Handler
-                0x0040076c        0x2 build/default/production/_ext/1191379593/startup_samv71.o
-                0x0040076c                DebugMon_Handler
-                0x0040076c                HardFault_Handler
-                0x0040076c                SysTick_Handler
-                0x0040076c                PendSV_Handler
-                0x0040076c                NMI_Handler
-                0x0040076c                UsageFault_Handler
-                0x0040076c                Default_Handler
-                0x0040076c                MemManage_Handler
-                0x0040076c                SVC_Handler
-                0x0040076c                BusFault_Handler
- *fill*         0x0040076e        0x2 
+                0x00400784        0x2 build/default/production/_ext/1191379593/startup_samv71.o
+                0x00400784                DebugMon_Handler
+                0x00400784                HardFault_Handler
+                0x00400784                SysTick_Handler
+                0x00400784                PendSV_Handler
+                0x00400784                NMI_Handler
+                0x00400784                UsageFault_Handler
+                0x00400784                Default_Handler
+                0x00400784                MemManage_Handler
+                0x00400784                SVC_Handler
+                0x00400784                BusFault_Handler
+ *fill*         0x00400786        0x2 
  .text.Reset_Handler
-                0x00400770       0x60 build/default/production/_ext/1191379593/startup_samv71.o
-                0x00400770                Reset_Handler
+                0x00400788       0x60 build/default/production/_ext/1191379593/startup_samv71.o
+                0x00400788                Reset_Handler
  .text.system_boot_init
-                0x004007d0       0x28 build/default/production/_ext/1191379593/system_samv71.o
-                0x004007d0                system_boot_init
+                0x004007e8       0x28 build/default/production/_ext/1191379593/system_samv71.o
+                0x004007e8                system_boot_init
  .text.system_cache_disable
-                0x004007f8       0x2c build/default/production/_ext/1191379593/system_samv71.o
-                0x004007f8                system_cache_disable
+                0x00400810       0x2c build/default/production/_ext/1191379593/system_samv71.o
+                0x00400810                system_cache_disable
  .text.system_cache_invalidate
-                0x00400824       0x2c build/default/production/_ext/1191379593/system_samv71.o
-                0x00400824                system_cache_invalidate
+                0x0040083c       0x2c build/default/production/_ext/1191379593/system_samv71.o
+                0x0040083c                system_cache_invalidate
  .text.system_prepare_jump
-                0x00400850       0x26 build/default/production/_ext/1191379593/system_samv71.o
-                0x00400850                system_prepare_jump
+                0x00400868       0x26 build/default/production/_ext/1191379593/system_samv71.o
+                0x00400868                system_prepare_jump
  *(.rodata)
  *(.rodata*)
- *fill*         0x00400876        0x2 
+ *fill*         0x0040088e        0x2 
  .rodata.crc32_table
-                0x00400878      0x400 build/default/production/_ext/1191379593/ota_verify.o
+                0x00400890      0x400 build/default/production/_ext/1191379593/ota_verify.o
  *(.glue_7)
- .glue_7        0x00400c78        0x0 linker stubs
+ .glue_7        0x00400c90        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x00400c78        0x0 linker stubs
+ .glue_7t       0x00400c90        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x00400c78        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
+ .eh_frame      0x00400c90        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
  *(.init)
- .init          0x00400c78        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crti.o
-                0x00400c78                _init
- .init          0x00400c7c        0x8 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtn.o
+ .init          0x00400c90        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crti.o
+                0x00400c90                _init
+ .init          0x00400c94        0x8 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtn.o
  *(.fini)
- .fini          0x00400c84        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crti.o
-                0x00400c84                _fini
- .fini          0x00400c88        0x8 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtn.o
-                0x00400c90                        . = ALIGN (0x4)
-                0x00400c90                        _etext = .
+ .fini          0x00400c9c        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crti.o
+                0x00400c9c                _fini
+ .fini          0x00400ca0        0x8 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtn.o
+                0x00400ca8                        . = ALIGN (0x4)
+                0x00400ca8                        _etext = .
 
-.vfp11_veneer   0x00400c90        0x0
- .vfp11_veneer  0x00400c90        0x0 linker stubs
+.vfp11_veneer   0x00400ca8        0x0
+ .vfp11_veneer  0x00400ca8        0x0 linker stubs
 
-.v4_bx          0x00400c90        0x0
- .v4_bx         0x00400c90        0x0 linker stubs
+.v4_bx          0x00400ca8        0x0
+ .v4_bx         0x00400ca8        0x0 linker stubs
 
-.iplt           0x00400c90        0x0
- .iplt          0x00400c90        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
+.iplt           0x00400ca8        0x0
+ .iplt          0x00400ca8        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
 
-.rel.dyn        0x00400c90        0x0
- .rel.iplt      0x00400c90        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
+.rel.dyn        0x00400ca8        0x0
+ .rel.iplt      0x00400ca8        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-.ARM            0x00400c90        0x0
-                0x00400c90                        __exidx_start = .
+.ARM            0x00400ca8        0x0
+                0x00400ca8                        __exidx_start = .
  *(.ARM.exidx*)
-                0x00400c90                        __exidx_end = .
+                0x00400ca8                        __exidx_end = .
 
-.preinit_array  0x00400c90        0x0
+.preinit_array  0x00400ca8        0x0
                 [!provide]                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
                 [!provide]                        PROVIDE (__preinit_array_end = .)
 
-.init_array     0x00400c90        0x4
-                0x00400c90                        PROVIDE (__init_array_start = .)
+.init_array     0x00400ca8        0x4
+                0x00400ca8                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array*)
- .init_array    0x00400c90        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
-                0x00400c94                        PROVIDE (__init_array_end = .)
+ .init_array    0x00400ca8        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
+                0x00400cac                        PROVIDE (__init_array_end = .)
 
-.fini_array     0x00400c94        0x4
+.fini_array     0x00400cac        0x4
                 [!provide]                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x00400c94        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
+ .fini_array    0x00400cac        0x4 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
                 [!provide]                        PROVIDE (__fini_array_end = .)
 
-.data           0x20400000        0x0 load address 0x00400c98
+.data           0x20400000        0x0 load address 0x00400cb0
                 0x20400000                        . = ALIGN (0x4)
                 0x20400000                        _sdata = .
  *(.data)
@@ -442,10 +442,10 @@ LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/t
                 0x20400000                        . = ALIGN (0x4)
                 0x20400000                        _edata = .
 
-.igot.plt       0x20400000        0x0 load address 0x00400c98
+.igot.plt       0x20400000        0x0 load address 0x00400cb0
  .igot.plt      0x20400000        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/thumb/v7e-m+dp/hard/crtbegin.o
 
-.bss            0x20400000      0x41c load address 0x00400c98
+.bss            0x20400000      0x41c load address 0x00400cb0
                 0x20400000                        . = ALIGN (0x4)
                 0x20400000                        _sbss = .
  *(.bss)
@@ -460,13 +460,13 @@ LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/t
                 0x2040041c                        . = ALIGN (0x4)
                 0x2040041c                        _ebss = .
 
-._stack         0x2040041c     0x1004 load address 0x00400c98
+._stack         0x2040041c     0x1004 load address 0x00400cb0
                 0x20400420                        . = ALIGN (0x8)
  *fill*         0x2040041c        0x4 
                 0x20401420                        . = (. + _stack_size)
  *fill*         0x20400420     0x1000 
                 0x20401420                        . = ALIGN (0x8)
-                0x00400c98                        _boot_flash_end = (LOADADDR (.data) + SIZEOF (.data))
+                0x00400cb0                        _boot_flash_end = (LOADADDR (.data) + SIZEOF (.data))
                 0x00000001                        ASSERT ((_boot_flash_end <= (ORIGIN (FLASH) + LENGTH (FLASH))), ERRO: Bootloader excede 64 KB de flash!)
 
 .ARM.attributes
@@ -506,7 +506,7 @@ LOAD data_init
  .note          0x00000090       0x18 build/default/production/_ext/1191379593/qspi_boot.o
  .note          0x000000a8       0x18 build/default/production/_ext/1191379593/startup_samv71.o
  .note          0x000000c0       0x18 build/default/production/_ext/1191379593/system_samv71.o
- .note          0x000000d8       0x18 C:\Users\diogo\AppData\Local\Temp\ccMi7VuY.o
+ .note          0x000000d8       0x18 C:\Users\diogo\AppData\Local\Temp\cciAZHDo.o
  .note          0x000000f0       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .note          0x00000108       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o)
  .note          0x00000120       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(libc.o)
@@ -527,31 +527,31 @@ LOAD data_init
  .comment       0x00000035       0x36 build/default/production/_ext/1191379593/startup_samv71.o
  .comment       0x00000035       0x36 build/default/production/_ext/1191379593/system_samv71.o
 
-.debug_info     0x00000000     0x163d
- .debug_info    0x00000000      0x53a build/default/production/_ext/1191379593/bootloader.o
- .debug_info    0x0000053a      0x6a9 build/default/production/_ext/1191379593/flash_efc.o
- .debug_info    0x00000be3      0x10b build/default/production/_ext/1191379593/main.o
- .debug_info    0x00000cee      0x32d build/default/production/_ext/1191379593/ota_verify.o
- .debug_info    0x0000101b      0x3c9 build/default/production/_ext/1191379593/qspi_boot.o
- .debug_info    0x000013e4      0x17d build/default/production/_ext/1191379593/startup_samv71.o
- .debug_info    0x00001561       0xdc build/default/production/_ext/1191379593/system_samv71.o
+.debug_info     0x00000000     0x1663
+ .debug_info    0x00000000      0x547 build/default/production/_ext/1191379593/bootloader.o
+ .debug_info    0x00000547      0x6a9 build/default/production/_ext/1191379593/flash_efc.o
+ .debug_info    0x00000bf0      0x10b build/default/production/_ext/1191379593/main.o
+ .debug_info    0x00000cfb      0x32d build/default/production/_ext/1191379593/ota_verify.o
+ .debug_info    0x00001028      0x3e2 build/default/production/_ext/1191379593/qspi_boot.o
+ .debug_info    0x0000140a      0x17d build/default/production/_ext/1191379593/startup_samv71.o
+ .debug_info    0x00001587       0xdc build/default/production/_ext/1191379593/system_samv71.o
 
-.debug_abbrev   0x00000000      0x8a6
- .debug_abbrev  0x00000000      0x1eb build/default/production/_ext/1191379593/bootloader.o
- .debug_abbrev  0x000001eb      0x202 build/default/production/_ext/1191379593/flash_efc.o
- .debug_abbrev  0x000003ed       0xa6 build/default/production/_ext/1191379593/main.o
- .debug_abbrev  0x00000493      0x16c build/default/production/_ext/1191379593/ota_verify.o
- .debug_abbrev  0x000005ff      0x162 build/default/production/_ext/1191379593/qspi_boot.o
- .debug_abbrev  0x00000761       0xf0 build/default/production/_ext/1191379593/startup_samv71.o
- .debug_abbrev  0x00000851       0x55 build/default/production/_ext/1191379593/system_samv71.o
+.debug_abbrev   0x00000000      0x8bd
+ .debug_abbrev  0x00000000      0x200 build/default/production/_ext/1191379593/bootloader.o
+ .debug_abbrev  0x00000200      0x202 build/default/production/_ext/1191379593/flash_efc.o
+ .debug_abbrev  0x00000402       0xa6 build/default/production/_ext/1191379593/main.o
+ .debug_abbrev  0x000004a8      0x16c build/default/production/_ext/1191379593/ota_verify.o
+ .debug_abbrev  0x00000614      0x164 build/default/production/_ext/1191379593/qspi_boot.o
+ .debug_abbrev  0x00000778       0xf0 build/default/production/_ext/1191379593/startup_samv71.o
+ .debug_abbrev  0x00000868       0x55 build/default/production/_ext/1191379593/system_samv71.o
 
-.debug_loc      0x00000000     0x157f
+.debug_loc      0x00000000     0x15c0
  .debug_loc     0x00000000      0x179 build/default/production/_ext/1191379593/bootloader.o
  .debug_loc     0x00000179      0x984 build/default/production/_ext/1191379593/flash_efc.o
  .debug_loc     0x00000afd       0x20 build/default/production/_ext/1191379593/main.o
  .debug_loc     0x00000b1d      0x412 build/default/production/_ext/1191379593/ota_verify.o
- .debug_loc     0x00000f2f      0x5ee build/default/production/_ext/1191379593/qspi_boot.o
- .debug_loc     0x0000151d       0x62 build/default/production/_ext/1191379593/startup_samv71.o
+ .debug_loc     0x00000f2f      0x62f build/default/production/_ext/1191379593/qspi_boot.o
+ .debug_loc     0x0000155e       0x62 build/default/production/_ext/1191379593/startup_samv71.o
 
 .debug_aranges  0x00000000      0x168
  .debug_aranges
@@ -578,14 +578,14 @@ LOAD data_init
  .debug_ranges  0x000001e8       0x18 build/default/production/_ext/1191379593/startup_samv71.o
  .debug_ranges  0x00000200       0x28 build/default/production/_ext/1191379593/system_samv71.o
 
-.debug_line     0x00000000      0xf4a
- .debug_line    0x00000000      0x25d build/default/production/_ext/1191379593/bootloader.o
- .debug_line    0x0000025d      0x435 build/default/production/_ext/1191379593/flash_efc.o
- .debug_line    0x00000692       0x8f build/default/production/_ext/1191379593/main.o
- .debug_line    0x00000721      0x19e build/default/production/_ext/1191379593/ota_verify.o
- .debug_line    0x000008bf      0x444 build/default/production/_ext/1191379593/qspi_boot.o
- .debug_line    0x00000d03       0xe9 build/default/production/_ext/1191379593/startup_samv71.o
- .debug_line    0x00000dec      0x15e build/default/production/_ext/1191379593/system_samv71.o
+.debug_line     0x00000000      0xf5b
+ .debug_line    0x00000000      0x26e build/default/production/_ext/1191379593/bootloader.o
+ .debug_line    0x0000026e      0x435 build/default/production/_ext/1191379593/flash_efc.o
+ .debug_line    0x000006a3       0x8f build/default/production/_ext/1191379593/main.o
+ .debug_line    0x00000732      0x19e build/default/production/_ext/1191379593/ota_verify.o
+ .debug_line    0x000008d0      0x444 build/default/production/_ext/1191379593/qspi_boot.o
+ .debug_line    0x00000d14       0xe9 build/default/production/_ext/1191379593/startup_samv71.o
+ .debug_line    0x00000dfd      0x15e build/default/production/_ext/1191379593/system_samv71.o
 
 .debug_str      0x00000000      0x7e6
  .debug_str     0x00000000      0x7e6 build/default/production/_ext/1191379593/bootloader.o

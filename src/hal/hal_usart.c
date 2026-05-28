@@ -44,13 +44,6 @@
 #define MCK_HZ 12000000UL
 #define USART_BRGR_VALUE (MCK_HZ / (16UL * USART_BAUDRATE))
 
-/* Macros de acesso — USART0 */
-#define USART0_CR (*(volatile uint32_t *)(USART0_BASE + US_CR_OFFSET))
-#define USART0_MR (*(volatile uint32_t *)(USART0_BASE + US_MR_OFFSET))
-#define USART0_CSR (*(volatile uint32_t *)(USART0_BASE + US_CSR_OFFSET))
-#define USART0_RHR (*(volatile uint32_t *)(USART0_BASE + US_RHR_OFFSET))
-#define USART0_THR (*(volatile uint32_t *)(USART0_BASE + US_THR_OFFSET))
-#define USART0_BRGR (*(volatile uint32_t *)(USART0_BASE + US_BRGR_OFFSET))
 
 #endif /* USE_REAL_HW */
 
