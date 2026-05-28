@@ -8,6 +8,7 @@
 #include "peripherals/eps.h"
 #include "peripherals/ttc.h"
 #include "peripherals/propulsor.h"
+#include "peripherals/ext_memory.h"
 
 extern gnss_data_t gnss;
 extern imu_data_t imu;
@@ -16,10 +17,12 @@ extern temperature_data_t temperature;
 extern eps_data_t eps;
 extern ttc_data_t ttc;
 extern propulsor_data_t propulsor;
+extern ext_mem_status_t ext_memory; 
 
 extern float BATTERY_STATUS;
 void sensors_tick(void);
 void sensors_read_all(void);
 void sensors_print(void);
+void mission_lifecycle();
 
 #endif

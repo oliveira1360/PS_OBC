@@ -12,6 +12,7 @@
 #include "hal/hal_i2c.h"
 #include "drivers/i2c_driver.h"
 #include "config/board.h"
+#include "peripherals/ext_memory.h"
 #include <stdint.h>
 
 /**
@@ -81,5 +82,5 @@ uint8_t hal_ttc_init(void)
  */
 uint8_t hal_ext_memory_init(void)
 {
-    return 1;
+    ExtMem_Init();
 }

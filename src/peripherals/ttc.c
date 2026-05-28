@@ -21,6 +21,15 @@ static uint8_t ota_receiving = 0U;
 static uint8_t ota_data_started = 0U; /* primeiro pacote OTA real recebido */
 static uint8_t ota_partial = 0U;      /* bytes já recebidos do primeiro pacote OTA */
 
+/* =========================================================================
+ * Buffer de staging de pacotes OTA
+ * Acedido por otaMode() via ttc_ota_* API.
+ * ========================================================================= */
+static uint8_t  s_ota_pkt_ready   = 0U;
+static uint16_t s_ota_pkt_seq     = 0U;
+static uint16_t s_ota_pkt_len     = 0U;
+static uint8_t  s_ota_pkt_buf[OTA_PACKET_SIZE];
+
 static void ttc_parse(uint8_t *buf);
 void ttc_read_async(void);
 static void ttc_parse_ota(uint8_t *buf, uint8_t len);
@@ -126,25 +135,75 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len)
     uint16_t sync = ((uint16_t)buf[0] << 8) | buf[1];
     if (sync != OTA_SYNC_WORD)
     {
-        // printf("[OTA] Bad sync word: 0x%04X\n", sync);
         return;
     }
 
-    uint16_t seq = ((uint16_t)buf[2] << 8) | buf[3];
+    uint16_t seq         = ((uint16_t)buf[2] << 8) | buf[3];
+    uint16_t payload_len = ((uint16_t)buf[4] << 8) | buf[5];
 
     if (seq == 0xFFFF)
     {
-        // printf("[OTA] END marker received — transfer complete\n");
-        ota_receiving = 0U;
+        /* Marcador de fim: payload contém [4B size][4B crc32][4B version] */
+        ota_receiving    = 0U;
         ota_data_started = 0U;
-        ttc.ota_active = false;
-        ttc.cmd_status = ACK_SUCCESS;
+        ttc.ota_active   = false;
+        ttc.cmd_status   = ACK_SUCCESS;
+
+        /* Copia END payload para o buffer de staging (otaMode() vai ler) */
+        s_ota_pkt_seq   = 0xFFFFU;
+        s_ota_pkt_len   = (payload_len < OTA_PACKET_SIZE) ? payload_len
+                                                           : OTA_PACKET_SIZE;
+        for (uint16_t i = 0U; i < s_ota_pkt_len; i++)
+        {
+            s_ota_pkt_buf[i] = buf[OTA_HEADER_SIZE + i];
+        }
+        s_ota_pkt_ready = 1U;
         return;
     }
 
-    uint16_t payload_len = ((uint16_t)buf[4] << 8) | buf[5];
-    // printf("[OTA] Packet seq=%d, payload=%d bytes\n", seq, payload_len);
+    /* Pacote de dados normal: copia payload para buffer de staging */
+    if (!s_ota_pkt_ready)   /* Não sobrepõe pacote que ainda não foi consumido */
+    {
+        s_ota_pkt_seq = seq;
+        s_ota_pkt_len = (payload_len < OTA_PACKET_SIZE) ? payload_len
+                                                         : OTA_PACKET_SIZE;
+        for (uint16_t i = 0U; i < s_ota_pkt_len; i++)
+        {
+            s_ota_pkt_buf[i] = buf[OTA_HEADER_SIZE + i];
+        }
+        s_ota_pkt_ready = 1U;
+    }
+
     ttc.cmd_status = ACK_SUCCESS;
+}
+
+/* =========================================================================
+ * ttc_ota_* — API pública de acesso ao staging buffer
+ * ========================================================================= */
+
+uint8_t ttc_ota_packet_ready(void)
+{
+    return s_ota_pkt_ready;
+}
+
+uint16_t ttc_ota_get_seq(void)
+{
+    return s_ota_pkt_seq;
+}
+
+const uint8_t *ttc_ota_get_payload(void)
+{
+    return s_ota_pkt_buf;
+}
+
+uint16_t ttc_ota_get_payload_len(void)
+{
+    return s_ota_pkt_len;
+}
+
+void ttc_ota_clear_ready(void)
+{
+    s_ota_pkt_ready = 0U;
 }
 
 /**

@@ -54,9 +54,9 @@ DRV_QSPI   = $(SRC)/drivers/qspi_driver.c
 # ---------------------------------------------------------------------------
 # Targets de drivers (build + run)
 # ---------------------------------------------------------------------------
-.PHONY: all test_spi test_i2c test_usart test_qspi test_i2c_stress run_all clean
+.PHONY: all test_spi test_i2c test_usart test_qspi test_i2c_stress test_i2c_realtime run_all clean
 
-all: test_spi test_i2c test_usart test_qspi test_i2c_stress
+all: test_spi test_i2c test_usart test_qspi test_i2c_stress test_i2c_realtime
 
 # --- SPI ---
 test_spi: bin/test_spi_driver
@@ -102,6 +102,18 @@ test_i2c_stress: bin/test_i2c_stress
 bin/test_i2c_stress: drivers/test_i2c_stress.c $(MOCK_I2C) $(DRV_I2C) | bin
 	$(CC) $(CFLAGS) $^ -o $@
 
+# --- I2C Sensor Realtime (nao-bloqueio + determinismo) ---
+test_i2c_realtime: bin/test_i2c_sensor_realtime
+	@echo ""
+	@echo "════════════════════════════════════════"
+	@echo "  RUNNING: I2C Sensor Realtime Tests"
+	@echo "  (Nao-Bloqueio & Determinismo)"
+	@echo "════════════════════════════════════════"
+	@./bin/test_i2c_sensor_realtime; echo "I2C-Realtime exit: $$?"
+
+bin/test_i2c_sensor_realtime: drivers/test_i2c_sensor_realtime.c $(MOCK_I2C) $(DRV_I2C) | bin
+	$(CC) $(CFLAGS) $^ -o $@
+
 # --- QSPI ---
 test_qspi: bin/test_qspi_driver
 	@echo ""
@@ -122,7 +134,7 @@ run_all: all
 	@echo "║        FULL TEST RUN SUMMARY         ║"
 	@echo "╚══════════════════════════════════════╝"
 	@TOTAL_FAIL=0; \
-	for bin in bin/test_spi_driver bin/test_i2c_driver bin/test_i2c_stress bin/test_usart_driver bin/test_qspi_driver; do \
+	for bin in bin/test_spi_driver bin/test_i2c_driver bin/test_i2c_stress bin/test_usart_driver bin/test_qspi_driver bin/test_i2c_sensor_realtime; do \
 	    $$bin; \
 	    TOTAL_FAIL=$$((TOTAL_FAIL + $$?)); \
 	done; \

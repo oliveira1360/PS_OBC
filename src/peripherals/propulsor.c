@@ -81,7 +81,7 @@ static void propulsor_parse(const uint8_t *data)
  */
 static void on_propulsor_done(int result)
 {
-    printf("[PROP] result=%d RX: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", result, rx_buf[0], rx_buf[1], rx_buf[2], rx_buf[3], rx_buf[4], rx_buf[5], rx_buf[6], rx_buf[7], rx_buf[8], rx_buf[9]);
+    //printf("[PROP] result=%d RX: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", result, rx_buf[0], rx_buf[1], rx_buf[2], rx_buf[3], rx_buf[4], rx_buf[5], rx_buf[6], rx_buf[7], rx_buf[8], rx_buf[9]);
 
     if (result == 0)
         propulsor_parse(&rx_buf[1]);

@@ -50,20 +50,8 @@ typedef struct {
     uint8_t       count;
 } i2c_queue_t;
 
-<<<<<<< HEAD
-
 void i2c_tick(i2c_handle_t *h);
 int i2c_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
 int i2c_write(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
-void i2c_enqueue(uint8_t addr, uint8_t *buf, uint8_t len, uint8_t rw, void (*cb)(int));
-
-
-extern i2c_handle_t i2c_master;
-extern i2c_queue_t  i2c_queue;
-=======
-void i2c_tick(i2c_handle_t *h);
-int i2c_read(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
-int i2c_write(i2c_handle_t *h, uint8_t addr, uint8_t *buf, uint8_t len);
->>>>>>> origin/OBC_board
 
 #endif

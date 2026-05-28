@@ -51,5 +51,27 @@ void ttc_read_async();
 void ttc_tick(void);
 void ttc_send_telemetry(void);
 
+/* =========================================================================
+ * API de acesso aos pacotes OTA recebidos — usada pelo otaMode()
+ *
+ * Quando um pacote OTA é recebido e validado pelo TTC (sync word correcto),
+ * o payload fica disponível até ttc_ota_clear_ready() ser chamado.
+ * ========================================================================= */
+
+/** @return 1 se há um pacote OTA pronto para processar, 0 caso contrário. */
+uint8_t ttc_ota_packet_ready(void);
+
+/** @return Número de sequência do pacote pronto (0xFFFF = marcador de fim). */
+uint16_t ttc_ota_get_seq(void);
+
+/** @return Ponteiro para o payload do pacote (OTA_PACKET_SIZE bytes max). */
+const uint8_t *ttc_ota_get_payload(void);
+
+/** @return Número de bytes válidos no payload do pacote actual. */
+uint16_t ttc_ota_get_payload_len(void);
+
+/** @brief Limpa o flag de pacote pronto — deve ser chamado após processar. */
+void ttc_ota_clear_ready(void);
+
 
 #endif

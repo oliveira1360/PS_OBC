@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=src/app/init.c src/app/mission.c src/app/modeSelecter.c src/app/sensors.c src/app/stateCheck.c src/drivers/i2c_driver.c src/drivers/qspi_driver.c src/drivers/spi_driver.c src/drivers/usart_driver.c src/hal/hal_gpio.c src/hal/hal_i2c.c src/hal/hal_peripherals_init.c src/hal/hal_qspi.c src/hal/hal_spi.c src/hal/hal_system.c src/hal/hal_usart.c src/hal/hal_debug_uart.c src/peripherals/eps.c src/peripherals/flexiforce.c src/peripherals/gnss.c src/peripherals/imu.c src/peripherals/pressure.c src/peripherals/propulsor.c src/peripherals/temperature.c src/peripherals/ttc.c src/main.c src/hal/hal_systick.c
+SOURCEFILES_QUOTED_IF_SPACED=src/app/init.c src/app/mission.c src/app/modeSelecter.c src/app/sensors.c src/app/stateCheck.c src/drivers/i2c_driver.c src/drivers/qspi_driver.c src/drivers/spi_driver.c src/drivers/usart_driver.c src/hal/hal_gpio.c src/hal/hal_i2c.c src/hal/hal_peripherals_init.c src/hal/hal_qspi.c src/hal/hal_spi.c src/hal/hal_system.c src/hal/hal_usart.c src/hal/hal_debug_uart.c src/hal/hal_systick.c src/peripherals/eps.c src/peripherals/flexiforce.c src/peripherals/gnss.c src/peripherals/imu.c src/peripherals/pressure.c src/peripherals/propulsor.c src/peripherals/temperature.c src/peripherals/ttc.c src/peripherals/ext_memory.c src/main.c src/testsForBoard/deterministic_test.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/src/app/init.o ${OBJECTDIR}/src/app/mission.o ${OBJECTDIR}/src/app/modeSelecter.o ${OBJECTDIR}/src/app/sensors.o ${OBJECTDIR}/src/app/stateCheck.o ${OBJECTDIR}/src/drivers/i2c_driver.o ${OBJECTDIR}/src/drivers/qspi_driver.o ${OBJECTDIR}/src/drivers/spi_driver.o ${OBJECTDIR}/src/drivers/usart_driver.o ${OBJECTDIR}/src/hal/hal_gpio.o ${OBJECTDIR}/src/hal/hal_i2c.o ${OBJECTDIR}/src/hal/hal_peripherals_init.o ${OBJECTDIR}/src/hal/hal_qspi.o ${OBJECTDIR}/src/hal/hal_spi.o ${OBJECTDIR}/src/hal/hal_system.o ${OBJECTDIR}/src/hal/hal_usart.o ${OBJECTDIR}/src/hal/hal_debug_uart.o ${OBJECTDIR}/src/peripherals/eps.o ${OBJECTDIR}/src/peripherals/flexiforce.o ${OBJECTDIR}/src/peripherals/gnss.o ${OBJECTDIR}/src/peripherals/imu.o ${OBJECTDIR}/src/peripherals/pressure.o ${OBJECTDIR}/src/peripherals/propulsor.o ${OBJECTDIR}/src/peripherals/temperature.o ${OBJECTDIR}/src/peripherals/ttc.o ${OBJECTDIR}/src/main.o ${OBJECTDIR}/src/hal/hal_systick.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/src/app/init.o.d ${OBJECTDIR}/src/app/mission.o.d ${OBJECTDIR}/src/app/modeSelecter.o.d ${OBJECTDIR}/src/app/sensors.o.d ${OBJECTDIR}/src/app/stateCheck.o.d ${OBJECTDIR}/src/drivers/i2c_driver.o.d ${OBJECTDIR}/src/drivers/qspi_driver.o.d ${OBJECTDIR}/src/drivers/spi_driver.o.d ${OBJECTDIR}/src/drivers/usart_driver.o.d ${OBJECTDIR}/src/hal/hal_gpio.o.d ${OBJECTDIR}/src/hal/hal_i2c.o.d ${OBJECTDIR}/src/hal/hal_peripherals_init.o.d ${OBJECTDIR}/src/hal/hal_qspi.o.d ${OBJECTDIR}/src/hal/hal_spi.o.d ${OBJECTDIR}/src/hal/hal_system.o.d ${OBJECTDIR}/src/hal/hal_usart.o.d ${OBJECTDIR}/src/hal/hal_debug_uart.o.d ${OBJECTDIR}/src/peripherals/eps.o.d ${OBJECTDIR}/src/peripherals/flexiforce.o.d ${OBJECTDIR}/src/peripherals/gnss.o.d ${OBJECTDIR}/src/peripherals/imu.o.d ${OBJECTDIR}/src/peripherals/pressure.o.d ${OBJECTDIR}/src/peripherals/propulsor.o.d ${OBJECTDIR}/src/peripherals/temperature.o.d ${OBJECTDIR}/src/peripherals/ttc.o.d ${OBJECTDIR}/src/main.o.d ${OBJECTDIR}/src/hal/hal_systick.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/src/app/init.o ${OBJECTDIR}/src/app/mission.o ${OBJECTDIR}/src/app/modeSelecter.o ${OBJECTDIR}/src/app/sensors.o ${OBJECTDIR}/src/app/stateCheck.o ${OBJECTDIR}/src/drivers/i2c_driver.o ${OBJECTDIR}/src/drivers/qspi_driver.o ${OBJECTDIR}/src/drivers/spi_driver.o ${OBJECTDIR}/src/drivers/usart_driver.o ${OBJECTDIR}/src/hal/hal_gpio.o ${OBJECTDIR}/src/hal/hal_i2c.o ${OBJECTDIR}/src/hal/hal_peripherals_init.o ${OBJECTDIR}/src/hal/hal_qspi.o ${OBJECTDIR}/src/hal/hal_spi.o ${OBJECTDIR}/src/hal/hal_system.o ${OBJECTDIR}/src/hal/hal_usart.o ${OBJECTDIR}/src/hal/hal_debug_uart.o ${OBJECTDIR}/src/hal/hal_systick.o ${OBJECTDIR}/src/peripherals/eps.o ${OBJECTDIR}/src/peripherals/flexiforce.o ${OBJECTDIR}/src/peripherals/gnss.o ${OBJECTDIR}/src/peripherals/imu.o ${OBJECTDIR}/src/peripherals/pressure.o ${OBJECTDIR}/src/peripherals/propulsor.o ${OBJECTDIR}/src/peripherals/temperature.o ${OBJECTDIR}/src/peripherals/ttc.o ${OBJECTDIR}/src/peripherals/ext_memory.o ${OBJECTDIR}/src/main.o ${OBJECTDIR}/src/testsForBoard/deterministic_test.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/src/app/init.o.d ${OBJECTDIR}/src/app/mission.o.d ${OBJECTDIR}/src/app/modeSelecter.o.d ${OBJECTDIR}/src/app/sensors.o.d ${OBJECTDIR}/src/app/stateCheck.o.d ${OBJECTDIR}/src/drivers/i2c_driver.o.d ${OBJECTDIR}/src/drivers/qspi_driver.o.d ${OBJECTDIR}/src/drivers/spi_driver.o.d ${OBJECTDIR}/src/drivers/usart_driver.o.d ${OBJECTDIR}/src/hal/hal_gpio.o.d ${OBJECTDIR}/src/hal/hal_i2c.o.d ${OBJECTDIR}/src/hal/hal_peripherals_init.o.d ${OBJECTDIR}/src/hal/hal_qspi.o.d ${OBJECTDIR}/src/hal/hal_spi.o.d ${OBJECTDIR}/src/hal/hal_system.o.d ${OBJECTDIR}/src/hal/hal_usart.o.d ${OBJECTDIR}/src/hal/hal_debug_uart.o.d ${OBJECTDIR}/src/hal/hal_systick.o.d ${OBJECTDIR}/src/peripherals/eps.o.d ${OBJECTDIR}/src/peripherals/flexiforce.o.d ${OBJECTDIR}/src/peripherals/gnss.o.d ${OBJECTDIR}/src/peripherals/imu.o.d ${OBJECTDIR}/src/peripherals/pressure.o.d ${OBJECTDIR}/src/peripherals/propulsor.o.d ${OBJECTDIR}/src/peripherals/temperature.o.d ${OBJECTDIR}/src/peripherals/ttc.o.d ${OBJECTDIR}/src/peripherals/ext_memory.o.d ${OBJECTDIR}/src/main.o.d ${OBJECTDIR}/src/testsForBoard/deterministic_test.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/src/app/init.o ${OBJECTDIR}/src/app/mission.o ${OBJECTDIR}/src/app/modeSelecter.o ${OBJECTDIR}/src/app/sensors.o ${OBJECTDIR}/src/app/stateCheck.o ${OBJECTDIR}/src/drivers/i2c_driver.o ${OBJECTDIR}/src/drivers/qspi_driver.o ${OBJECTDIR}/src/drivers/spi_driver.o ${OBJECTDIR}/src/drivers/usart_driver.o ${OBJECTDIR}/src/hal/hal_gpio.o ${OBJECTDIR}/src/hal/hal_i2c.o ${OBJECTDIR}/src/hal/hal_peripherals_init.o ${OBJECTDIR}/src/hal/hal_qspi.o ${OBJECTDIR}/src/hal/hal_spi.o ${OBJECTDIR}/src/hal/hal_system.o ${OBJECTDIR}/src/hal/hal_usart.o ${OBJECTDIR}/src/hal/hal_debug_uart.o ${OBJECTDIR}/src/peripherals/eps.o ${OBJECTDIR}/src/peripherals/flexiforce.o ${OBJECTDIR}/src/peripherals/gnss.o ${OBJECTDIR}/src/peripherals/imu.o ${OBJECTDIR}/src/peripherals/pressure.o ${OBJECTDIR}/src/peripherals/propulsor.o ${OBJECTDIR}/src/peripherals/temperature.o ${OBJECTDIR}/src/peripherals/ttc.o ${OBJECTDIR}/src/main.o ${OBJECTDIR}/src/hal/hal_systick.o
+OBJECTFILES=${OBJECTDIR}/src/app/init.o ${OBJECTDIR}/src/app/mission.o ${OBJECTDIR}/src/app/modeSelecter.o ${OBJECTDIR}/src/app/sensors.o ${OBJECTDIR}/src/app/stateCheck.o ${OBJECTDIR}/src/drivers/i2c_driver.o ${OBJECTDIR}/src/drivers/qspi_driver.o ${OBJECTDIR}/src/drivers/spi_driver.o ${OBJECTDIR}/src/drivers/usart_driver.o ${OBJECTDIR}/src/hal/hal_gpio.o ${OBJECTDIR}/src/hal/hal_i2c.o ${OBJECTDIR}/src/hal/hal_peripherals_init.o ${OBJECTDIR}/src/hal/hal_qspi.o ${OBJECTDIR}/src/hal/hal_spi.o ${OBJECTDIR}/src/hal/hal_system.o ${OBJECTDIR}/src/hal/hal_usart.o ${OBJECTDIR}/src/hal/hal_debug_uart.o ${OBJECTDIR}/src/hal/hal_systick.o ${OBJECTDIR}/src/peripherals/eps.o ${OBJECTDIR}/src/peripherals/flexiforce.o ${OBJECTDIR}/src/peripherals/gnss.o ${OBJECTDIR}/src/peripherals/imu.o ${OBJECTDIR}/src/peripherals/pressure.o ${OBJECTDIR}/src/peripherals/propulsor.o ${OBJECTDIR}/src/peripherals/temperature.o ${OBJECTDIR}/src/peripherals/ttc.o ${OBJECTDIR}/src/peripherals/ext_memory.o ${OBJECTDIR}/src/main.o ${OBJECTDIR}/src/testsForBoard/deterministic_test.o
 
 # Source Files
-SOURCEFILES=src/app/init.c src/app/mission.c src/app/modeSelecter.c src/app/sensors.c src/app/stateCheck.c src/drivers/i2c_driver.c src/drivers/qspi_driver.c src/drivers/spi_driver.c src/drivers/usart_driver.c src/hal/hal_gpio.c src/hal/hal_i2c.c src/hal/hal_peripherals_init.c src/hal/hal_qspi.c src/hal/hal_spi.c src/hal/hal_system.c src/hal/hal_usart.c src/hal/hal_debug_uart.c src/peripherals/eps.c src/peripherals/flexiforce.c src/peripherals/gnss.c src/peripherals/imu.c src/peripherals/pressure.c src/peripherals/propulsor.c src/peripherals/temperature.c src/peripherals/ttc.c src/main.c src/hal/hal_systick.c
+SOURCEFILES=src/app/init.c src/app/mission.c src/app/modeSelecter.c src/app/sensors.c src/app/stateCheck.c src/drivers/i2c_driver.c src/drivers/qspi_driver.c src/drivers/spi_driver.c src/drivers/usart_driver.c src/hal/hal_gpio.c src/hal/hal_i2c.c src/hal/hal_peripherals_init.c src/hal/hal_qspi.c src/hal/hal_spi.c src/hal/hal_system.c src/hal/hal_usart.c src/hal/hal_debug_uart.c src/hal/hal_systick.c src/peripherals/eps.c src/peripherals/flexiforce.c src/peripherals/gnss.c src/peripherals/imu.c src/peripherals/pressure.c src/peripherals/propulsor.c src/peripherals/temperature.c src/peripherals/ttc.c src/peripherals/ext_memory.c src/main.c src/testsForBoard/deterministic_test.c
 
 # Pack Options 
 PACK_COMMON_OPTIONS=-I "${CMSIS_DIR}/CMSIS/Core/Include"
@@ -206,6 +206,12 @@ ${OBJECTDIR}/src/hal/hal_debug_uart.o: src/hal/hal_debug_uart.c  .generated_file
 	@${RM} ${OBJECTDIR}/src/hal/hal_debug_uart.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_debug_uart.o.d" -o ${OBJECTDIR}/src/hal/hal_debug_uart.o src/hal/hal_debug_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
+${OBJECTDIR}/src/hal/hal_systick.o: src/hal/hal_systick.c  .generated_files/flags/default/a6b1f016c3c4d62e851d334cfe3956f4c6aa0969 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/hal" 
+	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o.d 
+	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_systick.o.d" -o ${OBJECTDIR}/src/hal/hal_systick.o src/hal/hal_systick.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+	
 ${OBJECTDIR}/src/peripherals/eps.o: src/peripherals/eps.c  .generated_files/flags/default/5fc593d8c5267e1945c25ab98c9f25338a5a928f .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/src/peripherals" 
 	@${RM} ${OBJECTDIR}/src/peripherals/eps.o.d 
@@ -254,17 +260,23 @@ ${OBJECTDIR}/src/peripherals/ttc.o: src/peripherals/ttc.c  .generated_files/flag
 	@${RM} ${OBJECTDIR}/src/peripherals/ttc.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/peripherals/ttc.o.d" -o ${OBJECTDIR}/src/peripherals/ttc.o src/peripherals/ttc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
+${OBJECTDIR}/src/peripherals/ext_memory.o: src/peripherals/ext_memory.c  .generated_files/flags/default/85cdd33f36ef939e8aa48e4818c249df43dc890 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/peripherals" 
+	@${RM} ${OBJECTDIR}/src/peripherals/ext_memory.o.d 
+	@${RM} ${OBJECTDIR}/src/peripherals/ext_memory.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/peripherals/ext_memory.o.d" -o ${OBJECTDIR}/src/peripherals/ext_memory.o src/peripherals/ext_memory.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+	
 ${OBJECTDIR}/src/main.o: src/main.c  .generated_files/flags/default/8a188b08a633074782faef21d758229d6b0a6267 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/src" 
 	@${RM} ${OBJECTDIR}/src/main.o.d 
 	@${RM} ${OBJECTDIR}/src/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/main.o.d" -o ${OBJECTDIR}/src/main.o src/main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
-${OBJECTDIR}/src/hal/hal_systick.o: src/hal/hal_systick.c  .generated_files/flags/default/a6b1f016c3c4d62e851d334cfe3956f4c6aa0969 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}/src/hal" 
-	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o.d 
-	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_systick.o.d" -o ${OBJECTDIR}/src/hal/hal_systick.o src/hal/hal_systick.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+${OBJECTDIR}/src/testsForBoard/deterministic_test.o: src/testsForBoard/deterministic_test.c  .generated_files/flags/default/e5e97f6abdaf8f7dd1f7d527e252dc448c5673fe .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/testsForBoard" 
+	@${RM} ${OBJECTDIR}/src/testsForBoard/deterministic_test.o.d 
+	@${RM} ${OBJECTDIR}/src/testsForBoard/deterministic_test.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG   -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/testsForBoard/deterministic_test.o.d" -o ${OBJECTDIR}/src/testsForBoard/deterministic_test.o src/testsForBoard/deterministic_test.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
 else
 ${OBJECTDIR}/src/app/init.o: src/app/init.c  .generated_files/flags/default/34e0eebc471248466919cbef33e46dad0aee29a3 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
@@ -369,6 +381,12 @@ ${OBJECTDIR}/src/hal/hal_debug_uart.o: src/hal/hal_debug_uart.c  .generated_file
 	@${RM} ${OBJECTDIR}/src/hal/hal_debug_uart.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_debug_uart.o.d" -o ${OBJECTDIR}/src/hal/hal_debug_uart.o src/hal/hal_debug_uart.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
+${OBJECTDIR}/src/hal/hal_systick.o: src/hal/hal_systick.c  .generated_files/flags/default/b84910bc9a7a3fff7f4f825a4a523fa8f1793f62 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/hal" 
+	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o.d 
+	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_systick.o.d" -o ${OBJECTDIR}/src/hal/hal_systick.o src/hal/hal_systick.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+	
 ${OBJECTDIR}/src/peripherals/eps.o: src/peripherals/eps.c  .generated_files/flags/default/2d9820d2cc21b3bf21c4e0ba7bcd7cfca077952b .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/src/peripherals" 
 	@${RM} ${OBJECTDIR}/src/peripherals/eps.o.d 
@@ -417,17 +435,23 @@ ${OBJECTDIR}/src/peripherals/ttc.o: src/peripherals/ttc.c  .generated_files/flag
 	@${RM} ${OBJECTDIR}/src/peripherals/ttc.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/peripherals/ttc.o.d" -o ${OBJECTDIR}/src/peripherals/ttc.o src/peripherals/ttc.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
+${OBJECTDIR}/src/peripherals/ext_memory.o: src/peripherals/ext_memory.c  .generated_files/flags/default/3a487d251c278605b8b7d552a5e1666fdcc3ce21 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/peripherals" 
+	@${RM} ${OBJECTDIR}/src/peripherals/ext_memory.o.d 
+	@${RM} ${OBJECTDIR}/src/peripherals/ext_memory.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/peripherals/ext_memory.o.d" -o ${OBJECTDIR}/src/peripherals/ext_memory.o src/peripherals/ext_memory.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+	
 ${OBJECTDIR}/src/main.o: src/main.c  .generated_files/flags/default/61061b04ee96d991caa7f731142e6dea8a1d2be6 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
 	@${MKDIR} "${OBJECTDIR}/src" 
 	@${RM} ${OBJECTDIR}/src/main.o.d 
 	@${RM} ${OBJECTDIR}/src/main.o 
 	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/main.o.d" -o ${OBJECTDIR}/src/main.o src/main.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
-${OBJECTDIR}/src/hal/hal_systick.o: src/hal/hal_systick.c  .generated_files/flags/default/b84910bc9a7a3fff7f4f825a4a523fa8f1793f62 .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
-	@${MKDIR} "${OBJECTDIR}/src/hal" 
-	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o.d 
-	@${RM} ${OBJECTDIR}/src/hal/hal_systick.o 
-	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/hal/hal_systick.o.d" -o ${OBJECTDIR}/src/hal/hal_systick.o src/hal/hal_systick.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
+${OBJECTDIR}/src/testsForBoard/deterministic_test.o: src/testsForBoard/deterministic_test.c  .generated_files/flags/default/25c1b8b2b983894800afd62754233a786f461eef .generated_files/flags/default/da39a3ee5e6b4b0d3255bfef95601890afd80709
+	@${MKDIR} "${OBJECTDIR}/src/testsForBoard" 
+	@${RM} ${OBJECTDIR}/src/testsForBoard/deterministic_test.o.d 
+	@${RM} ${OBJECTDIR}/src/testsForBoard/deterministic_test.o 
+	${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -ffunction-sections -fdata-sections -O1 -fno-common -I"inc" -I"inc/app" -I"inc/config" -I"inc/drivers" -I"inc/hal" -I"inc/peripherals" -MP -MMD -MF "${OBJECTDIR}/src/testsForBoard/deterministic_test.o.d" -o ${OBJECTDIR}/src/testsForBoard/deterministic_test.o src/testsForBoard/deterministic_test.c    -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -mdfp="${DFP_DIR}/samv71b" ${PACK_COMMON_OPTIONS} 
 	
 endif
 
@@ -442,12 +466,12 @@ endif
 ifeq ($(TYPE_IMAGE), DEBUG_RUN)
 ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk    
 	@${MKDIR} ${DISTDIR} 
-	${MP_CC} $(MP_EXTRA_LD_PRE) -g   -mprocessor=$(MP_PROCESSOR_OPTION)  -o ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__ICD2RAM=1,--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,-D=__DEBUG_D,--defsym=_min_heap_size=0,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map",--memorysummary,${DISTDIR}/memoryfile.xml -mdfp="${DFP_DIR}/samv71b"
+	${MP_CC} $(MP_EXTRA_LD_PRE) -g   -mprocessor=$(MP_PROCESSOR_OPTION)  -T ota/bootloader/linker/samv71q21_app.ld -o ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=__ICD2RAM=1,--defsym=__MPLAB_DEBUG=1,--defsym=__DEBUG=1,-D=__DEBUG_D,--defsym=_min_heap_size=0,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map",--memorysummary,${DISTDIR}/memoryfile.xml -mdfp="${DFP_DIR}/samv71b"
 	
 else
 ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}: ${OBJECTFILES}  nbproject/Makefile-${CND_CONF}.mk   
 	@${MKDIR} ${DISTDIR} 
-	${MP_CC} $(MP_EXTRA_LD_PRE)  -mprocessor=$(MP_PROCESSOR_OPTION)  -o ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=_min_heap_size=0,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map",--memorysummary,${DISTDIR}/memoryfile.xml -mdfp="${DFP_DIR}/samv71b"
+	${MP_CC} $(MP_EXTRA_LD_PRE)  -mprocessor=$(MP_PROCESSOR_OPTION)  -T ota/bootloader/linker/samv71q21_app.ld -o ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} ${OBJECTFILES_QUOTED_IF_SPACED}          -DXPRJ_default=$(CND_CONF)    $(COMPARISON_BUILD)  -Wl,--defsym=__MPLAB_BUILD=1$(MP_EXTRA_LD_POST)$(MP_LINKER_FILE_OPTION),--defsym=_min_heap_size=0,--gc-sections,-Map="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map",--memorysummary,${DISTDIR}/memoryfile.xml -mdfp="${DFP_DIR}/samv71b"
 	${MP_CC_DIR}\\xc32-bin2hex ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${DEBUGGABLE_SUFFIX} 
 endif
 

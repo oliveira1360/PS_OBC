@@ -155,7 +155,7 @@ void usart_rx_tick(usart_handle_t *h)
         {
             // IMPORTANT: Only count the timeout if we already received the FIRST byte
             // and are waiting for bytes 2, 3, or 4.
-            if (h->rx_index > 0) 
+            if (h->rx_index > 0)
             {
                 h->timeout++;
                 if (h->timeout >= USART_TIMEOUT_MAX)

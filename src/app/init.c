@@ -8,10 +8,10 @@
 #include "hal/hal_usart.h"
 #include "hal/hal_system.h"
 #include "hal/hal_systick.h"
-#include <stdio.h>
+#include "peripherals/ttc.h"
 
 static uint8_t self_test(void);
-
+void recovery();
 init_status_t init_status = {0};
 
 static int init_all(void)
@@ -22,27 +22,16 @@ static int init_all(void)
         init_status.gpio = hal_gpio_init();
 
     if (!init_status.i2c)
-    {
         init_status.i2c = hal_i2c_init();
-        hal_i2c_bus_recovery();
-    }
 
-    
     if (!init_status.spi)
         init_status.spi = hal_spi_init();
-        
 
     if (!init_status.qspi)
         init_status.qspi = hal_qspi_init();
 
-    printf("init_status.usart before init code: %d", init_status.usart);
-
     if (!init_status.usart)
-    {
         init_status.usart = hal_usart_init();
-        printf("init_status.usart code after init:  %d", init_status.usart);
-
-    }
 
     if (!init_status.gnss)
         init_status.gnss = hal_gnss_init();
@@ -68,18 +57,31 @@ static int init_all(void)
            init_status.temperature && init_status.ext_memory;
 }
 
+void recovery()
+{
+    hal_i2c_bus_recovery();
+}
+
 int system_init(void)
 {
     uint8_t attempts = 0;
 
     while (!init_all())
     {
+        recovery();
         attempts++;
         if (attempts >= MAX_INIT_RETRIES)
-            return 0; /* falha crítica */
+            return 0;
     }
 
-    return self_test(); /* 1=pass, 0=fail → reinicia */
+    while (self_test())
+    {
+        attempts++;
+        if (attempts >= MAX_INIT_RETRIES)
+            return 0;
+    }
+
+    return 1;
 }
 
 static uint8_t self_test(void)

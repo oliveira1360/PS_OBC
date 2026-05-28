@@ -1,22 +1,13 @@
 #include <stdio.h>
-#include "app/states.h"
 #include "app/modes.h"
-#include "app/mission.h"
 #include "app/sensors.h"
 #include "app/init.h"
-#include "peripherals/gnss.h"
-#include "peripherals/imu.h"
-#include "peripherals/eps.h"
-#include "peripherals/pressure.h"
-#include "peripherals/temperature.h"
 #include "peripherals/ttc.h"
-#include "hal/hal_i2c.h"
 #include "hal/hal_system.h"
 #include "hal/hal_debug_uart.h"
-#include "hal/hal_systick.h"
-#include "hal/hal_usart.h"
-#include "hal/hal_spi.h"
-#include "config/board.h"
+#include "testsForBoard/deterministic_test.h"
+#include "testsForBoard/qspi_test.h"
+#include "testsForBoard/unit_tests.h"
 
 int main(void)
 {
@@ -26,41 +17,22 @@ int main(void)
     {
         hal_system_reset();
     }
-    States state = nominal_mode;
 
-    sensors_read_all();
+    run_unit_tests();
+    test_qspi_rw();
+
     ttc_read_async();
     for (size_t i = 0; i < 10; i++)
     {
         printf("\n");
     }
-    
+
+    States state = nominal_mode;
 
     while (1)
     {
         sensors_tick();
-
-        switch (state)
-        {
-        case nominal_mode:
-            state = nominalMode();
-            break;
-        case communication_mode:
-            state = communicationMode();
-            break;
-        case ota_mode:
-            state = otaMode();
-            break;
-        case safe_mode:
-            state = safeMode();
-            break;
-        case ultra_low_power_mode:
-            state = ultraLowPowerMode();
-            break;
-        case decommissioning_mode:
-            state = decommissioningMode();
-            break;
-        }
+        mission_lifecycle();
     }
 
     return 0;

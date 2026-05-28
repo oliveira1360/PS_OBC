@@ -91,7 +91,6 @@ void qspi_write_async(qspi_handle_t *h, uint32_t addr,
  * @param addr Endereço dentro do sector a apagar.
  * @param cb   Callback chamado no fim (1=ok, 0=erro).
  */
-void qspi_erase_sector_async(qspi_handle_t *h, uint32_t addr,
-                              void (*cb)(int));
+void qspi_erase_sector_async(qspi_handle_t *h, uint32_t addr,void (*cb)(int));
 
 #endif
