@@ -57,7 +57,7 @@ static void on_pressure_done(int result)
  *
  * Configura o handle I2C e inicia a máquina de estados para ler
  * os dados do sensor. Se já existir uma leitura em curso, a função
- * retorna silenciosamente.
+ * retorna silenciosamente.//
  */
 void pressure_read_async()
 {

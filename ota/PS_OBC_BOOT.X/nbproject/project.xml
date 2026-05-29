@@ -7,7 +7,9 @@
             <creation-uuid>fe2ae9e2-271b-4dd6-a8d7-05f1a70e7abc</creation-uuid>
             <make-project-type>0</make-project-type>
             <sourceEncoding>ISO-8859-1</sourceEncoding>
-            <make-dep-projects/>
+            <make-dep-projects>
+                <make-dep-project>../..</make-dep-project>
+            </make-dep-projects>
             <sourceRootList>
                 <sourceRootElem>../bootloader/src</sourceRootElem>
                 <sourceRootElem>../bootloader/inc</sourceRootElem>

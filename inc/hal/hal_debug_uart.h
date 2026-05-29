@@ -6,5 +6,6 @@
  * Chamar uma vez no início do main().
  */
 void debug_uart_init(void);
+void debug_uart_puts(const char *s);
 
 #endif /* HAL_DEBUG_UART_H */

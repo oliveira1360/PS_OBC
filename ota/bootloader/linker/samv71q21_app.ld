@@ -1,25 +1,24 @@
 /**
  * samv71q21_app.ld
- * Linker script para a APLICAÇÃO quando coexiste com o bootloader OTA.
+ * Linker script da aplicação — DFP-compatível, flash em 0x00410000.
  *
- * ATENÇÃO: Este ficheiro substitui o linker script gerado pelo MCC/MPLAB X
- * para a aplicação principal (PS_OBC.X). Deve ser configurado em:
- *   Project Properties → XC32 → xc32-ld → Linker Script
+ * Derivado do ATSAMV71Q21B.ld do DFP (Microchip SAMV71_DFP 4.12.237),
+ * com o ORIGIN do flash alterado de 0x00400000 para 0x00410000 para que a
+ * aplicação coexista com o bootloader OTA nos primeiros 64 KB.
  *
- * Diferenças relativamente ao script padrão do MPLAB X:
- *   - Flash começa em 0x00410000 (não em 0x00400000)
- *     Os primeiros 64 KB (0x00400000-0x0040FFFF) pertencem ao bootloader.
- *   - Resto igual ao comportamento padrão para ATSAMV71Q21B.
+ * Diferenças face ao script padrão do DFP:
+ *   - ORIGIN(rom) = 0x00410000  (era 0x00400000)
+ *   - LENGTH(rom) = 0x001F0000  (1984 KB — eram 2048 KB)
  *
- * Mapa de memória da aplicação:
- *   Flash: 0x00410000 - 0x005FFFFF  (~1984 KB)
- *   SRAM:  0x20400000 - 0x2045FFFF  (384 KB — toda a SRAM)
+ * Todos os símbolos (_sfixed, _efixed, _etext, _szero, _ezero, __rom_end,
+ * __ram_end, __bss_start__, __bss_end__) mantêm os nomes esperados pelo
+ * DFP startup (cckIDs2G.o) e pelo runtime XC32 (libpic32c.a / data_init.o).
  *
- * NOTA IMPORTANTE PARA O VECTOR TABLE OFFSET:
- *   A aplicação deve configurar SCB->VTOR = 0x00410000 no seu SystemInit()
- *   ou startup. Se usar o MCC/CMSIS SystemInit gerado, confirmar que
- *   __VECTOR_TABLE_ATTRIBUTE ou VTOR é inicializado para 0x00410000.
- *   Ver ota/docs/ota_protocol.md para instruções detalhadas.
+ * NÃO adicionar startup_samv71.c ao projecto — o startup do DFP é usado.
+ *
+ * Como usar:
+ *   Project Properties → XC32 → xc32-ld → Linker Script:
+ *     ota/bootloader/linker/samv71q21_app.ld
  */
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
@@ -27,38 +26,25 @@ OUTPUT_ARCH(arm)
 SEARCH_DIR(.)
 
 /* =========================================================================
- * Memória
+ * Regiões de memória
  * ========================================================================= */
 MEMORY
 {
-    /* Flash interna — região da aplicação (~1984 KB)
-     * Os primeiros 64 KB (0x00400000-0x0040FFFF) pertencem ao bootloader. */
-    FLASH  (rx)  : ORIGIN = 0x00410000, LENGTH = 1984K
+    /* Flash — região da aplicação: começa após os 64 KB do bootloader */
+    rom  (rx)  : ORIGIN = 0x00410000, LENGTH = 0x001F0000  /* 1984 KB */
 
-    /* SRAM completa (384 KB) — o bootloader não retorna, pelo que a
-     * aplicação pode usar toda a SRAM. */
-    RAM    (rwx) : ORIGIN = 0x20400000, LENGTH = 384K
+    /* SRAM completa — o bootloader não retorna, a app usa toda a RAM */
+    ram  (rwx) : ORIGIN = 0x20400000, LENGTH = 0x00060000  /* 384 KB  */
 
-    /* TCM (Tightly Coupled Memory) — opcional, para código crítico */
-    ITCM   (rx)  : ORIGIN = 0x00000000, LENGTH = 16K
-    DTCM   (rwx) : ORIGIN = 0x20000000, LENGTH = 16K
-
-    /* QSPI memory-mapped */
-    QSPIMEM (rx) : ORIGIN = 0x80000000, LENGTH = 16M
+    /* TCM — tamanho 0 (não usado pelo bootloader nem pela app por omissão) */
+    itcm (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00000000
+    dtcm (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00000000
 }
 
-/* =========================================================================
- * Stack e Heap
- * ========================================================================= */
-_stack_size = 0x2000;  /* 8 KB de stack para a aplicação                    */
-_heap_size  = 0x1000;  /* 4 KB de heap (a aplicação usa alocação estática)  */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
-
-PROVIDE(_sidata = LOADADDR(.data));
-
-/* _sfixed: símbolo usado pelo DFP startup (SystemInit) para configurar VTOR.
- * Com flash a começar em 0x00410000, o VTOR fica correctamente definido. */
-PROVIDE(_sfixed = ORIGIN(FLASH));
+/* Símbolos de fim de memória — usados pelo DFP startup para o SP inicial
+ * (primeira entrada da tabela de vectores = __ram_end = topo da SRAM). */
+__rom_end = ORIGIN(rom) + LENGTH(rom);
+__ram_end = ORIGIN(ram) + LENGTH(ram);
 
 /* =========================================================================
  * Secções
@@ -66,119 +52,99 @@ PROVIDE(_sfixed = ORIGIN(FLASH));
 SECTIONS
 {
     /* ------------------------------------------------------------------
-     * .isr_vector — tabela de vectores da aplicação
-     * DEVE estar em 0x00410000 para o bootloader saltar correctamente.
+     * .vectors — tabela de vectores do DFP startup (exception_table)
+     *   _sfixed = 0x00410000: usado pelo SystemInit do DFP para VTOR.
+     *   O bootloader lê [0] = SP inicial e [1] = Reset_Handler daqui.
      * ------------------------------------------------------------------ */
-    .isr_vector :
+    .vectors :
     {
         . = ALIGN(4);
+        _sfixed = .;
+        KEEP(*(.vectors .vectors.* .vectors_default .vectors_default.*))
         KEEP(*(.isr_vector))
-        . = ALIGN(4);
-    } > FLASH
+        KEEP(*(.reset*))
+        KEEP(*(.after_vectors))
+    } > rom
 
     /* ------------------------------------------------------------------
-     * .text — código da aplicação
+     * .text — código e tabelas de init/fini
+     *   _efixed: fim da secção fixa (antes do .ARM.exidx).
      * ------------------------------------------------------------------ */
     .text :
     {
         . = ALIGN(4);
-        *(.text)
-        *(.text*)
-        *(.rodata)
-        *(.rodata*)
-        *(.glue_7)
         *(.glue_7t)
-        *(.eh_frame)
+        *(.glue_7)
+        *(.gnu.linkonce.r.*)
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+        . = ALIGN(4);
         KEEP(*(.init))
+        . = ALIGN(4);
+        __preinit_array_start = .;
+        KEEP(*(.preinit_array))
+        __preinit_array_end = .;
+        . = ALIGN(4);
+        __init_array_start = .;
+        KEEP(*(SORT_BY_NAME(.init_array.*)))
+        KEEP(*(.init_array))
+        __init_array_end = .;
+        KEEP(*crtbegin.o(.ctors))
+        KEEP(*(EXCLUDE_FILE(*crtend.o) .ctors))
+        KEEP(*(SORT_BY_NAME(.ctors.*)))
+        KEEP(*crtend.o(.ctors))
+        . = ALIGN(4);
         KEEP(*(.fini))
         . = ALIGN(4);
-        _etext = .;
-    } > FLASH
-
-    .ARM.extab :
-    {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } > FLASH
-
-    .ARM :
-    {
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-    } > FLASH
-
-    .preinit_array :
-    {
-        PROVIDE_HIDDEN(__preinit_array_start = .);
-        KEEP(*(.preinit_array*))
-        PROVIDE_HIDDEN(__preinit_array_end = .);
-    } > FLASH
-
-    .init_array :
-    {
-        PROVIDE_HIDDEN(__init_array_start = .);
-        KEEP(*(SORT(.init_array.*)))
-        KEEP(*(.init_array*))
-        PROVIDE_HIDDEN(__init_array_end = .);
-    } > FLASH
-
-    .fini_array :
-    {
-        PROVIDE_HIDDEN(__fini_array_start = .);
-        KEEP(*(SORT(.fini_array.*)))
-        KEEP(*(.fini_array*))
-        PROVIDE_HIDDEN(__fini_array_end = .);
-    } > FLASH
+        __fini_array_start = .;
+        KEEP(*(.fini_array))
+        KEEP(*(SORT_BY_NAME(.fini_array.*)))
+        __fini_array_end = .;
+        KEEP(*crtbegin.o(.dtors))
+        KEEP(*(EXCLUDE_FILE(*crtend.o) .dtors))
+        KEEP(*(SORT_BY_NAME(.dtors.*)))
+        KEEP(*crtend.o(.dtors))
+        . = ALIGN(4);
+        _efixed = .;
+        PROVIDE(__exidx_start = .);
+    } > rom
 
     /* ------------------------------------------------------------------
-     * .data e .bss
+     * .ARM.exidx — índice de desenrolamento de stack (C++ exceptions)
+     *   _etext: definido depois do exidx — LMA usado pelo data_init do XC32.
      * ------------------------------------------------------------------ */
-    .data :
+    .ARM.exidx :
     {
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+        PROVIDE(__exidx_end = .);
         . = ALIGN(4);
-        _sdata = .;
-        *(.data)
-        *(.data*)
-        . = ALIGN(4);
-        _edata = .;
-    } > RAM AT > FLASH
+        _etext = .;
+    } > rom
 
-    .bss :
+    /* ------------------------------------------------------------------
+     * .bss — dados não inicializados em RAM
+     *   O XC32 coloca automaticamente .bss.*, .data.*, .dinit nas regiões
+     *   de memória corretas — não é necessário enumerá-las aqui.
+     *   _szero/_ezero e _sbss/_ebss: nomes esperados pelo DFP startup.
+     * ------------------------------------------------------------------ */
+    .bss (NOLOAD) :
     {
         . = ALIGN(4);
-        _sbss = .;
-        *(.bss)
-        *(.bss*)
+        __bss_start__ = .;
+        _sbss  = .;
+        _szero = .;
         *(COMMON)
         . = ALIGN(4);
-        _ebss = .;
-    } > RAM
-
-    /* Heap */
-    ._heap :
-    {
-        . = ALIGN(8);
-        _sheap = .;
-        . = . + _heap_size;
-        . = ALIGN(8);
-        _eheap = .;
-    } > RAM
-
-    /* Stack */
-    ._stack :
-    {
-        . = ALIGN(8);
-        . = . + _stack_size;
-        . = ALIGN(8);
-    } > RAM
+        __bss_end__ = .;
+        _ebss  = .;
+        _ezero = .;
+        . = ALIGN(4);
+        _end = .;
+        _ram_end_ = (ORIGIN(ram) + LENGTH(ram)) - 1;
+    } > ram
 
     /* ------------------------------------------------------------------
-     * Verificação: garante que a aplicação não ultrapassa a flash disponível
+     * .ARM.attributes — metadados ELF (não mapeado em memória)
      * ------------------------------------------------------------------ */
-    _app_flash_end = LOADADDR(.data) + SIZEOF(.data);
-    ASSERT(_app_flash_end <= ORIGIN(FLASH) + LENGTH(FLASH),
-           "ERRO: Aplicação excede a flash disponível (0x00410000-0x005FFFFF)!")
-
     .ARM.attributes 0 :
     {
         *(.ARM.attributes)

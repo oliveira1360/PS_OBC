@@ -83,6 +83,39 @@ void sensors_save_to_flash(void)
         printf("ERRO: ttc_data_t (%lu bytes) excede a pagina QSPI (256 bytes)!\n", frame_size);
     }
 }
+/**
+ * Emits all telemetry as a single compact JSON line followed by CR+LF.
+ * One line = one complete frame. No box-drawing, no multi-line assembly needed.
+ *
+ * Example output (one line):
+ * {"lat":0.0000,"lon":0.0000,"alt":0.00,"spd":0.00,"ax":0.000,"ay":0.000,
+ *  "az":0.000,"gx":0.000,"gy":0.000,"gz":0.000,"mx":0.000,"my":0.000,
+ *  "mz":0.000,"pres":0.00,"temp":0.00,"volt":0.000,"curr":0.000,"dop":0.000}
+ */
+void sensors_print(void)
+{
+    /* "TELEM:" keyword lets the ground-station backend identify this line
+     * unambiguously, regardless of any debug output on the same UART.     */
+    printf(
+        "\r\nTELEM:{\"lat\":%.4f,\"lon\":%.4f,\"alt\":%.2f,\"spd\":%.2f,"
+        "\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,"
+        "\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,"
+        "\"mx\":%.3f,\"my\":%.3f,\"mz\":%.3f,"
+        "\"pres\":%.2f,\"temp\":%.2f,"
+        "\"volt\":%.3f,\"curr\":%.3f,\"dop\":%.3f}\r\n",
+        (double)gnss.latitude,  (double)gnss.longitude,
+        (double)gnss.altitude,  (double)gnss.speed,
+        (double)imu.ax, (double)imu.ay, (double)imu.az,
+        (double)imu.gx, (double)imu.gy, (double)imu.gz,
+        (double)imu.mx, (double)imu.my, (double)imu.mz,
+        (double)pressure.pressure,
+        (double)temperature.temperature,
+        (double)eps.voltage, (double)eps.current,
+        (double)ttc.doppler
+    );
+}
+
+/*
 void sensors_print(void)
 {
     printf("+----------------------------------------------------------------------+\n");
@@ -111,3 +144,4 @@ void sensors_print(void)
     printf("+----------------------------------------------------------------------+\n\n");
     printf("\n\n\n\n\n");
 }
+*/

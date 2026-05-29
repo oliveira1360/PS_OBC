@@ -68,8 +68,8 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMV71_DFP" vendor="Microchip" version="4.12.237"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMV71_DFP" vendor="Microchip" version="4.12.237"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -81,6 +81,21 @@
         <archiverTool>
         </archiverTool>
         <loading>
+          <makeArtifact PL="../.."
+                        CT="1"
+                        CN="default"
+                        AC="true"
+                        BL="true"
+                        WD="../.."
+                        BC="${MAKE}  -f Makefile CONF=default"
+                        DBC="${MAKE}  -f Makefile CONF=default TYPE_IMAGE=DEBUG_RUN"
+                        CC="rm -rf &quot;build/default&quot; &quot;dist/default&quot;"
+                        OP="dist/default/production/PS_OBC.X.production.hex"
+                        DOP="dist/default/debug/PS_OBC.X.debug.elf"
+                        FL="dist/default/production/PS_OBC.X.production.hex"
+                        PD="dist/default/production/PS_OBC.X.production.elf"
+                        DD="dist/default/debug/PS_OBC.X.debug.elf">
+          </makeArtifact>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
           <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>

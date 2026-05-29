@@ -10,6 +10,7 @@
 #include "drivers/usart_driver.h"
 #include "config/board.h"
 #include "app/sensors.h"
+#include "app/mission.h"
 
 static usart_handle_t usart = {0};
 static uint8_t rx_buf[OTA_FULL_PACKET];
@@ -20,6 +21,32 @@ static uint8_t waiting_tx = 0U;
 static uint8_t ota_receiving = 0U;
 static uint8_t ota_data_started = 0U; /* primeiro pacote OTA real recebido */
 static uint8_t ota_partial = 0U;      /* bytes já recebidos do primeiro pacote OTA */
+
+/* =========================================================================
+ * Handshake de sincronização UART
+ *
+ * No arranque, o OBC lê 1 byte de cada vez à procura da sequência
+ * [0xAA][0x55][0xAA][0x55] enviada pelo Pico.  Quando a detecta, responde
+ * com [0x55][0xAA][0x55][0xAA] e passa para modo de operação normal.
+ *
+ * Isto resolve o problema de o OBC arrancar a meio de um comando do Pico
+ * e ficar permanentemente desalinhado.
+ * ========================================================================= */
+#define TTC_SYNC_A  0xAAU
+#define TTC_SYNC_B  0x55U
+
+typedef enum {
+    SYNC_WAIT_A1 = 0,  /* à espera de 0xAA (1º byte) */
+    SYNC_WAIT_B1,      /* à espera de 0x55 (2º byte) */
+    SYNC_WAIT_A2,      /* à espera de 0xAA (3º byte) */
+    SYNC_WAIT_B2,      /* à espera de 0x55 (4º byte) */
+    SYNC_DONE          /* sincronizado — modo normal  */
+} ttc_sync_state_t;
+
+static ttc_sync_state_t sync_state   = SYNC_WAIT_A1;
+static uint8_t          sync_rx_byte = 0U;
+static const uint8_t    sync_ready[4] = {TTC_SYNC_B, TTC_SYNC_A,
+                                          TTC_SYNC_B, TTC_SYNC_A};
 
 /* =========================================================================
  * Buffer de staging de pacotes OTA
@@ -33,6 +60,47 @@ static uint8_t  s_ota_pkt_buf[OTA_PACKET_SIZE];
 static void ttc_parse(uint8_t *buf);
 void ttc_read_async(void);
 static void ttc_parse_ota(uint8_t *buf, uint8_t len);
+static void on_ttc_sync_byte(int result);
+
+/* =========================================================================
+ * Callback de sincronização — chamado após receber 1 byte em modo sync
+ * ========================================================================= */
+static void on_ttc_sync_byte(int result)
+{
+    if (result == 1)
+    {
+        switch (sync_state)
+        {
+        case SYNC_WAIT_A1:
+            sync_state = (sync_rx_byte == TTC_SYNC_A) ? SYNC_WAIT_B1 : SYNC_WAIT_A1;
+            break;
+        case SYNC_WAIT_B1:
+            sync_state = (sync_rx_byte == TTC_SYNC_B) ? SYNC_WAIT_A2 : SYNC_WAIT_A1;
+            break;
+        case SYNC_WAIT_A2:
+            sync_state = (sync_rx_byte == TTC_SYNC_A) ? SYNC_WAIT_B2 : SYNC_WAIT_A1;
+            break;
+        case SYNC_WAIT_B2:
+            if (sync_rx_byte == TTC_SYNC_B)
+            {
+                sync_state = SYNC_DONE;
+                printf("[TTC] Sync OK — a enviar READY\n");
+                waiting_tx = 1U;
+                /* sync_ready é const — cast seguro para API que aceita uint8_t* */
+                usart_send_async(&usart, (uint8_t *)sync_ready, sizeof(sync_ready));
+                /* on_ttc_tx_done → ttc_read_async → modo normal (4 bytes) */
+                return;
+            }
+            sync_state = SYNC_WAIT_A1;
+            break;
+        default:
+            sync_state = SYNC_WAIT_A1;
+            break;
+        }
+    }
+    /* Ainda não sincronizado — continua a ler 1 byte de cada vez */
+    ttc_read_async();
+}
 
 static void on_ttc_tx_done(int result)
 {
@@ -60,7 +128,7 @@ static void on_ota_drain_done(int result)
 
 static void on_ttc_done(int result)
 {
-    //printf("result ttc %d", result);
+    printf("result ttc %d", result);
     if (result == 1)
     {
         if (ota_data_started)
@@ -78,7 +146,7 @@ static void on_ttc_done(int result)
 }
 static void ttc_parse(uint8_t *buf)
 {
-    //printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
+    printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
 
     ground_command_t cmd = (ground_command_t)buf[0];
     ttc.last_command = cmd;
@@ -87,6 +155,7 @@ static void ttc_parse(uint8_t *buf)
     {
     case CMD_REQUEST_DATA:
         //printf("cmd0\n");
+        COMM_WINDOW_OPEN = 1;
         ttc.doppler = (float)buf[1] / 10.0f;
         ttc_send_telemetry();
         break;
@@ -98,6 +167,8 @@ static void ttc_parse(uint8_t *buf)
 
     case CMD_START_OTA:
         printf("[TTC] START_OTA received — sending ACK\n");
+        COMM_WINDOW_OPEN = 1;
+        OTA_REQUESTED    = 1;
         ttc.ota_active = true;
         ttc.cmd_status = ACK_SUCCESS;
         ota_receiving = 1U;
@@ -113,6 +184,7 @@ static void ttc_parse(uint8_t *buf)
 
     case CMD_END_OTA:
         printf("cmd3 — OTA mode OFF\n");
+        OTA_REQUESTED  = 0;
         ttc.ota_active = false;
         ttc.cmd_status = ACK_SUCCESS;
         ota_receiving = 0U;
@@ -208,11 +280,22 @@ void ttc_ota_clear_ready(void)
 
 /**
  * @brief Inicia receção assíncrona de um comando da Ground Station.
+ *
+ * Em modo sync (arranque): lê 1 byte de cada vez via on_ttc_sync_byte
+ * até detectar o handshake do Pico.
+ * Em modo normal: lê TTC_CMD_LEN ou OTA_FULL_PACKET bytes via on_ttc_done.
  */
 void ttc_read_async(void)
 {
     if (usart.rx_state != UART_RX_IDLE)
         return;
+
+    if (sync_state != SYNC_DONE)
+    {
+        /* Modo sync — lê 1 byte de cada vez para detectar a sequência */
+        usart_recv_async(&usart, &sync_rx_byte, 1U, on_ttc_sync_byte);
+        return;
+    }
 
     uint8_t expected_len = ota_data_started ? OTA_FULL_PACKET : TTC_CMD_LEN;
     usart_recv_async(&usart, rx_buf, expected_len, on_ttc_done);

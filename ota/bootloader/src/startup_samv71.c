@@ -35,15 +35,42 @@ int  main(void);
  * ========================================================================= */
 #define WEAK_DEFAULT __attribute__((weak, alias("Default_Handler")))
 
-void NMI_Handler(void)       WEAK_DEFAULT;
-void HardFault_Handler(void) WEAK_DEFAULT;
-void MemManage_Handler(void) WEAK_DEFAULT;
-void BusFault_Handler(void)  WEAK_DEFAULT;
+void NMI_Handler(void)        WEAK_DEFAULT;
+void MemManage_Handler(void)  WEAK_DEFAULT;
 void UsageFault_Handler(void) WEAK_DEFAULT;
-void SVC_Handler(void)       WEAK_DEFAULT;
-void DebugMon_Handler(void)  WEAK_DEFAULT;
-void PendSV_Handler(void)    WEAK_DEFAULT;
-void SysTick_Handler(void)   WEAK_DEFAULT;
+void SVC_Handler(void)        WEAK_DEFAULT;
+void DebugMon_Handler(void)   WEAK_DEFAULT;
+void PendSV_Handler(void)     WEAK_DEFAULT;
+void SysTick_Handler(void)    WEAK_DEFAULT;
+
+/* =========================================================================
+ * BusFault_Handler e HardFault_Handler — saltam para a app em vez de
+ * ficarem presos. Necessário para recuperar de falhas QSPI memory-mapped.
+ * APP_START_ADDR = 0x00410000: vector[0]=SP inicial, vector[1]=Reset_Handler
+ * ========================================================================= */
+__attribute__((naked))
+void BusFault_Handler(void)
+{
+    __asm__ volatile (
+        "ldr r0, =0x00410000  \n"  /* Base da tabela de vectores da app    */
+        "ldr r1, [r0, #0]     \n"  /* vector[0]: SP inicial da app         */
+        "ldr r2, [r0, #4]     \n"  /* vector[1]: Reset_Handler da app      */
+        "msr msp, r1          \n"  /* Configura MSP para a app             */
+        "bx  r2               \n"  /* Salta para Reset_Handler da app      */
+    );
+}
+
+__attribute__((naked))
+void HardFault_Handler(void)
+{
+    __asm__ volatile (
+        "ldr r0, =0x00410000  \n"
+        "ldr r1, [r0, #0]     \n"
+        "ldr r2, [r0, #4]     \n"
+        "msr msp, r1          \n"
+        "bx  r2               \n"
+    );
+}
 
 /* =========================================================================
  * Tabela de vectores — DEVE estar em 0x00400000 (secção .isr_vector)

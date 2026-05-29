@@ -92,3 +92,22 @@ void _mon_putc(char c)
     }
     debug_uart_putc(c);
 }
+
+
+/**
+ * @brief Envia uma string diretamente pela UART, sem usar a biblioteca <stdio.h>
+ */
+void debug_uart_puts(const char *s)
+{
+    if (!debug_uart_ready) return;
+    
+    while (*s) {
+        if (*s == '\n') {
+            // Reutilizamos a sua função estática
+            extern void _mon_putc(char c); 
+            _mon_putc('\r');
+        }
+        _mon_putc(*s);
+        s++;
+    }
+}

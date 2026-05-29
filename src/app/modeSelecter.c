@@ -10,49 +10,10 @@
 #include "peripherals/ext_memory.h"
 #include "config/board.h"
 
-/*
-#include <time.h> // remover no futuro, uso para o clock(tempo)
+/* Timer partilhado entre nominalMode e safeMode — evita dupla impressão
+ * quando o sistema transita de nominal → safe no mesmo ciclo de update. */
+static uint32_t s_print_last_ms = 0U;
 
-States nominalMode(void)
-{
-    static clock_t last_time = 0;
-
-    if (last_time == 0) {
-        last_time = clock();
-    }
-
-    clock_t now = clock();
-
-    if (((now - last_time) * 1000) / CLOCKS_PER_SEC > TIME_TO_UPDATE_VALUES)
-    {
-        sensors_print();
-        sensors_read_all();
-        last_time = clock();
-    }
-
-    return getMode(nominal_mode);
-}*/
-
-States nominalMode(void)
-{
-    static uint32_t last_ms = 0U;
-
-    uint32_t now = hal_systick_get_ms();
-
-    if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
-    {
-        sensors_print();
-        sensors_read_all();
-        last_ms = now;
-    }
-
-    return getMode(nominal_mode);
-}
-
-States communicationMode(void)
-{
-    return getMode(communication_mode);
-}
 
 /* Endereços OTA na flash externa (devem coincidir com o bootloader) */
 #define OTA_EXT_META_ADDR MEM_REGION_OTA_START           /* 0x100000 */
@@ -335,17 +296,57 @@ States otaMode(void)
     return getMode(ota_mode);
 }
 
-States safeMode(void)
+/*
+#include <time.h> // remover no futuro, uso para o clock(tempo)
+
+States nominalMode(void)
 {
-    static uint32_t last_ms = 0U;
+    static clock_t last_time = 0;
 
-    uint32_t now = hal_systick_get_ms();
+    if (last_time == 0) {
+        last_time = clock();
+    }
 
-    if ((now - last_ms) >= TIME_TO_UPDATE_VALUES)
+    clock_t now = clock();
+
+    if (((now - last_time) * 1000) / CLOCKS_PER_SEC > TIME_TO_UPDATE_VALUES)
     {
         sensors_print();
         sensors_read_all();
-        last_ms = now;
+        last_time = clock();
+    }
+
+    return getMode(nominal_mode);
+}*/
+
+States nominalMode(void)
+{
+    uint32_t now = hal_systick_get_ms();
+
+    if ((now - s_print_last_ms) >= TIME_TO_UPDATE_VALUES)
+    {
+        //sensors_print();
+        sensors_read_all();
+        s_print_last_ms = now;
+    }
+
+    return getMode(nominal_mode);
+}
+
+States communicationMode(void)
+{
+    return getMode(communication_mode);
+}
+
+States safeMode(void)
+{
+    uint32_t now = hal_systick_get_ms();
+
+    if ((now - s_print_last_ms) >= TIME_TO_UPDATE_VALUES)
+    {
+        //sensors_print();
+        sensors_read_all();
+        s_print_last_ms = now;
     }
 
     return getMode(safe_mode);
