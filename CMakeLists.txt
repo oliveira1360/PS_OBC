@@ -30,6 +30,14 @@ pico_enable_stdio_usb(cubesat_slave 1)
 pico_enable_stdio_uart(cubesat_slave 0)
 pico_add_extra_outputs(cubesat_slave)
 
+# Skip the tud_cdc_connected() / DTR check inside stdio_usb_in_chars so that
+# getchar_timeout_us() works even when the host (dashboard / jSerialComm) has
+# not asserted DTR — which is the default behaviour of most serial libraries.
+#
+# Must be add_compile_definitions (global) so the flag reaches the pico-sdk's
+# own stdio_usb.c library file, not just our own source files.
+add_compile_definitions(PICO_STDIO_USB_CONNECTION_WITHOUT_DTR=1)
+
 # ===== Pico 2: SPI propulsor =====
 add_executable(pico2_propulsor
     pico2.c
