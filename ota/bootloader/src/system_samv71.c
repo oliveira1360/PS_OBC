@@ -4,27 +4,27 @@
  */
 
 #include "system_samv71.h"
-#include "qspi_boot.h"   /* ID_QSPI_PERIPH */
+#include "qspi_boot.h" /* ID_QSPI_PERIPH */
 
 /* =========================================================================
  * Watchdog Timer (WDT) — desabilitar no arranque do bootloader
  * ========================================================================= */
-#define WDT_BASE   0x400E1850UL
-#define WDT_MR     (*(volatile uint32_t *)(WDT_BASE + 0x04U))
-#define WDT_MR_WDDIS (1UL << 15)  /**< Watchdog Disable bit                  */
+#define WDT_BASE 0x400E1850UL
+#define WDT_MR (*(volatile uint32_t *)(WDT_BASE + 0x04U))
+#define WDT_MR_WDDIS (1UL << 15) /**< Watchdog Disable bit                  */
 
 /* =========================================================================
  * Reinforced Safety Watchdog Timer (RSWDT) — também desabilitar
  * ========================================================================= */
-#define RSWDT_BASE  0x400E1900UL
-#define RSWDT_MR    (*(volatile uint32_t *)(RSWDT_BASE + 0x04U))
+#define RSWDT_BASE 0x400E1900UL
+#define RSWDT_MR (*(volatile uint32_t *)(RSWDT_BASE + 0x04U))
 #define RSWDT_MR_WDDIS (1UL << 15)
 
 /* =========================================================================
  * EFC — Flash wait states
  * ========================================================================= */
-#define EFC_BASE_SYS  0x400E0C00UL
-#define EFC_FMR_SYS   (*(volatile uint32_t *)(EFC_BASE_SYS + 0x00U))
+#define EFC_BASE_SYS 0x400E0C00UL
+#define EFC_FMR_SYS (*(volatile uint32_t *)(EFC_BASE_SYS + 0x00U))
 /* FWS = 0 wait states para f < ~17 MHz (oscilador interno 12 MHz) */
 #define EFC_FMR_FWS(v) (((v) & 0xFU) << 8)
 
@@ -33,28 +33,30 @@
  * ========================================================================= */
 void system_boot_init(void)
 {
-    /* 0. Set GPNVM bit 1 (boot from flash).
-     *    O pino ERASE repoe este bit a 0 (boot from ROM/SAM-BA).
-     *    Aguarda FRDY=1 com timeout, escreve, aguarda conclusão com timeout. */
+#define SCB_CCR_REG (*(volatile uint32_t *)0xE000ED14UL)
+    EFC_FMR_SYS = EFC_FMR_FWS(6U) | (1UL << 16); /* 6 WS — seguro para qualquer clock */
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+
+    /* 0. Set GPNVM bit 1 (boot from flash). */
     {
         volatile uint32_t *fsr = (volatile uint32_t *)0x400E0C08UL;
         volatile uint32_t *fcr = (volatile uint32_t *)0x400E0C04UL;
         uint32_t t;
-        t = 2000000UL; while (!(*fsr & 1UL) && t) { t--; }
+        t = 2000000UL;
+        while (!(*fsr & 1UL) && t) { t--; }
         *fcr = (0x5AUL << 24U) | (1UL << 8U) | 0x0BUL;
-        t = 2000000UL; while (!(*fsr & 1UL) && t) { t--; }
+        t = 2000000UL;
+        while (!(*fsr & 1UL) && t) { t--; }
     }
 
-    /* 1. Desabilita WDT — evita reset inesperado durante a operação OTA */
-    WDT_MR  = WDT_MR_WDDIS;
+    /* 1. Desabilita WDT */
+    WDT_MR = WDT_MR_WDDIS;
     RSWDT_MR = RSWDT_MR_WDDIS;
 
-    /* 2. Flash wait states: 0 WS é suficiente a 12 MHz (oscilador RC interno)
-     *    Se o sistema arrancar com PLL activo (>17 MHz), ajustar aqui.
-     *    A 12 MHz o reset default já funciona, mas ser explícito é mais seguro. */
-    EFC_FMR_SYS = EFC_FMR_FWS(0U) | (1UL << 16); /* FAM=1: Full access mode   */
+    /* (REMOVIDO o segundo EFC_FMR_SYS que punha FWS=0) */
 
-    /* 3. Activa clock do QSPI no PMC (peripheral ID 43 → PCER1 bit 11) */
+    /* 3. Activa clock do QSPI no PMC */
     PMC_PCER1 = (1UL << (ID_QSPI_PERIPH - 32U));
 }
 
@@ -63,15 +65,18 @@ void system_boot_init(void)
  * ========================================================================= */
 void system_cache_disable(void)
 {
-    /* Desabilita I-Cache */
-    if (SCB_CCR & SCB_CCR_IC)
-    {
-        /* Barreira de instrução antes */
-        __asm__ volatile ("dsb" ::: "memory");
-        __asm__ volatile ("isb" ::: "memory");
-        SCB_CCR &= ~SCB_CCR_IC;
-        __asm__ volatile ("isb" ::: "memory");
-    }
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+
+    /* Desliga I-Cache */
+    SCB_CCR &= ~SCB_CCR_IC;
+
+    /* Desliga D-Cache — SEM isto as escritas ao page latch do EFC
+     * ficam no write-buffer/cache e o WP comita um latch vazio. */
+    SCB_CCR &= ~(1UL << 16); /* DC bit */
+
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
 }
 
 /* =========================================================================
@@ -79,16 +84,27 @@ void system_cache_disable(void)
  * ========================================================================= */
 void system_cache_invalidate(void)
 {
-    /* Invalida toda a I-Cache */
-    __asm__ volatile ("dsb" ::: "memory");
-    SCB_ICIALLU = 0U;  /* Escrever qualquer valor invalida a I-Cache */
-    __asm__ volatile ("dsb" ::: "memory");
-    __asm__ volatile ("isb" ::: "memory");
+    __asm__ volatile("dsb" ::: "memory");
 
-    /* Re-habilita I-Cache */
-    SCB_CCR |= SCB_CCR_IC;
-    __asm__ volatile ("dsb" ::: "memory");
-    __asm__ volatile ("isb" ::: "memory");
+    /* Invalida I-Cache */
+    SCB_ICIALLU = 0U;
+
+    /* Invalida toda a D-Cache por set/way */
+    /* SAMV71 Cortex-M7: 4-way, 128 sets, linha 32B (16KB D-Cache) */
+    for (uint32_t set = 0U; set < 128U; set++)
+    {
+        for (uint32_t way = 0U; way < 4U; way++)
+        {
+            uint32_t r = (way << 30) | (set << 5);
+            *(volatile uint32_t *)0xE000EF60UL = r;  /* DCISW */
+        }
+    }
+
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+
+    /* NAO religa as caches — deixa OFF ate ao salto.
+     * A app reconfigura no seu arranque. */
 }
 
 /* =========================================================================
@@ -107,6 +123,6 @@ void system_prepare_jump(void)
 
     /* Barreira de memória para garantir que as escritas nos registos
      * ficam completas antes do salto */
-    __asm__ volatile ("dsb" ::: "memory");
-    __asm__ volatile ("isb" ::: "memory");
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
 }

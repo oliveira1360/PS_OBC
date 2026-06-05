@@ -78,4 +78,5 @@
      */
     void system_prepare_jump(void);
 
+    void system_cache_disable(void);
     #endif /* SYSTEM_SAMV71_H */

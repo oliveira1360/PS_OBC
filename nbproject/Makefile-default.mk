@@ -105,8 +105,8 @@ ifneq ($(INFORMATION_MESSAGE), )
 endif
 	${MAKE}  -f nbproject/Makefile-default.mk ${DISTDIR}/PS_OBC.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
 	@echo "--------------------------------------"
-	@echo "User defined post-build step: [xc32-objcopy -O binary -j .vectors* -j .text* -j .ARM* -j .dinit dist\default\production\PS_OBC.X.production.elf dist\firmware_ota.bin]"
-	@xc32-objcopy -O binary -j .vectors* -j .text* -j .ARM* -j .dinit dist\default\production\PS_OBC.X.production.elf dist\firmware_ota.bin
+	@echo "User defined post-build step: ["C:\Program Files\Microchip\xc32\v5.10\bin\bin\pic32c-objcopy.exe" -I ihex -O binary dist\default\production\PS_OBC.X.production.hex dist\firmware_ota.bin]"
+	@"C:\Program Files\Microchip\xc32\v5.10\bin\bin\pic32c-objcopy.exe" -I ihex -O binary dist\default\production\PS_OBC.X.production.hex dist\firmware_ota.bin
 	@echo "--------------------------------------"
 
 MP_PROCESSOR_OPTION=ATSAMV71Q21B

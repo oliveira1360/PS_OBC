@@ -12,8 +12,8 @@ int main(void)
 {
     debug_uart_init();
 
-    printf("\n === OBC BOOT === FW v3.5\n");
-    printf("we are the champions");
+    printf("\n === OBC BOOT === FW v3.91\n");
+    printf("we are the champions, for ola de novo ola???");
     
     for (size_t i = 0; i < 10; i++)
     {

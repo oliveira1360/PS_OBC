@@ -140,8 +140,8 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="SAMV71_DFP" vendor="Microchip" version="4.12.237"/>
         <pack name="CMSIS" vendor="ARM" version="5.4.0"/>
+        <pack name="SAMV71_DFP" vendor="Microchip" version="4.12.237"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -165,7 +165,7 @@
         <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>true</makeCustomizationPostStepEnabled>
-        <makeCustomizationPostStep>xc32-objcopy -O binary -j .vectors* -j .text* -j .ARM* -j .dinit dist\default\production\PS_OBC.X.production.elf dist\firmware_ota.bin</makeCustomizationPostStep>
+        <makeCustomizationPostStep>"C:\Program Files\Microchip\xc32\v5.10\bin\bin\pic32c-objcopy.exe" -I ihex -O binary dist\default\production\PS_OBC.X.production.hex dist\firmware_ota.bin</makeCustomizationPostStep>
         <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>

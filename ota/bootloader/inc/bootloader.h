@@ -109,5 +109,7 @@ boot_result_t bootloader_run(void);
  * Esta função NÃO retorna.
  */
 void bootloader_jump_to_app(void);
+void debug_uart_puts(const char *s);
+void debug_uart_hex(const char *label, uint32_t val);
 
 #endif /* BOOTLOADER_H */

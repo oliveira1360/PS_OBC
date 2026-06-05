@@ -11,14 +11,20 @@
  */
 
 #include "flash_efc.h"
-#include "bootloader.h"    /* APP_START_ADDR, APP_MAX_SIZE */
+#include "bootloader.h" /* APP_START_ADDR, APP_MAX_SIZE */
 #include "system_samv71.h"
 #include <string.h>
 
+#pragma GCC optimize("O0")
 /* =========================================================================
  * Helpers internos
  * ========================================================================= */
 
+
+
+ void debug_uart_hex(const char *label, uint32_t val);
+
+ 
 /**
  * @brief Converte endereço de flash em número de página.
  */
@@ -54,8 +60,10 @@ flash_efc_result_t flash_efc_wait_ready(void)
     }
 
     /* Verifica bits de erro */
-    if (EFC_FSR & EFC_FSR_FLOCKE)  return FLASH_EFC_LOCKED;
-    if (EFC_FSR & EFC_FSR_ERRORS)  return FLASH_EFC_ERROR;
+    if (EFC_FSR & EFC_FSR_FLOCKE)
+        return FLASH_EFC_LOCKED;
+    if (EFC_FSR & EFC_FSR_ERRORS)
+        return FLASH_EFC_ERROR;
 
     return FLASH_EFC_OK;
 }
@@ -66,8 +74,8 @@ flash_efc_result_t flash_efc_wait_ready(void)
 flash_efc_result_t flash_efc_unlock(uint32_t addr, uint32_t size)
 {
     /* Itera sobre os lock regions afectados e limpa cada um (CLB) */
-    uint32_t end  = addr + size;
-    uint32_t cur  = addr;
+    uint32_t end = addr + size;
+    uint32_t cur = addr;
 
     /* Lock region = 16 KB no SAMV71Q21 (32 páginas de 512 B) */
     const uint32_t LOCK_REGION_SIZE = 16U * 1024U;
@@ -78,7 +86,8 @@ flash_efc_result_t flash_efc_unlock(uint32_t addr, uint32_t size)
         efc_send_cmd(EFC_CMD_CLB, page);
 
         flash_efc_result_t res = flash_efc_wait_ready();
-        if (res != FLASH_EFC_OK) return res;
+        if (res != FLASH_EFC_OK)
+            return res;
 
         cur += LOCK_REGION_SIZE;
     }
@@ -126,77 +135,92 @@ flash_efc_result_t flash_efc_erase_region(uint32_t start, uint32_t size)
 
     /* Alinha end para cima ao sector */
     uint32_t end = start + size;
-    uint32_t aligned_end = (end + FLASH_SECTOR_SIZE - 1U)
-                         & ~((uint32_t)(FLASH_SECTOR_SIZE - 1U));
+    uint32_t aligned_end = (end + FLASH_SECTOR_SIZE - 1U) & ~((uint32_t)(FLASH_SECTOR_SIZE - 1U));
 
     /* Desbloqueia a região */
     res = flash_efc_unlock(aligned_start, aligned_end - aligned_start);
-    if (res != FLASH_EFC_OK) return res;
+    if (res != FLASH_EFC_OK)
+        return res;
 
     /* Apaga sector a sector */
     for (uint32_t addr = aligned_start; addr < aligned_end;
          addr += FLASH_SECTOR_SIZE)
     {
         res = flash_efc_erase_sector(addr);
-        if (res != FLASH_EFC_OK) return res;
+        if (res != FLASH_EFC_OK)
+            return res;
     }
 
     return FLASH_EFC_OK;
 }
 
 /* =========================================================================
- * flash_efc_write_page — escreve 512 bytes
+ * flash_efc_write_page — apaga e escreve 512 bytes (EWP)
  * ========================================================================= */
 flash_efc_result_t flash_efc_write_page(uint32_t addr, const uint8_t *data)
 {
-    /* Verifica alinhamento */
     if (addr & (FLASH_PAGE_SIZE - 1U))
-    {
         return FLASH_EFC_ALIGN_ERR;
-    }
-
-    /* Não permite escrever na região do bootloader */
     if (addr < APP_START_ADDR)
-    {
         return FLASH_EFC_RANGE_ERR;
-    }
 
-    /* Escreve os 512 bytes via writes de 32 bits para o latch buffer.
-     * O hardware do SAMV71 dirige estas escritas ao page latch, não à flash.
-     * O conteúdo só é comprometido à flash quando se envia o comando WP/EWP. */
-    volatile uint32_t *flash_ptr = (volatile uint32_t *)addr;
-    const uint32_t    *src32     = (const uint32_t *)data;
-    uint32_t           words     = FLASH_PAGE_SIZE / 4U;
-
-    for (uint32_t i = 0U; i < words; i++)
+    for (uint32_t attempt = 0U; attempt < 3U; attempt++)
     {
-        flash_ptr[i] = src32[i];
+        volatile uint32_t *flash_ptr = (volatile uint32_t *)addr;
+        uint32_t words = FLASH_PAGE_SIZE / 4U;
+
+        for (uint32_t i = 0U; i < words; i++)
+        {
+            uint32_t w = (uint32_t)data[i * 4 + 0] | ((uint32_t)data[i * 4 + 1] << 8) | ((uint32_t)data[i * 4 + 2] << 16) | ((uint32_t)data[i * 4 + 3] << 24);
+            flash_ptr[i] = w;
+            __asm__ volatile("dsb" ::: "memory"); /* dsb a cada word, nao barreira vazia */
+        }
+
+        __asm__ volatile("dsb" ::: "memory");
+        uint32_t page = addr_to_page(addr);
+        efc_send_cmd(EFC_CMD_EWP, page);
+        debug_uart_hex("[BOOT] FSR pos-EWP=", EFC_FSR); 
+
+        flash_efc_result_t res = flash_efc_wait_ready();
+        debug_uart_hex("[BOOT] FSR pos-wait=", EFC_FSR);
+        if (res != FLASH_EFC_OK)
+            return res;
+
+        /* verifica o que ficou na flash */
+        const uint8_t *chk = (const uint8_t *)addr;
+        bool ok = true;
+        for (uint32_t k = 0U; k < FLASH_PAGE_SIZE; k++)
+        {
+            if (chk[k] != data[k])
+            {
+                ok = false;
+                break;
+            }
+        }
+        if (ok)
+            return FLASH_EFC_OK; /* pagina correta */
+        /* senao, repete (EWP apaga e reescreve) */
     }
 
-    /* Barreira de memória para garantir que todas as escritas ao latch
-     * estão completas antes de enviar o comando WP */
-    __asm__ volatile ("dsb" ::: "memory");
-
-    /* Comando WP (Write Page): FARG = número da página */
-    uint32_t page = addr_to_page(addr);
-    efc_send_cmd(EFC_CMD_WP, page);
-
-    return flash_efc_wait_ready();
+    return FLASH_EFC_ERROR; /* falhou apos 3 tentativas */
 }
 
 /* =========================================================================
  * flash_efc_write_firmware
  * ========================================================================= */
 flash_efc_result_t flash_efc_write_firmware(uint32_t dest_addr,
-                                              const uint8_t *src,
-                                              uint32_t size)
+                                            const uint8_t *src,
+                                            uint32_t size)
 {
     flash_efc_result_t res;
 
     /* Validações básicas */
-    if (dest_addr < APP_START_ADDR)                   return FLASH_EFC_RANGE_ERR;
-    if (size == 0U || size > APP_MAX_SIZE)            return FLASH_EFC_RANGE_ERR;
-    if (dest_addr & (FLASH_PAGE_SIZE - 1U))           return FLASH_EFC_ALIGN_ERR;
+    if (dest_addr < APP_START_ADDR)
+        return FLASH_EFC_RANGE_ERR;
+    if (size == 0U || size > APP_MAX_SIZE)
+        return FLASH_EFC_RANGE_ERR;
+    if (dest_addr & (FLASH_PAGE_SIZE - 1U))
+        return FLASH_EFC_ALIGN_ERR;
 
     /* 1. Desabilita I-Cache antes de escrever na flash */
     system_cache_disable();
@@ -210,7 +234,7 @@ flash_efc_result_t flash_efc_write_firmware(uint32_t dest_addr,
     }
 
     /* 3. Escreve página a página (512 bytes cada) */
-    static uint8_t page_buf[FLASH_PAGE_SIZE];  /* Buffer estático — sem alloc */
+    static uint8_t page_buf[FLASH_PAGE_SIZE]; /* Buffer estático — sem alloc */
 
     uint32_t bytes_written = 0U;
     uint32_t dst = dest_addr;
@@ -247,7 +271,7 @@ flash_efc_result_t flash_efc_write_firmware(uint32_t dest_addr,
             return res;
         }
 
-        dst           += FLASH_PAGE_SIZE;
+        dst += FLASH_PAGE_SIZE;
         bytes_written += chunk;
     }
 

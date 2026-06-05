@@ -27,6 +27,8 @@
 #include "ota_verify.h"
 #include "system_samv71.h"
 
+static void boot_system_reset(void);
+
 /* =========================================================================
  * Helpers internos
  * ========================================================================= */
@@ -42,11 +44,13 @@ static void clear_ota_metadata(void)
     {
         if (qspi_boot_erase_sector(OTA_EXT_METADATA_SECTOR) == QSPI_BOOT_OK)
         {
-            return;  /* Erase confirmado pelo wait_busy */
+            return; /* Erase confirmado pelo wait_busy */
         }
         /* Pequena pausa antes de retry */
         volatile uint32_t delay = 0x10000U;
-        while (delay--) {}
+        while (delay--)
+        {
+        }
     }
     /* Se falhou 3 vezes, continua de qualquer forma — na pior das hipóteses
      * o próximo boot volta a aplicar o mesmo firmware (inofensivo). */
@@ -60,7 +64,7 @@ static void clear_ota_metadata(void)
 static bool app_is_valid(void)
 {
     const uint32_t *app_vectors = (const uint32_t *)APP_START_ADDR;
-    uint32_t reset_handler = app_vectors[1];  /* Reset_Handler no vector[1] */
+    uint32_t reset_handler = app_vectors[1]; /* Reset_Handler no vector[1] */
 
     return (reset_handler != 0x00000000UL &&
             reset_handler != 0xFFFFFFFFUL);
@@ -71,132 +75,167 @@ static bool app_is_valid(void)
  * ========================================================================= */
 boot_result_t bootloader_run(void)
 {
-    /* --- 1. Inicializa QSPI -------------------------------------------- */
     if (qspi_boot_init() != QSPI_BOOT_OK)
     {
-        /* QSPI não respondeu — arranca aplicação existente sem OTA */
+        debug_uart_puts("[BOOT] qspi_init FALHOU\n");
         bootloader_jump_to_app();
-        return BOOT_OTA_READ_ERR;  /* Nunca chega aqui */
+    }
+    debug_uart_puts("[BOOT] qspi_init OK\n");
+
+    /* ===== TESTE A: CRC da app que JA esta na flash interna ===== */
+    {
+        uint32_t c = 0xFFFFFFFFUL;
+        const uint8_t *a = (const uint8_t *)APP_START_ADDR;
+        for (uint32_t i = 0U; i < 19372U; i++) /* size fixo so para o teste */
+        {
+            c ^= (uint32_t)a[i];
+            for (uint8_t b = 0U; b < 8U; b++)
+                c = (c & 1UL) ? (c >> 1) ^ 0xEDB88320UL : (c >> 1);
+        }
+        c ^= 0xFFFFFFFFUL;
+        debug_uart_hex("[BOOT] CRC app atual=", c);
     }
 
-    /* --- 2. Lê metadados OTA ------------------------------------------- */
-    static ota_metadata_t meta;  /* Estático — evita stack overflow          */
+    /* ===== TESTE B: escreve 1 pagina com padrao conhecido ===== */
+    {
+        static uint8_t test_buf[512];
+        for (int i = 0; i < 512; i++)
+            test_buf[i] = (uint8_t)(i & 0xFF);
 
-    qspi_boot_result_t qres =
-        qspi_boot_read(OTA_EXT_METADATA_ADDR,
-                       (uint8_t *)&meta,
-                       sizeof(meta));
+        flash_efc_result_t te = flash_efc_erase_region(APP_START_ADDR, 512U);
+        debug_uart_hex("[BOOT] test erase result=", (uint32_t)te);
 
+        /* le DEPOIS do erase, ANTES de escrever — deve dar tudo 0xFF */
+        const uint8_t *chk = (const uint8_t *)APP_START_ADDR;
+        debug_uart_puts("[BOOT] pos-erase (esperado FF FF...): ");
+        for (int i = 0; i < 8; i++)
+            debug_uart_hex("", chk[i]);
+
+        flash_efc_result_t tw = flash_efc_write_page(APP_START_ADDR, test_buf);
+        debug_uart_hex("[BOOT] test write result=", (uint32_t)tw);
+
+        const uint8_t *rd = (const uint8_t *)APP_START_ADDR;
+        debug_uart_puts("[BOOT] test readback (esperado 00 01 02 03 04 05 06 07): ");
+        for (int i = 0; i < 8; i++)
+            debug_uart_hex("", rd[i]);
+    }
+
+    static ota_metadata_t meta;
+    qspi_boot_result_t qres = qspi_boot_read(OTA_EXT_METADATA_ADDR, (uint8_t *)&meta, sizeof(meta));
     if (qres != QSPI_BOOT_OK)
     {
-        /* Falha ao ler flash externa — arranca aplicação existente */
+        debug_uart_puts("[BOOT] read meta FALHOU\n");
         bootloader_jump_to_app();
-        return BOOT_OTA_READ_ERR;  /* Nunca chega aqui */
     }
 
-    /* --- 3. Verifica se há OTA pendente -------------------------------- */
+    debug_uart_hex("[BOOT] magic=", meta.magic);
+    debug_uart_hex("[BOOT] size=", meta.firmware_size);
+    debug_uart_hex("[BOOT] crc=", meta.firmware_crc32);
+
     if (meta.magic != OTA_MAGIC_PENDING)
     {
-        /* Nenhuma actualização pendente — arranca normalmente */
+        debug_uart_puts("[BOOT] sem OTA pendente -> app antiga\n");
         bootloader_jump_to_app();
-        return BOOT_NO_OTA;  /* Nunca chega aqui */
     }
 
-    /* --- 4. Valida tamanho do firmware --------------------------------- */
     if (meta.firmware_size == 0U || meta.firmware_size > APP_MAX_SIZE)
     {
-        /* Metadados inválidos — limpa e arranca */
+        debug_uart_puts("[BOOT] size invalido -> limpa e app antiga\n");
         clear_ota_metadata();
         bootloader_jump_to_app();
-        return BOOT_OTA_SIZE_ERR;  /* Nunca chega aqui */
     }
 
-    /* --- 5. Verifica CRC32 do firmware --------------------------------- */
-    bool crc_ok = ota_verify_crc(OTA_EXT_FIRMWARE_ADDR,
-                                  meta.firmware_size,
-                                  meta.firmware_crc32);
+    bool crc_ok = ota_verify_crc(OTA_EXT_FIRMWARE_ADDR, meta.firmware_size, meta.firmware_crc32);
+    debug_uart_puts(crc_ok ? "[BOOT] CRC externa OK\n" : "[BOOT] CRC externa FAIL\n");
 
     if (!crc_ok)
     {
-        /* CRC falhou — limpa metadados para evitar loop de boot infinito,
-         * e arranca com o firmware existente (se válido) */
         clear_ota_metadata();
         if (app_is_valid())
-        {
             bootloader_jump_to_app();
+        while (1)
+        {
         }
-        /* Se não há firmware válido, fica aqui (hardfault safety) */
-        while (1) {}
-        return BOOT_OTA_CRC_FAIL;  /* Nunca chega aqui */
     }
 
-    /* --- 6. Copia firmware da flash externa para a flash interna ------- */
-    /*
-     * O firmware é lido em blocos de W25Q_PAGE_SIZE bytes (256 B) da flash
-     * externa e escrito em blocos de FLASH_PAGE_SIZE bytes (512 B) na flash
-     * interna. A função flash_efc_write_firmware() trata do erase+write.
-     *
-     * Como o firmware pode ser até ~1 MB, não cabe num buffer estático de RAM.
-     * A estratégia é ler directamente via memory-mapped QSPI (0x80000000)
-     * e passar o ponteiro para flash_efc_write_firmware().
-     *
-     * Nota: O memory-mapped QSPI precisa de ser configurado com o frame
-     * correcto antes de aceder. Usamos qspi_boot_read() internamente no
-     * flash_efc_write_firmware() para ler bloco a bloco.
-     *
-     * Alternativa mais simples: acesso directo via ponteiro memory-mapped
-     * (0x80000000 + OTA_EXT_FIRMWARE_ADDR) após configurar o IFR.
-     * Optamos por esta abordagem para evitar buffer intermédio.
-     */
+    debug_uart_puts("[BOOT] a copiar fw para flash interna...\n");
 
-    /* Configura QSPI para leitura memory-mapped contínua */
-    QSPI_IAR = OTA_EXT_FIRMWARE_ADDR;
-    QSPI_ICR = (uint32_t)W25Q_CMD_FAST_READ;
-    QSPI_IFR = QSPI_IFR_WIDTH_SINGLE
-             | QSPI_IFR_INSTEN
-             | QSPI_IFR_ADDREN
-             | QSPI_IFR_ADDRL_24
-             | QSPI_IFR_DATAEN
-             | QSPI_IFR_TFRTYP_READMEM
-             | QSPI_IFR_NBDUM(W25Q_FAST_READ_DUMMY);
-    (void)QSPI_IFR;
+#define COPY_PAGE 512U
+    static uint8_t copy_buf[COPY_PAGE];
 
-    /* Ponteiro para o firmware na região memory-mapped do QSPI */
-    const uint8_t *fw_ptr =
-        (const uint8_t *)(QSPI_MEM_BASE_ADDR + OTA_EXT_FIRMWARE_ADDR);
+    system_cache_disable();
 
-    /* Escreve na flash interna directamente a partir do ponteiro QSPI */
-    flash_efc_result_t fres =
-        flash_efc_write_firmware(APP_START_ADDR, fw_ptr, meta.firmware_size);
-
-    /* Finaliza transferência QSPI e aguarda INSTRE antes de qualquer
-     * novo comando — sem este wait o CS pode ainda estar asserted quando
-     * clear_ota_metadata() tenta enviar WREN, corrompendo a transacção. */
-    QSPI_CR = QSPI_CR_LASTXFER;
+    flash_efc_result_t fres = flash_efc_erase_region(APP_START_ADDR, meta.firmware_size);
+    if (fres == FLASH_EFC_OK)
     {
-        uint32_t _t = 0x00200000UL;
-        while (!(QSPI_SR & QSPI_SR_INSTRE) && --_t) {}
+        uint32_t off = 0U;
+        while (off < meta.firmware_size)
+        {
+            uint32_t chunk = (meta.firmware_size - off) > COPY_PAGE
+                                 ? COPY_PAGE
+                                 : (meta.firmware_size - off);
+            if (chunk < COPY_PAGE)
+                for (uint32_t i = 0U; i < COPY_PAGE; i++)
+                    copy_buf[i] = 0xFFU;
+
+            if (qspi_boot_read(OTA_EXT_FIRMWARE_ADDR + off, copy_buf, chunk) != QSPI_BOOT_OK)
+            {
+                fres = FLASH_EFC_ERROR;
+                break;
+            }
+            fres = flash_efc_write_page(APP_START_ADDR + off, copy_buf);
+            if (fres != FLASH_EFC_OK)
+                break;
+
+            /* verifica imediatamente esta pagina */
+            const uint8_t *wr = (const uint8_t *)(APP_START_ADDR + off);
+            for (uint32_t k = 0U; k < chunk; k++)
+            {
+                if (wr[k] != copy_buf[k])
+                {
+                    debug_uart_hex("[BOOT] MISMATCH na pagina off=", off);
+                    debug_uart_hex("  byte k=", k);
+                    debug_uart_hex("  escrito=", copy_buf[k]);
+                    debug_uart_hex("  lido=", wr[k]);
+                    break;
+                }
+            }
+
+            off += COPY_PAGE;
+        }
     }
 
-    if (fres != FLASH_EFC_OK)
+    system_cache_invalidate();
+
+    /* verifica flash interna */
+    uint32_t crc_int = 0xFFFFFFFFUL;
+    const uint8_t *app = (const uint8_t *)APP_START_ADDR;
+    for (uint32_t i = 0U; i < meta.firmware_size; i++)
     {
-        /* Falha ao escrever — NÃO limpa metadados (permite retry) */
-        /* Tenta arrancar com firmware anterior se válido */
+        crc_int ^= (uint32_t)app[i];
+        for (uint8_t b = 0U; b < 8U; b++)
+            crc_int = (crc_int & 1UL) ? (crc_int >> 1) ^ 0xEDB88320UL : (crc_int >> 1);
+    }
+    crc_int ^= 0xFFFFFFFFUL;
+
+    debug_uart_hex("[BOOT] CRC flash interna=", crc_int);
+    debug_uart_hex("[BOOT] CRC esperado=", meta.firmware_crc32);
+
+    if (crc_int != meta.firmware_crc32)
+    {
+        /* NAO faz reset (evita loop). Salta para a app existente se valida. */
+        debug_uart_puts("[BOOT] copia FALHOU -> app existente\n");
         if (app_is_valid())
-        {
             bootloader_jump_to_app();
+        while (1)
+        {
         }
-        while (1) {}
-        return BOOT_OTA_FLASH_ERR;  /* Nunca chega aqui */
     }
 
-    /* --- 7. Limpa metadados OTA (apaga flag) --------------------------- */
+    debug_uart_puts("[BOOT] copia verificada OK\n");
     clear_ota_metadata();
-
-    /* --- 8. Salta para a nova aplicação -------------------------------- */
     bootloader_jump_to_app();
 
-    /* Nunca chega aqui */
     return BOOT_OTA_APPLIED;
 }
 
@@ -205,14 +244,20 @@ boot_result_t bootloader_run(void)
  * ========================================================================= */
 void bootloader_jump_to_app(void)
 {
-    /* Ponteiro para a tabela de vectores da aplicação */
     const uint32_t *app_vectors = (const uint32_t *)APP_START_ADDR;
+    debug_uart_hex("[BOOT] jump SP=", app_vectors[0]);
+    debug_uart_hex("[BOOT] jump reset=", app_vectors[1]);
 
-    /* Verifica se a aplicação parece válida antes de saltar */
     if (!app_is_valid())
     {
-        /* Sem aplicação válida — loop de segurança */
-        while (1) {}
+        debug_uart_puts("[BOOT] app INVALIDA -> loop\n");
+        while (1)
+        {
+        }
+    }
+    /* drena UART antes de saltar */
+    for (volatile uint32_t d = 0; d < 200000U; d++)
+    {
     }
 
     /* 1. Prepara sistema: desabilita IRQs, SysTick, etc. */
@@ -222,8 +267,8 @@ void bootloader_jump_to_app(void)
     SCB_VTOR = APP_START_ADDR;
 
     /* Barreira para garantir que o VTOR está actualizado */
-    __asm__ volatile ("dsb" ::: "memory");
-    __asm__ volatile ("isb" ::: "memory");
+    __asm__ volatile("dsb" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
 
     /* 3. Carrega novo Stack Pointer (vector[0] da aplicação) */
     uint32_t app_sp = app_vectors[0];
@@ -236,14 +281,23 @@ void bootloader_jump_to_app(void)
      *    - Salta para o Reset_Handler
      *    Esta sequência em assembly garante que não ficam restos
      *    do stack do bootloader a afectar a aplicação. */
-    __asm__ volatile (
-        "msr msp, %0      \n"  /* Configura Main Stack Pointer              */
-        "bx  %1           \n"  /* Branch para Reset_Handler da aplicação    */
+    __asm__ volatile(
+        "msr msp, %0      \n" /* Configura Main Stack Pointer              */
+        "bx  %1           \n" /* Branch para Reset_Handler da aplicação    */
         :
-        : "r" (app_sp), "r" (app_reset)
-        : "memory"
-    );
+        : "r"(app_sp), "r"(app_reset)
+        : "memory");
 
     /* Nunca chega aqui */
     __builtin_unreachable();
+}
+
+static void boot_system_reset(void)
+{
+    __asm__ volatile("dsb" ::: "memory");
+    *(volatile uint32_t *)0xE000ED0CUL = (0x5FAUL << 16) | (1UL << 2); /* SYSRESETREQ */
+    __asm__ volatile("dsb" ::: "memory");
+    while (1)
+    {
+    }
 }
