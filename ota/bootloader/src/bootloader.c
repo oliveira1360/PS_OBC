@@ -37,7 +37,19 @@
  */
 static void clear_ota_metadata(void)
 {
-    (void)qspi_boot_erase_sector(OTA_EXT_METADATA_SECTOR);
+    /* Tenta apagar até 3 vezes — erase falhou silenciosamente em versões anteriores */
+    for (uint32_t attempt = 0U; attempt < 3U; attempt++)
+    {
+        if (qspi_boot_erase_sector(OTA_EXT_METADATA_SECTOR) == QSPI_BOOT_OK)
+        {
+            return;  /* Erase confirmado pelo wait_busy */
+        }
+        /* Pequena pausa antes de retry */
+        volatile uint32_t delay = 0x10000U;
+        while (delay--) {}
+    }
+    /* Se falhou 3 vezes, continua de qualquer forma — na pior das hipóteses
+     * o próximo boot volta a aplicar o mesmo firmware (inofensivo). */
 }
 
 /**
@@ -157,9 +169,14 @@ boot_result_t bootloader_run(void)
     flash_efc_result_t fres =
         flash_efc_write_firmware(APP_START_ADDR, fw_ptr, meta.firmware_size);
 
-    /* Finaliza transferência QSPI */
+    /* Finaliza transferência QSPI e aguarda INSTRE antes de qualquer
+     * novo comando — sem este wait o CS pode ainda estar asserted quando
+     * clear_ota_metadata() tenta enviar WREN, corrompendo a transacção. */
     QSPI_CR = QSPI_CR_LASTXFER;
-    /* Não aguarda INSTRE aqui — a leitura memory-mapped já terminou */
+    {
+        uint32_t _t = 0x00200000UL;
+        while (!(QSPI_SR & QSPI_SR_INSTRE) && --_t) {}
+    }
 
     if (fres != FLASH_EFC_OK)
     {

@@ -24,24 +24,36 @@
  * ------------------------------------------------------------------------- */
 #define TEST_SECTOR_ADDR   0x010000UL  /* Sector 16 — região de logs        */
 #define TEST_PAGE_SIZE     256U        /* Uma página da S25FL116K            */
-#define BUSY_TIMEOUT       200000UL    /* Iterações máx. à espera do BUSY    */
+#define BUSY_TIMEOUT       10000000UL  /* 10 Milhões - dá tempo à flash!     */
 
 /* -------------------------------------------------------------------------
  * Utilitário: aguarda fim de erase/write com timeout
- * Devolve 1 se OK, 0 se timeout
+ * Devolve 1 se OK, 0 se timeout (COM DEBUG PRINTS)
  * ------------------------------------------------------------------------- */
 static uint8_t wait_not_busy(void)
 {
     uint32_t count = 0U;
-    while (hal_qspi_is_busy())
+    uint8_t status;
+
+    while (1)
     {
+        /* Lemos o valor cru do Status Register em vez de apenas verificar o bit */
+        status = hal_qspi_read_status();
+        
+        /* Bit 0 (0x01) é o BUSY bit na S25FL116K */
+        if ((status & 0x01U) == 0U) 
+        {
+            return 1U; /* OK, já não está ocupada */
+        }
+
         count++;
         if (count >= BUSY_TIMEOUT)
         {
-            return 0U;  /* timeout */
+            /* Se esgotou o tempo, imprime qual foi o valor lido */
+            printf("\r\n      -> [DEBUG] TIMEOUT! Status Reg bloqueado em: 0x%02X ", status);
+            return 0U; /* falhou */
         }
     }
-    return 1U;
 }
 
 /* =========================================================================

@@ -33,6 +33,18 @@
  * ========================================================================= */
 void system_boot_init(void)
 {
+    /* 0. Set GPNVM bit 1 (boot from flash).
+     *    O pino ERASE repoe este bit a 0 (boot from ROM/SAM-BA).
+     *    Aguarda FRDY=1 com timeout, escreve, aguarda conclusão com timeout. */
+    {
+        volatile uint32_t *fsr = (volatile uint32_t *)0x400E0C08UL;
+        volatile uint32_t *fcr = (volatile uint32_t *)0x400E0C04UL;
+        uint32_t t;
+        t = 2000000UL; while (!(*fsr & 1UL) && t) { t--; }
+        *fcr = (0x5AUL << 24U) | (1UL << 8U) | 0x0BUL;
+        t = 2000000UL; while (!(*fsr & 1UL) && t) { t--; }
+    }
+
     /* 1. Desabilita WDT — evita reset inesperado durante a operação OTA */
     WDT_MR  = WDT_MR_WDDIS;
     RSWDT_MR = RSWDT_MR_WDDIS;

@@ -75,8 +75,13 @@ void debug_uart_init(void)
  */
 static void debug_uart_putc(char c)
 {
-    while ((DBG_REG(US1_CSR_ADDR) & US_CSR_TXRDY) == 0U) {}
-    DBG_REG(US1_THR_ADDR) = (uint32_t)c;
+    /* Timeout evita bloqueio infinito se UART TX ficar preso */
+    uint32_t t = 0x100000U;
+    while (((DBG_REG(US1_CSR_ADDR) & US_CSR_TXRDY) == 0U) && --t) {}
+    if (t != 0U)
+    {
+        DBG_REG(US1_THR_ADDR) = (uint32_t)c;
+    }
 }
 
 /**

@@ -162,5 +162,6 @@ uint8_t hal_qspi_is_busy(void);
 uint8_t hal_qspi_instruction_done(void);
 void hal_qspi_read_memory(uint32_t addr, uint8_t *buf, uint32_t len);
 void hal_qspi_write_memory(uint32_t addr, const uint8_t *buf, uint32_t len);
+void hal_qspi_clear_write_protection(void);
 
 #endif

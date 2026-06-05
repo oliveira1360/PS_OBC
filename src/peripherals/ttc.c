@@ -12,55 +12,68 @@
 #include "app/sensors.h"
 #include "app/mission.h"
 
+#define TTC_SYNC_A 0xAAU
+#define TTC_SYNC_B 0x55U
+#define TTC_SYNC_TIMEOUT_BYTES 32U
+
 static usart_handle_t usart = {0};
 static uint8_t rx_buf[OTA_FULL_PACKET];
 static uint8_t tx_buf[TTC_BUF_LEN];
 static uint8_t ota_ack_buf[TTC_CMD_LEN];
+
+/* Códigos do protocolo OTA */
+#define OTA_ACK_CODE   0xACU   /* pacote recebido com sucesso  */
+#define OTA_NACK_CODE  0x4EU   /* sync inválido — retransmitir */
+#define OTA_READY_CODE 0xE0U   /* flash apagada — pronto para receber */
 
 static uint8_t waiting_tx = 0U;
 static uint8_t ota_receiving = 0U;
 static uint8_t ota_data_started = 0U; /* primeiro pacote OTA real recebido */
 static uint8_t ota_partial = 0U;      /* bytes já recebidos do primeiro pacote OTA */
 
-/* =========================================================================
- * Handshake de sincronização UART
- *
- * No arranque, o OBC lê 1 byte de cada vez à procura da sequência
- * [0xAA][0x55][0xAA][0x55] enviada pelo Pico.  Quando a detecta, responde
- * com [0x55][0xAA][0x55][0xAA] e passa para modo de operação normal.
- *
- * Isto resolve o problema de o OBC arrancar a meio de um comando do Pico
- * e ficar permanentemente desalinhado.
- * ========================================================================= */
-#define TTC_SYNC_A  0xAAU
-#define TTC_SYNC_B  0x55U
-
-typedef enum {
-    SYNC_WAIT_A1 = 0,  /* à espera de 0xAA (1º byte) */
-    SYNC_WAIT_B1,      /* à espera de 0x55 (2º byte) */
-    SYNC_WAIT_A2,      /* à espera de 0xAA (3º byte) */
-    SYNC_WAIT_B2,      /* à espera de 0x55 (4º byte) */
-    SYNC_DONE          /* sincronizado — modo normal  */
+typedef enum
+{
+    SYNC_WAIT_A1 = 0, /* à espera de 0xAA (1º byte) */
+    SYNC_WAIT_B1,     /* à espera de 0x55 (2º byte) */
+    SYNC_WAIT_A2,     /* à espera de 0xAA (3º byte) */
+    SYNC_WAIT_B2,     /* à espera de 0x55 (4º byte) */
+    SYNC_DONE         /* sincronizado — modo normal  */
 } ttc_sync_state_t;
 
-static ttc_sync_state_t sync_state   = SYNC_WAIT_A1;
-static uint8_t          sync_rx_byte = 0U;
-static const uint8_t    sync_ready[4] = {TTC_SYNC_B, TTC_SYNC_A,
-                                          TTC_SYNC_B, TTC_SYNC_A};
+typedef enum
+{
+    OTA_FRAME_HUNT_AA = 0,
+    OTA_FRAME_HUNT_55,
+    OTA_FRAME_FOUND,
+} ota_frame_t;
+
+/* With passthrough Pico, no sync sequence is sent at boot — start in SYNC_DONE */
+static ttc_sync_state_t sync_state = SYNC_DONE;
+static uint8_t sync_rx_byte = 0U;
+static uint16_t sync_byte_cnt = 0U; /* bytes recebidos sem sync */
+static const uint8_t sync_ready[4] = {TTC_SYNC_B, TTC_SYNC_A,
+                                      TTC_SYNC_B, TTC_SYNC_A};
+static ota_frame_t ota_frame_state = OTA_FRAME_HUNT_AA;
+static uint8_t ota_frame_byte = 0U;
 
 /* =========================================================================
  * Buffer de staging de pacotes OTA
  * Acedido por otaMode() via ttc_ota_* API.
  * ========================================================================= */
-static uint8_t  s_ota_pkt_ready   = 0U;
-static uint16_t s_ota_pkt_seq     = 0U;
-static uint16_t s_ota_pkt_len     = 0U;
-static uint8_t  s_ota_pkt_buf[OTA_PACKET_SIZE];
+static uint8_t s_ota_pkt_ready = 0U;
+static uint16_t s_ota_pkt_seq = 0U;
+static uint16_t s_ota_pkt_len = 0U;
+static uint8_t s_ota_pkt_buf[OTA_PACKET_SIZE];
 
 static void ttc_parse(uint8_t *buf);
 void ttc_read_async(void);
 static void ttc_parse_ota(uint8_t *buf, uint8_t len);
 static void on_ttc_sync_byte(int result);
+static void on_ota_frame_byte(int result);
+static void on_ttc_done(int result);
+static void ttc_send_ota_ack(uint16_t seq);
+static void ttc_send_ota_nack(uint16_t next_seq);
+void        ttc_send_ota_ready(void);
 
 /* =========================================================================
  * Callback de sincronização — chamado após receber 1 byte em modo sync
@@ -69,6 +82,19 @@ static void on_ttc_sync_byte(int result)
 {
     if (result == 1)
     {
+        sync_byte_cnt++;
+
+        /* --- Timeout: Pico já está em modo normal, nunca vai enviar o
+         *     padrão de sync. Entra directamente em modo de 4 bytes.    --- */
+        if (sync_byte_cnt >= TTC_SYNC_TIMEOUT_BYTES)
+        {
+            sync_state = SYNC_DONE;
+            printf("[TTC] Sync timeout (%u bytes) — modo normal directo\n",
+                   (unsigned)sync_byte_cnt);
+            ttc_read_async(); /* começa a ler 4 bytes normais */
+            return;
+        }
+
         switch (sync_state)
         {
         case SYNC_WAIT_A1:
@@ -86,9 +112,7 @@ static void on_ttc_sync_byte(int result)
                 sync_state = SYNC_DONE;
                 printf("[TTC] Sync OK — a enviar READY\n");
                 waiting_tx = 1U;
-                /* sync_ready é const — cast seguro para API que aceita uint8_t* */
                 usart_send_async(&usart, (uint8_t *)sync_ready, sizeof(sync_ready));
-                /* on_ttc_tx_done → ttc_read_async → modo normal (4 bytes) */
                 return;
             }
             sync_state = SYNC_WAIT_A1;
@@ -100,6 +124,47 @@ static void on_ttc_sync_byte(int result)
     }
     /* Ainda não sincronizado — continua a ler 1 byte de cada vez */
     ttc_read_async();
+}
+
+/* =========================================================================
+ * on_ota_frame_byte — scans for [0xAA][0x55] before each OTA packet
+ * ========================================================================= */
+static void on_ota_frame_byte(int result)
+{
+    if (result == 1)
+    {
+        switch (ota_frame_state)
+        {
+        case OTA_FRAME_HUNT_AA:
+            if (ota_frame_byte == 0xAAU)
+                ota_frame_state = OTA_FRAME_HUNT_55;
+            break;
+
+        case OTA_FRAME_HUNT_55:
+            if (ota_frame_byte == 0x55U)
+            {
+                /* Encontrou [0xAA][0x55] — lê os 132 bytes restantes via
+                 * circular buffer (RXRDY interrupt). Sem conflito com DMA.  */
+                ota_frame_state = OTA_FRAME_FOUND;
+                rx_buf[0] = 0xAAU;
+                rx_buf[1] = 0x55U;
+                usart_recv_async(&usart, rx_buf + 2U,
+                                 (uint8_t)(OTA_FULL_PACKET - 2U), on_ttc_done);
+                return;
+            }
+            /* 0xAA may start a new sequence */
+            ota_frame_state = (ota_frame_byte == 0xAAU)
+                                  ? OTA_FRAME_HUNT_55
+                                  : OTA_FRAME_HUNT_AA;
+            break;
+
+        default:
+            ota_frame_state = OTA_FRAME_HUNT_AA;
+            break;
+        }
+    }
+    if (!waiting_tx)
+        ttc_read_async();
 }
 
 static void on_ttc_tx_done(int result)
@@ -128,15 +193,17 @@ static void on_ota_drain_done(int result)
 
 static void on_ttc_done(int result)
 {
-    printf("result ttc %d", result);
     if (result == 1)
     {
         if (ota_data_started)
         {
             ttc_parse_ota(rx_buf, OTA_FULL_PACKET);
+            /* Reset frame scanner so the next packet is hunted fresh */
+            ota_frame_state = OTA_FRAME_HUNT_AA;
         }
         else
         {
+            printf("result ttc %d", result);
             ttc_parse(rx_buf);
         }
     }
@@ -149,12 +216,11 @@ static void ttc_parse(uint8_t *buf)
     printf("parse: 0x%02X 0x%02X 0x%02X 0x%02X\n", buf[0], buf[1], buf[2], buf[3]);
 
     ground_command_t cmd = (ground_command_t)buf[0];
-    ttc.last_command = cmd;
 
     switch (cmd)
     {
     case CMD_REQUEST_DATA:
-        //printf("cmd0\n");
+        // printf("cmd0\n");
         COMM_WINDOW_OPEN = 1;
         ttc.doppler = (float)buf[1] / 10.0f;
         ttc_send_telemetry();
@@ -166,28 +232,24 @@ static void ttc_parse(uint8_t *buf)
         break;
 
     case CMD_START_OTA:
-        printf("[TTC] START_OTA received — sending ACK\n");
+        /* Reset completo do estado OTA (limpa sessão anterior) */
+        ttc_ota_abort();
+        s_ota_pkt_seq = 0U;
+        printf("[TTC] START_OTA recebido — a preparar memoria...\n");
         COMM_WINDOW_OPEN = 1;
-        OTA_REQUESTED    = 1;
+        OTA_REQUESTED = 1;
         ttc.ota_active = true;
         ttc.cmd_status = ACK_SUCCESS;
-        ota_receiving = 1U;
-        ota_data_started = 1U;
-
-        ota_ack_buf[0] = 0x10;
-        ota_ack_buf[1] = 0xAC;
-        ota_ack_buf[2] = 0x4B;
-        ota_ack_buf[3] = 0x00;
-        waiting_tx = 1U;
-        usart_send_async(&usart, ota_ack_buf, TTC_CMD_LEN);
         break;
 
     case CMD_END_OTA:
         printf("cmd3 — OTA mode OFF\n");
-        OTA_REQUESTED  = 0;
+        OTA_REQUESTED = 0;
         ttc.ota_active = false;
         ttc.cmd_status = ACK_SUCCESS;
         ota_receiving = 0U;
+        ota_data_started = 0U;
+        ota_frame_state = OTA_FRAME_HUNT_AA;
         break;
 
     case CMD_REMOTE_CTRL:
@@ -207,46 +269,100 @@ static void ttc_parse_ota(uint8_t *buf, uint8_t len)
     uint16_t sync = ((uint16_t)buf[0] << 8) | buf[1];
     if (sync != OTA_SYNC_WORD)
     {
+        printf("[OTA RX] sync invalido: 0x%04X (esperado 0x%04X)\n",
+               sync, OTA_SYNC_WORD);
+        /* NACK — backend deve retransmitir o mesmo pacote */
+        ttc_send_ota_nack(s_ota_pkt_seq + 1U);
         return;
     }
 
-    uint16_t seq         = ((uint16_t)buf[2] << 8) | buf[3];
+    uint16_t seq = ((uint16_t)buf[2] << 8) | buf[3];
     uint16_t payload_len = ((uint16_t)buf[4] << 8) | buf[5];
 
-    if (seq == 0xFFFF)
+    if (seq == 0xFFFFU)
     {
-        /* Marcador de fim: payload contém [4B size][4B crc32][4B version] */
-        ota_receiving    = 0U;
-        ota_data_started = 0U;
-        ttc.ota_active   = false;
-        ttc.cmd_status   = ACK_SUCCESS;
+        /* Marcador de fim: payload contém [4B size][4B crc32] */
+        uint32_t fw_size = ((uint32_t)buf[OTA_HEADER_SIZE + 0] << 24) |
+                           ((uint32_t)buf[OTA_HEADER_SIZE + 1] << 16) |
+                           ((uint32_t)buf[OTA_HEADER_SIZE + 2] << 8) |
+                           (uint32_t)buf[OTA_HEADER_SIZE + 3];
+        uint32_t fw_crc = ((uint32_t)buf[OTA_HEADER_SIZE + 4] << 24) |
+                          ((uint32_t)buf[OTA_HEADER_SIZE + 5] << 16) |
+                          ((uint32_t)buf[OTA_HEADER_SIZE + 6] << 8) |
+                          (uint32_t)buf[OTA_HEADER_SIZE + 7];
+        printf("[OTA RX] END marker — size=%lu crc=0x%08lX\n",
+               (unsigned long)fw_size, (unsigned long)fw_crc);
 
-        /* Copia END payload para o buffer de staging (otaMode() vai ler) */
-        s_ota_pkt_seq   = 0xFFFFU;
-        s_ota_pkt_len   = (payload_len < OTA_PACKET_SIZE) ? payload_len
-                                                           : OTA_PACKET_SIZE;
+        ota_receiving = 0U;
+        ota_data_started = 0U;
+        ttc.ota_active = false;
+        ttc.cmd_status = ACK_SUCCESS;
+
+        s_ota_pkt_seq = 0xFFFFU;
+        s_ota_pkt_len = (payload_len < OTA_PACKET_SIZE) ? payload_len : OTA_PACKET_SIZE;
         for (uint16_t i = 0U; i < s_ota_pkt_len; i++)
-        {
             s_ota_pkt_buf[i] = buf[OTA_HEADER_SIZE + i];
-        }
         s_ota_pkt_ready = 1U;
+
+        /* ACK do pacote END */
+        ttc_send_ota_ack(seq);
         return;
     }
 
-    /* Pacote de dados normal: copia payload para buffer de staging */
-    if (!s_ota_pkt_ready)   /* Não sobrepõe pacote que ainda não foi consumido */
+    /* --- Pacote de dados normal --- */
+    uint16_t cur_len = (payload_len < OTA_PACKET_SIZE) ? payload_len : OTA_PACKET_SIZE;
+
+    printf("[OTA RX] pkt seq=%u len=%u ready=%u\n", seq, cur_len, s_ota_pkt_ready);
+
+    if (!s_ota_pkt_ready) 
     {
         s_ota_pkt_seq = seq;
-        s_ota_pkt_len = (payload_len < OTA_PACKET_SIZE) ? payload_len
-                                                         : OTA_PACKET_SIZE;
-        for (uint16_t i = 0U; i < s_ota_pkt_len; i++)
-        {
+        s_ota_pkt_len = cur_len;
+        for (uint16_t i = 0U; i < cur_len; i++)
             s_ota_pkt_buf[i] = buf[OTA_HEADER_SIZE + i];
-        }
         s_ota_pkt_ready = 1U;
+        
+        /* ONLY send ACK if we actually accepted the packet into the buffer */
+        ttc_send_ota_ack(seq);
+    }
+    else
+    {
+        /* Buffer is full (Flash is still writing). Do not send ACK. 
+         * The backend will timeout and retry this sequence later. */
+        printf("[OTA RX] Drop seq=%u (Flash busy)\n", seq);
     }
 
     ttc.cmd_status = ACK_SUCCESS;
+
+    /* ACK — backend só envia o próximo chunk após receber este */
+}
+
+/* =========================================================================
+ * ttc_send_ota_ack — envia ACK [0xAC][seq_hi][seq_lo][checksum]
+ * ========================================================================= */
+static void ttc_send_ota_ack(uint16_t seq)
+{
+    ota_ack_buf[0] = OTA_ACK_CODE;
+    ota_ack_buf[1] = (uint8_t)(seq >> 8U);
+    ota_ack_buf[2] = (uint8_t)(seq & 0xFFU);
+    ota_ack_buf[3] = ota_ack_buf[0] ^ ota_ack_buf[1] ^ ota_ack_buf[2];
+    waiting_tx = 1U;
+    usart_send_async(&usart, ota_ack_buf, TTC_CMD_LEN);
+}
+
+/* =========================================================================
+ * ttc_send_ota_nack — envia NACK [0x4E][next_hi][next_lo][checksum]
+ *
+ * @param next_seq  Seq do próximo pacote esperado (backend retransmite a partir daí).
+ * ========================================================================= */
+static void ttc_send_ota_nack(uint16_t next_seq)
+{
+    ota_ack_buf[0] = OTA_NACK_CODE;
+    ota_ack_buf[1] = (uint8_t)(next_seq >> 8U);
+    ota_ack_buf[2] = (uint8_t)(next_seq & 0xFFU);
+    ota_ack_buf[3] = ota_ack_buf[0] ^ ota_ack_buf[1] ^ ota_ack_buf[2];
+    waiting_tx = 1U;
+    usart_send_async(&usart, ota_ack_buf, TTC_CMD_LEN);
 }
 
 /* =========================================================================
@@ -279,6 +395,20 @@ void ttc_ota_clear_ready(void)
 }
 
 /**
+ * @brief Repõe o estado OTA do TTC após um abort.
+ *        Deve ser chamado quando otaMode() entra em erro,
+ *        para que o próximo CMD_START_OTA seja processado
+ *        como comando e não engolido pelo frame scanner.
+ */
+void ttc_ota_abort(void)
+{
+    ota_receiving = 0U;
+    ota_data_started = 0U;
+    ota_frame_state = OTA_FRAME_HUNT_AA;
+    s_ota_pkt_ready = 0U;
+}
+
+/**
  * @brief Inicia receção assíncrona de um comando da Ground Station.
  *
  * Em modo sync (arranque): lê 1 byte de cada vez via on_ttc_sync_byte
@@ -294,6 +424,13 @@ void ttc_read_async(void)
     {
         /* Modo sync — lê 1 byte de cada vez para detectar a sequência */
         usart_recv_async(&usart, &sync_rx_byte, 1U, on_ttc_sync_byte);
+        return;
+    }
+
+    if (ota_data_started && ota_frame_state != OTA_FRAME_FOUND)
+    {
+        /* Scan byte-by-byte for [0xAA][0x55] frame marker */
+        usart_recv_async(&usart, &ota_frame_byte, 1U, on_ota_frame_byte);
         return;
     }
 
@@ -351,4 +488,25 @@ void ttc_send_telemetry(void)
 
     waiting_tx = 1U;
     usart_send_async(&usart, tx_buf, i);
+}
+
+
+
+void ttc_send_ota_ready(void)
+{
+    /* Cancela qualquer receive pendente (ex: receive de 4B do modo normal
+     * que ainda estava activo durante o erase). Sem isto o primeiro chunk
+     * seria consumido pelo receive errado antes do frame scanner arrancar. */
+    usart.rx_state = UART_RX_IDLE;
+
+    ota_receiving    = 1U;
+    ota_data_started = 1U;
+    ota_frame_state  = OTA_FRAME_HUNT_AA;
+
+    ota_ack_buf[0] = 0x10;
+    ota_ack_buf[1] = 0xAC;
+    ota_ack_buf[2] = 0x4B;
+    ota_ack_buf[3] = 0xF7;
+    waiting_tx = 1U;
+    usart_send_async(&usart, ota_ack_buf, TTC_CMD_LEN);
 }

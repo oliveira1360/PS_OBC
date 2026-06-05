@@ -48,7 +48,9 @@ typedef struct {
 
 void usart_tx_tick(usart_handle_t *h);
 void usart_rx_tick(usart_handle_t *h);
+void usart_dma_tick(usart_handle_t *h);
 void usart_send_async(usart_handle_t *h, uint8_t *data, uint8_t len);
 void usart_recv_async(usart_handle_t *h, uint8_t *buf, uint8_t len, void (*cb)(int));
+void usart_recv_dma(usart_handle_t *h, uint8_t *buf, uint16_t len, void (*cb)(int));
 
 #endif

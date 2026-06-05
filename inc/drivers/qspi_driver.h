@@ -47,7 +47,7 @@ typedef struct {
    Constantes de configuração
    ========================================================================= */
 #define QSPI_TIMEOUT_MAX     5000U   /** Ciclos de main loop até timeout   */
-#define QSPI_RETRY_MAX       3U      /** Tentativas de WREN antes de erro  */
+#define QSPI_RETRY_MAX       50U     /** Tentativas de WREN antes de erro  */
 
 /* =========================================================================
    Protótipos — API do driver

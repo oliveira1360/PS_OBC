@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "app/sensors.h"
-#include "peripherals/propulsor.h"  
+#include "app/mission.h"
+#include "peripherals/propulsor.h"
 
 
 gnss_data_t gnss = {0};
@@ -47,19 +48,15 @@ void sensors_read_all(void)
 
 void sensors_save_to_flash(void)
 {
-    // A tua struct ttc global já está definida no sensors.c:
-    // extern ttc_data_t ttc; // (Apenas nota mental, não precisas de escrever isto se já estiver global)
-
-    // 1. Antes de gravar, podes querer atualizar o estado atual no ttc
-    // Para que a estação de terra saiba em que modo o satélite estava quando os dados foram recolhidos
-    // Exemplo (se tiveres uma função get_current_state()):
-    // ttc.current_state = get_current_state(); 
-    
-    // (Opcional, mas recomendado) Adicionar um timestamp à estrutura ttc_data_t 
-    // se ainda não o tiveres feito no ttc.h, para saberes QUANDO isto foi gravado.
-    // ttc.timestamp_ms = hal_systick_get_ms();
 
     uint32_t frame_size = sizeof(ttc_data_t);
+
+    ttc.eps = eps;
+    ttc.temp = temperature;
+    ttc.press = pressure;
+    ttc.imu = imu;
+    ttc.current_state = state;
+
 
     // 2. Segurança: Garantir que não excede o limite da página da Flash (256 bytes)
     if (frame_size <= 256U)
@@ -83,26 +80,15 @@ void sensors_save_to_flash(void)
         printf("ERRO: ttc_data_t (%lu bytes) excede a pagina QSPI (256 bytes)!\n", frame_size);
     }
 }
-/**
- * Emits all telemetry as a single compact JSON line followed by CR+LF.
- * One line = one complete frame. No box-drawing, no multi-line assembly needed.
- *
- * Example output (one line):
- * {"lat":0.0000,"lon":0.0000,"alt":0.00,"spd":0.00,"ax":0.000,"ay":0.000,
- *  "az":0.000,"gx":0.000,"gy":0.000,"gz":0.000,"mx":0.000,"my":0.000,
- *  "mz":0.000,"pres":0.00,"temp":0.00,"volt":0.000,"curr":0.000,"dop":0.000}
- */
 void sensors_print(void)
 {
-    /* "TELEM:" keyword lets the ground-station backend identify this line
-     * unambiguously, regardless of any debug output on the same UART.     */
     printf(
         "\r\nTELEM:{\"lat\":%.4f,\"lon\":%.4f,\"alt\":%.2f,\"spd\":%.2f,"
         "\"ax\":%.3f,\"ay\":%.3f,\"az\":%.3f,"
         "\"gx\":%.3f,\"gy\":%.3f,\"gz\":%.3f,"
         "\"mx\":%.3f,\"my\":%.3f,\"mz\":%.3f,"
         "\"pres\":%.2f,\"temp\":%.2f,"
-        "\"volt\":%.3f,\"curr\":%.3f,\"dop\":%.3f}\r\n",
+        "\"volt\":%.3f,\"curr\":%.3f}\r\n",
         (double)gnss.latitude,  (double)gnss.longitude,
         (double)gnss.altitude,  (double)gnss.speed,
         (double)imu.ax, (double)imu.ay, (double)imu.az,
@@ -110,8 +96,7 @@ void sensors_print(void)
         (double)imu.mx, (double)imu.my, (double)imu.mz,
         (double)pressure.pressure,
         (double)temperature.temperature,
-        (double)eps.voltage, (double)eps.current,
-        (double)ttc.doppler
+        (double)eps.voltage, (double)eps.current
     );
 }
 

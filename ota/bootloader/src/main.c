@@ -8,10 +8,14 @@
  */
 
 #include "bootloader.h"
-#include "system_samv71.h"
+#include "../inc/system_samv71.h"
+
+//#pragma config BOOT_MODE = SET
+
 
 int main(void)
 {
+
     /* Inicialização mínima do sistema:
      *  - Desabilita WDT e RSWDT
      *  - Configura flash wait states (0 WS @ 12 MHz)
@@ -28,5 +32,5 @@ int main(void)
         /* loop de segurança */
     }
 
-    return 0;  /* Nunca alcançado */
+    return 0; /* Nunca alcançado */
 }

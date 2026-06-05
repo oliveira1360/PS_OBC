@@ -34,7 +34,10 @@ static uint8_t buf[TEMP_BUF_LEN];
 static void temperature_parse(uint8_t *buf)
 {
     //printf("raw temperature: %02X", *buf);
-    temperature.temperature = (float)((buf[0] << 8) | buf[1]);
+    int16_t raw_temp = (int16_t)((buf[0] << 8) | buf[1]);
+    raw_temp >>= 4; 
+    temperature.temperature = (float)raw_temp * 0.0625f;
+    printf("final temp: %f", temperature.temperature);
 }
 
 /**

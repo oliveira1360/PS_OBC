@@ -5,6 +5,7 @@
 
 #include "drivers/usart_driver.h"
 #include "hal/hal_usart.h"
+#include "config/board.h"
 #include <stdio.h>
 
 /**
@@ -49,12 +50,14 @@ void usart_recv_async(usart_handle_t *h, uint8_t *buf, uint8_t len, void (*cb)(i
         return; /* já está a receber, ignora */
     }
 
-    h->rx_buf = buf;
-    h->rx_len = len;
+    h->rx_buf   = buf;
+    h->rx_len   = len;
     h->rx_index = 0U;
-    h->timeout = 0U;
+    h->timeout  = 0U;
     h->callback = cb;
     h->rx_state = UART_RX_RECEIVING;
+    /* Leitura byte a byte via circular buffer (interrupt RXRDY).
+     * Usado para comandos TTC (4 B) e frame scanner OTA (1 B).  */
 }
 
 /**
@@ -138,6 +141,8 @@ void usart_rx_tick(usart_handle_t *h)
         break;
 
     case UART_RX_RECEIVING:
+        /* Lê bytes do circular buffer (preenchido por USART0_Handler).
+         * Funciona igual em HW real e simulação — zero perda de bytes. */
         if (hal_rx_data_availible())
         {
             h->rx_buf[h->rx_index] = hal_usart_read_byte();
@@ -153,17 +158,12 @@ void usart_rx_tick(usart_handle_t *h)
         }
         else
         {
-            // IMPORTANT: Only count the timeout if we already received the FIRST byte
-            // and are waiting for bytes 2, 3, or 4.
             if (h->rx_index > 0)
             {
                 h->timeout++;
                 if (h->timeout >= USART_TIMEOUT_MAX)
-                {
                     h->rx_state = UART_RX_ERROR;
-                }
             }
-            // If rx_index == 0, it just loops safely forever until the Pico sends data.
         }
         break;
 
@@ -184,4 +184,58 @@ void usart_rx_tick(usart_handle_t *h)
         h->rx_state = UART_RX_IDLE;
         break;
     }
+}
+
+/**
+ * @brief Inicia receção DMA bulk — para o payload OTA (132 bytes).
+ *
+ * Ao contrário de usart_recv_async (que usa o circular buffer byte a byte),
+ * esta função delega ao XDMAC toda a transferência de @p len bytes.
+ * O XDMAC desabilita o interrupt RXRDY durante a transferência e
+ * reabilita-o em XDMAC_Handler. A callback é chamada pelo usart_rx_tick
+ * quando o DMA termina (contexto do main loop).
+ *
+ * @note Só faz sentido em hardware real (USE_REAL_HW=1).
+ *       Em simulação cai para usart_recv_async normal.
+ */
+void usart_recv_dma(usart_handle_t *h, uint8_t *buf, uint16_t len, void (*cb)(int))
+{
+    if (h->rx_state != UART_RX_IDLE)
+        return;
+
+    h->rx_buf   = buf;
+    h->rx_len   = len;
+    h->rx_index = 0U;
+    h->timeout  = 0U;
+    h->callback = cb;
+    h->rx_state = UART_RX_RECEIVING;
+
+#if USE_REAL_HW
+    hal_usart_dma_recv(buf, len);
+#endif
+    /* Em simulação: usart_rx_tick drena o buffer simulado normalmente */
+}
+
+/**
+ * @brief Tick DMA — deve ser chamado em cada iteração do main loop
+ *        quando uma transferência DMA está activa.
+ *
+ * Detecta o fim da transferência DMA (flag s_dma_rx_done setada por
+ * XDMAC_Handler) e chama a callback no contexto do main loop.
+ */
+void usart_dma_tick(usart_handle_t *h)
+{
+#if USE_REAL_HW
+    if (h->rx_state == UART_RX_RECEIVING && hal_usart_dma_done())
+    {
+        hal_usart_dma_clear();
+        h->rx_index = h->rx_len;
+        h->rx_state = UART_RX_IDLE;
+        if (h->callback != (void *)0)
+            h->callback(1);
+    }
+#else
+    /* Em simulação o usart_rx_tick já trata tudo */
+    (void)h;
+#endif
 }

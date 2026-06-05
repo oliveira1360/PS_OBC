@@ -206,6 +206,7 @@ qspi_boot_result_t qspi_boot_erase_sector(uint32_t addr)
              | QSPI_IFR_ADDRL_24
              | QSPI_IFR_TFRTYP_WRITE;
     (void)QSPI_IFR;
+    QSPI_CR = QSPI_CR_LASTXFER;
 
     uint32_t timeout = QSPI_BOOT_TIMEOUT;
     while (!(QSPI_SR & QSPI_SR_INSTRE))

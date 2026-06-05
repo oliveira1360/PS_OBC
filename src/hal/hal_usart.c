@@ -118,6 +118,92 @@ static void hal_usart_randomize(void)
 #endif /* !USE_REAL_HW */
 
 /* ==========================================================================
+ * Circular buffer de RX — preenchido pelo interrupt RXRDY.
+ *
+ * Usado para todas as leituras pequenas (comandos TTC, frame scanner).
+ * O interrupt garante que nenhum byte é perdido mesmo que o main loop
+ * esteja ocupado com printf/sensores.
+ * ========================================================================== */
+#if USE_REAL_HW
+
+#define RX_CIRC_MASK  (RX_CIRC_BUF_SIZE - 1U)
+
+static volatile uint8_t  rx_circ_buf[RX_CIRC_BUF_SIZE];
+static volatile uint16_t rx_circ_head = 0U;
+static volatile uint16_t rx_circ_tail = 0U;
+
+void USART0_Handler(void)
+{
+    uint32_t csr = USART0_CSR;
+    if (csr & US_CSR_RXRDY)
+    {
+        uint8_t byte = (uint8_t)(USART0_RHR & 0xFFU);
+        uint16_t next = (rx_circ_head + 1U) & RX_CIRC_MASK;
+        if (next != rx_circ_tail)
+        {
+            rx_circ_buf[rx_circ_head] = byte;
+            rx_circ_head = next;
+        }
+    }
+    if (csr & (US_CSR_OVRE | US_CSR_FRAME | US_CSR_PARE))
+        USART0_CR = US_CR_RSTSTA;
+}
+
+/* ==========================================================================
+ * DMA RX — XDMAC canal 0 para o payload OTA (132 bytes em modo bulk).
+ *
+ * Antes de arrancar, desabilita o interrupt RXRDY para evitar que os bytes
+ * sejam consumidos simultaneamente pelo interrupt e pelo DMA.
+ * XDMAC_Handler reabilita o RXRDY interrupt quando a transferência termina.
+ * ========================================================================== */
+static volatile uint8_t s_dma_rx_done = 0U;
+
+void XDMAC_Handler(void)
+{
+    uint32_t gis = XDMAC_GIS;
+    if (gis & (1U << DMA_CH_USART0_RX))
+    {
+        (void)XDMAC_CH_CIS(DMA_CH_USART0_RX);
+        XDMAC_GD = (1U << DMA_CH_USART0_RX);
+        /* Reabilita interrupt RXRDY — circular buffer volta a receber */
+        USART0_IER = US_IER_RXRDY;
+        s_dma_rx_done = 1U;
+    }
+}
+
+/**
+ * @brief Inicia transferência DMA bulk USART0 RX → buffer.
+ *
+ * Desabilita o interrupt RXRDY antes de arrancar para evitar conflito.
+ * XDMAC_Handler reabilita-o quando os @p len bytes forem todos recebidos.
+ *
+ * @param buf  Buffer de destino em SRAM.
+ * @param len  Número de bytes a receber (tipicamente OTA_FULL_PACKET-2 = 132).
+ */
+void hal_usart_dma_recv(uint8_t *buf, uint16_t len)
+{
+    /* Desabilita RXRDY enquanto DMA está activo */
+    USART0_IDR = US_IER_RXRDY;
+
+    XDMAC_GD = (1U << DMA_CH_USART0_RX);
+
+    XDMAC_CH_CSA(DMA_CH_USART0_RX)  = USART0_BASE + US_RHR_OFFSET;
+    XDMAC_CH_CDA(DMA_CH_USART0_RX)  = (uint32_t)buf;
+    XDMAC_CH_CUBC(DMA_CH_USART0_RX) = (uint32_t)len;
+    XDMAC_CH_CBC(DMA_CH_USART0_RX)  = 0U;
+    XDMAC_CH_CC(DMA_CH_USART0_RX)   = XDMAC_CC_USART0_RX;
+
+    XDMAC_CH_CIE(DMA_CH_USART0_RX)  = XDMAC_CI_BIS;
+    XDMAC_GIE = (1U << DMA_CH_USART0_RX);
+    XDMAC_GE  = (1U << DMA_CH_USART0_RX);
+}
+
+uint8_t hal_usart_dma_done(void)  { return s_dma_rx_done; }
+void    hal_usart_dma_clear(void) { s_dma_rx_done = 0U;   }
+
+#endif /* USE_REAL_HW */
+
+/* ==========================================================================
  * IMPLEMENTAÇÕES DAS FUNÇÕES HAL
  * ========================================================================== */
 
@@ -158,6 +244,17 @@ uint8_t hal_usart_init(void)
         (void)USART0_RHR;
     }
 
+    /* 9. Habilita interrupt RXRDY (circular buffer) + IRQ13 no NVIC */
+    rx_circ_head = 0U;
+    rx_circ_tail = 0U;
+    USART0_IER  = US_IER_RXRDY;
+    NVIC_ISER0  = (1UL << ID_USART0);
+
+    /* 10. Habilita clock do XDMAC no PMC (ID=58 → bit 26 do PCER1)
+     *     e IRQ58 no NVIC (ISER1 bit 26) — usado para bulk OTA (132 B) */
+    PMC_PCER1  |= (1UL << (ID_XDMAC - 32U));
+    NVIC_ISER1  = (1UL << (ID_XDMAC - 32U));
+
     return 1U;
 
 #else
@@ -170,16 +267,7 @@ uint8_t hal_usart_init(void)
 uint8_t hal_rx_data_availible(void)
 {
 #if USE_REAL_HW
-    uint32_t csr = USART0_CSR;
-
-    /* Limpa erros de overrun/framing se existirem */
-    if (csr & (US_CSR_OVRE | US_CSR_FRAME | US_CSR_PARE))
-    {
-        USART0_CR = US_CR_RSTSTA; /* Reset status bits */
-        (void)USART0_RHR;         /* FLUSH the garbage byte! */
-    }
-
-    return ((csr & US_CSR_RXRDY) != 0U) ? 1U : 0U;
+    return (rx_circ_head != rx_circ_tail) ? 1U : 0U;
 #else
     return rx_ready_flag;
 #endif
@@ -207,7 +295,10 @@ void hal_usart_write_byte(uint8_t byte)
 uint8_t hal_usart_read_byte(void)
 {
 #if USE_REAL_HW
-    return (uint8_t)(USART0_RHR & 0xFFU);
+    if (rx_circ_head == rx_circ_tail) return 0U;
+    uint8_t byte = rx_circ_buf[rx_circ_tail];
+    rx_circ_tail = (rx_circ_tail + 1U) & RX_CIRC_MASK;
+    return byte;
 #else
     uint8_t byte = sim.data[rx_index];
     rx_index++;

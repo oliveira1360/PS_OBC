@@ -73,5 +73,10 @@ uint16_t ttc_ota_get_payload_len(void);
 /** @brief Limpa o flag de pacote pronto — deve ser chamado após processar. */
 void ttc_ota_clear_ready(void);
 
+/** @brief Repõe estado OTA após abort — permite que próximo CMD_START_OTA seja tratado correctamente. */
+void ttc_ota_abort(void);
+
+void ttc_send_ota_ready(void);
+
 
 #endif

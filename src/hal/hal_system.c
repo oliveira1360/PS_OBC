@@ -9,6 +9,9 @@
  */
 
 #include "hal/hal_system.h"
+#include <stdint.h>
+
+
 
 /**
  * @brief Executa um reset por software ao sistema (Simulação).
@@ -19,6 +22,15 @@
  */
 void hal_system_reset(void)
 {
+    /* NVIC_SystemReset — Cortex-M7 SCB AIRCR
+     * VECTKEY=0x05FA nos bits [31:16], SYSRESETREQ no bit 2. */
+    volatile uint32_t *AIRCR = (volatile uint32_t *)0xE000ED0CUL;
+    *AIRCR = (0x05FAUL << 16U) | (1UL << 2U);
+
+    __asm__ volatile ("dsb" ::: "memory");
+    __asm__ volatile ("isb" ::: "memory");
+
+    while (1) {}   /* nunca chega aqui */
 }
 
 /**
