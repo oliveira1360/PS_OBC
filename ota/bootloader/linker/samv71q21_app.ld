@@ -31,7 +31,7 @@ SEARCH_DIR(.)
 MEMORY
 {
     /* Flash — região da aplicação: começa após os 64 KB do bootloader */
-    rom  (rx)  : ORIGIN = 0x00410000, LENGTH = 0x001F0000  /* 1984 KB */
+    rom  (rx)  : ORIGIN = 0x00420000, LENGTH = 0x001F0000  /* 1984 KB */
 
     /* SRAM completa — o bootloader não retorna, a app usa toda a RAM */
     ram  (rwx) : ORIGIN = 0x20400000, LENGTH = 0x00060000  /* 384 KB  */

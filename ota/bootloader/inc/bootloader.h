@@ -44,7 +44,7 @@
  * ========================================================================= */
 #define BOOT_START_ADDR          0x00400000UL   /**< Início do bootloader        */
 #define BOOT_SIZE                0x00010000UL   /**< Tamanho: 64 KB              */
-#define APP_START_ADDR           0x00410000UL   /**< Início da aplicação         */
+#define APP_START_ADDR           0x00420000UL   /**< Início da aplicação         */
 #define APP_MAX_SIZE             0x001F0000UL   /**< Máximo ~1984 KB             */
 
 /* =========================================================================

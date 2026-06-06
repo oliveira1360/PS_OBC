@@ -34,7 +34,7 @@
 void system_boot_init(void)
 {
 #define SCB_CCR_REG (*(volatile uint32_t *)0xE000ED14UL)
-    EFC_FMR_SYS = EFC_FMR_FWS(6U) | (1UL << 16); /* 6 WS — seguro para qualquer clock */
+   EFC_FMR_SYS = EFC_FMR_FWS(1U) | (1UL << 16);
     __asm__ volatile("dsb" ::: "memory");
     __asm__ volatile("isb" ::: "memory");
 

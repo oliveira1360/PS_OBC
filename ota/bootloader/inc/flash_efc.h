@@ -78,6 +78,9 @@ typedef enum {
  * Protótipos
  * ========================================================================= */
 
+uint32_t flash_efc_crc_ramfunc(uint32_t addr, uint32_t size);
+
+
 /**
  * @brief Aguarda que o EFC fique pronto (FRDY) e verifica erros.
  */
@@ -126,5 +129,6 @@ flash_efc_result_t flash_efc_write_page(uint32_t addr, const uint8_t *data);
 flash_efc_result_t flash_efc_write_firmware(uint32_t dest_addr,
                                              const uint8_t *src,
                                              uint32_t size);
+                                             
 
 #endif /* FLASH_EFC_H */

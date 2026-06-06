@@ -10,31 +10,21 @@
 #include "bootloader.h"
 #include "../inc/system_samv71.h"
 
-// #pragma config BOOT_MODE = SET
 
 int main(void)
 {
     debug_uart_init();
     debug_uart_puts("\n[BOOT] test boot print\n");
-    for (volatile uint32_t d = 0; d < 200000U; d++)
-    {
-    }
+    for (volatile uint32_t d = 0; d < 200000U; d++) { }
 
-    /* Inicialização mínima do sistema:
-     *  - Desabilita WDT e RSWDT
-     *  - Configura flash wait states (0 WS @ 12 MHz)
-     *  - Activa clock do QSPI no PMC */
     system_boot_init();
+
+    debug_uart_hex("[BOOT] ram[0]=", *(volatile uint32_t *)0x20400000UL);
 
     (void)bootloader_run();
 
-    /* Segurança: se bootloader_run() retornar inesperadamente */
-    while (1)
-    {
-        /* loop de segurança */
-    }
-
-    return 0; /* Nunca alcançado */
+    while (1) { }
+    return 0;
 }
 
 #define DBG_REG(addr) (*(volatile uint32_t *)(addr))
