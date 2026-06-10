@@ -1,5 +1,5 @@
 /**
- * @file cubesat_multi_slave.c
+ * @file cubesat_slave.c
  * @brief CubeSat I2C + UART  — Dynamic LEO Sensor Simulation
  *
  * Sensor data updates every SENSOR_UPDATE_MS with realistic orbital dynamics:
@@ -49,24 +49,24 @@
 #define STOP_BITS    1
 #define PARITY       UART_PARITY_NONE
 
-/* ========== OTA Simulation ========== */
-#define OTA_PACKET_SIZE   128
-#define OTA_HEADER_SIZE   6
-#define OTA_SYNC_WORD     0xAA55
-#define OTA_ACK_BYTE      0xAC
+/* ========== USB↔UART passthrough ========== */
+/* The Pico no longer builds OTA packets or sends random commands.
+ * All TTC commands (CMD_REQUEST_DATA, CMD_START_OTA, OTA packets, etc.)
+ * come from the dashboard via USB and are forwarded byte-for-byte to the OBC. */
 
-/* USB OTA reception — firmware buffer (32 KB).
- * Increase OTA_FW_BUF_SIZE if your firmware is larger (Pico has 264 KB SRAM). */
-#define OTA_MAGIC_STR     "OTA_BEGIN"
-#define OTA_MAGIC_LEN     9
-#define OTA_FW_BUF_SIZE   (32U * 1024U)   /* 32 KB = 256 packets of 128 B */
+/* ========== Bluetooth HC-05 (UART0) ========== */
+/* Set to 1 to use HC-05 on UART0 (GP0 TX / GP1 RX) as the passthrough channel.
+ * Set to 0 to use USB (stdio) as the passthrough channel.
+ * Recompile after changing. */
+#define USE_BLUETOOTH 0
+
+#define BT_UART     uart0
+#define BT_TX_PIN   16
+#define BT_RX_PIN   17
+#define BT_BAUDRATE TTC_BAUDRATE
 
 /* ========== Timing (ms) ========== */
-#define TTC_INTERVAL_MS        1000
 #define SENSOR_UPDATE_MS       500
-#define OTA_PACKET_INTERVAL_MS 500
-#define OTA_ACK_WAIT_MS        2000
-#define OTA_ACK_POLL_MS        10
 
 /* ========== Orbital parameters ========== */
 #define ORBIT_ALT_KM       550.0f
@@ -79,19 +79,6 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
 #endif
-
-/* ========== OTA state ========== */
-static bool     ota_active      = false;
-static uint16_t ota_seq         = 0;
-static uint16_t ota_total       = 0;
-static uint8_t  ota_packet_buf[OTA_HEADER_SIZE + OTA_PACKET_SIZE];
-
-/* USB-received firmware */
-static uint8_t  ota_fw_buf[OTA_FW_BUF_SIZE];
-static uint32_t ota_fw_size    = 0;
-static uint32_t ota_fw_crc32   = 0;
-static uint32_t ota_fw_version = 0;
-static bool     ota_fw_ready   = false;
 
 /* ========== I2C state ========== */
 static uint8_t  current_addr  = 0x00;
@@ -110,8 +97,7 @@ static uint8_t buf_eps_default[2];
 static uint8_t *active_buf = NULL;
 
 /* ========== UART state ========== */
-static uint16_t tlm_timestamp = 0;
-static uint8_t  uart_rx_buf[16];
+/* (no persistent state needed — passthrough is stateless) */
 
 /* ========== Simulation state ========== */
 static float sim_time_s = 0.0f;
@@ -167,24 +153,44 @@ static void update_sensor_data(void)
     float dt_sim   = dt_real * SIM_TIME_SCALE;
     sim_time_s    += dt_sim;
 
+    /* orbit_phase ∈ [0.0, 1.0)  — posição normalizada na órbita
+     * orbit_angle ∈ [0.0, 2π)  — correspondente em radianos
+     * eclipse     = true durante ~35% do período orbital (zona de sombra) */
     float orbit_phase = fmodf(sim_time_s, ORBIT_PERIOD_S) / ORBIT_PERIOD_S;
     float orbit_angle = orbit_phase * 2.0f * M_PI;
     bool  eclipse     = is_in_eclipse(sim_time_s);
 
-    /* GNSS */
+    /* ------------------------------------------------------------------ */
+    /* GNSS                                                                 */
+    /* ------------------------------------------------------------------ */
     {
         float incl_rad = ORBIT_INCL_DEG * M_PI / 180.0f;
+
+        /* lat  ∈ [-ORBIT_INCL_DEG, +ORBIT_INCL_DEG]  (e.g. ±98° SSO)
+         *       + ruído gaussiano σ=0.0001°  → negligível                */
         float lat = asinf(sinf(incl_rad) * sinf(orbit_angle)) * 180.0f / M_PI;
+
+        /* lon  ∈ [-180°, +180°]  — deriva com a rotação terrestre
+         *       + componente cosseno para cobrir toda a gama longitudinal */
         float lon_base = fmodf(sim_time_s * (360.0f / 86400.0f), 360.0f);
         float lon = fmodf(-9.14f - lon_base + cosf(orbit_angle) * 180.0f, 360.0f);
         if (lon >  180.0f) lon -= 360.0f;
         if (lon < -180.0f) lon += 360.0f;
+
+        /* alt  = ORBIT_ALT_KM ± 5 km (variação orbital) + ruído σ=0.1 km */
         float alt = ORBIT_ALT_KM + 5.0f * sinf(orbit_angle * 2.0f) + rand_gauss(0.0f, 0.1f);
+
+        /* spd  = ORBIT_SPEED_KMS + ruído σ=0.005 km/s  (~±15 m/s)        */
         float spd = ORBIT_SPEED_KMS + rand_gauss(0.0f, 0.005f);
+
+        /* fix_quality = 1  (fixo, sem variação)
+         * sat_count   ∈ [5, 14]  — varia sinusoidalmente + jitter ±1     */
         uint8_t fix_quality = 1;
         uint8_t sat_count   = (uint8_t)(8 + (int)(3.0f * sinf(orbit_angle)) + (rand() % 3));
         if (sat_count < 5)  sat_count = 5;
         if (sat_count > 14) sat_count = 14;
+
+        /* Packed big-endian: [lat(4B)][lon(4B)][alt(4B)][spd(4B)][fix(1B)][sats(1B)] */
         pack_float_be(&buf_gnss[0],  lat + rand_gauss(0.0f, 0.0001f));
         pack_float_be(&buf_gnss[4],  lon + rand_gauss(0.0f, 0.0001f));
         pack_float_be(&buf_gnss[8],  alt);
@@ -193,82 +199,150 @@ static void update_sensor_data(void)
         buf_gnss[17] = sat_count;
     }
 
-    /* IMU */
+    /* ------------------------------------------------------------------ */
+    /* IMU — acelerómetro                                                   */
+    /* ------------------------------------------------------------------ */
     {
+        /* Spike aleatório com probabilidade 1/200 por tick               */
         bool spike = (rand() % 200) == 0;
         float ax, ay, az;
+
         if (spike) {
+            /* Spike:  ax/ay/az ∈ ~[-0.9, +0.9] m/s²  (3σ, gaussiano)   */
             ax = rand_gauss(0.0f, 0.3f);
             ay = rand_gauss(0.0f, 0.3f);
             az = rand_gauss(0.0f, 0.3f);
         } else {
+            /* Normal: micro-gravidade
+             *   ax ≈ ±0.006 m/s²  (σ=0.002) + modulação orbital ~1e-5  
+             *   ay ≈ ±0.006 m/s²  (σ=0.002)
+             *   az ≈ ±0.006 m/s²  (σ=0.002)                            */
             ax = rand_gauss(0.0f, 0.002f) + 1e-5f * sinf(orbit_angle);
             ay = rand_gauss(0.0f, 0.002f);
             az = rand_gauss(0.0f, 0.002f);
         }
+
+        /* Conversão para raw int16 (escala ±2g = ±16384 LSB/g):
+         *   normal: raw ≈ ±10 LSB
+         *   spike:  raw ≈ ±502 LSB                                       */
         int16_t raw_ax = (int16_t)(ax / 9.81f * 16384.0f);
         int16_t raw_ay = (int16_t)(ay / 9.81f * 16384.0f);
         int16_t raw_az = (int16_t)(az / 9.81f * 16384.0f);
+
+        /* Packed big-endian: [ax(2B)][ay(2B)][az(2B)] */
         pack_int16_be(&buf_imu_accel[0], raw_ax);
         pack_int16_be(&buf_imu_accel[2], raw_ay);
         pack_int16_be(&buf_imu_accel[4], raw_az);
+
+        /* WHO_AM_I = 0x68  (fixo, byte de identificação MPU-6050/similar) */
         buf_imu_default[0] = 0x68;
     }
 
-    /* Pressure */
+    /* ------------------------------------------------------------------ */
+    /* Pressure (BMP280-like, formato raw 20-bit + 20-bit)                 */
+    /* ------------------------------------------------------------------ */
     {
+        /* press_raw ∈ [3000, 3499]  — valor ADC bruto (sem unidade física real) */
         uint32_t press_raw = (uint32_t)(3000 + rand() % 500);
+
+        /* board_temp:
+         *   eclipse → gaussiana μ=5°C,  σ=2°C  → típico ≈ [1, 9]°C
+         *   sol     → gaussiana μ=30°C, σ=3°C  → típico ≈ [24, 36]°C  */
         float board_temp = eclipse ? rand_gauss(5.0f, 2.0f) : rand_gauss(30.0f, 3.0f);
+
+        /* temp_raw = board_temp * 256 + 32768
+         *   eclipse: ≈ [32896, 34560]  (board_temp ∈ [1,9]°C)
+         *   sol:     ≈ [38912, 41984]  (board_temp ∈ [24,36]°C)         */
         uint32_t temp_raw  = (uint32_t)(board_temp * 256.0f + 32768.0f);
+
+        /* Packed em 6 bytes: press_raw[19:0] nos bits [7:4] dos bytes 0-2
+         *                    temp_raw [19:0] nos bits [7:4] dos bytes 3-5 */
         buf_pressure[0] = (uint8_t)((press_raw >> 12) & 0xFF);
         buf_pressure[1] = (uint8_t)((press_raw >>  4) & 0xFF);
         buf_pressure[2] = (uint8_t)((press_raw <<  4) & 0xF0);
         buf_pressure[3] = (uint8_t)((temp_raw  >> 12) & 0xFF);
         buf_pressure[4] = (uint8_t)((temp_raw  >>  4) & 0xFF);
         buf_pressure[5] = (uint8_t)((temp_raw  <<  4) & 0xF0);
-        buf_pressure_default[0] = 0x58;
+
+        /* Chip ID / status (fixo) */
+        buf_pressure_default[0] = 0x58;   /* BMP280 chip_id */
         buf_pressure_default[1] = 0x00;
     }
 
-    /* Temperature */
+    /* ------------------------------------------------------------------ */
+    /* Temperature (TMP102-like, raw int16 com resolução 0.0625°C/LSB)     */
+    /* ------------------------------------------------------------------ */
     {
-        static float temp_current = 25.0f;
+        static float temp_current = 25.0f;   /* estado persistente entre ticks */
+
+        /* temp_target:
+         *   eclipse → μ=-10°C, σ=5°C  → típico ≈ [-25, +5]°C
+         *   sol     → μ=+32°C, σ=5°C  → típico ≈ [+17, +47]°C          */
         float temp_target = eclipse ? rand_gauss(-10.0f, 5.0f) : rand_gauss(32.0f, 5.0f);
+
+        /* Filtro de 1ª ordem τ=50 ticks (≈50 × SENSOR_UPDATE_MS)
+         *   temp_current converge lentamente para temp_target            */
         temp_current += (temp_target - temp_current) * 0.02f;
-        temp_current += rand_gauss(0.0f, 0.1f);
+        temp_current += rand_gauss(0.0f, 0.1f);   /* ruído σ=0.1°C       */
+
+        /* raw = (temp_current / 0.0625) << 4  — formato TMP102 big-endian */
         int16_t raw_temp = (int16_t)(temp_current / 0.0625f);
         raw_temp <<= 4;
         pack_int16_be(buf_temperature, raw_temp);
     }
 
-    /* EPS */
+    /* ------------------------------------------------------------------ */
+    /* EPS — tensão e corrente do barramento de potência                    */
+    /* ------------------------------------------------------------------ */
     {
-        static float voltage = 28.0f;
-        static float current = 0.5f;
+        static float voltage = 5.0f;   /* estado persistente entre ticks */
+        static float current = 1.5f;
+
         float v_target, i_target;
+
+        /* eclipse → descarga:
+         *   v_target ≈ 3.7V ± 0.15V  (3σ ≈ [3.25, 4.15] V)
+         *   i_target ≈ 1.2A ± 0.05A  (3σ ≈ [1.05, 1.35] A)
+         * sol     → carga:
+         *   v_target ≈ 5.8V ± 0.15V  (3σ ≈ [5.35, 6.25] V)
+         *   i_target ≈ 1.7A ± 0.08A  (3σ ≈ [1.46, 1.94] A)             */
         if (eclipse) {
-            v_target = rand_gauss(24.0f, 0.5f);
-            i_target = rand_gauss(0.2f, 0.05f);
+            v_target = rand_gauss(3.7f, 0.15f);
+            i_target = rand_gauss(1.2f, 0.05f);
         } else {
-            v_target = rand_gauss(30.0f, 0.5f);
-            i_target = rand_gauss(1.0f, 0.2f);
+            v_target = rand_gauss(5.8f, 0.15f);
+            i_target = rand_gauss(1.7f, 0.08f);
         }
+
+        /* Filtros de 1ª ordem:
+         *   voltage: τ ≈ 33 ticks  (constante 0.03)
+         *   current: τ ≈ 20 ticks  (constante 0.05)                     */
         voltage += (v_target - voltage) * 0.03f;
         current += (i_target - current) * 0.05f;
-        voltage += rand_gauss(0.0f, 0.05f);
-        current += rand_gauss(0.0f, 0.01f);
-        if (voltage < 18.0f) voltage = 18.0f;
-        if (voltage > 34.0f) voltage = 34.0f;
-        if (current < 0.0f)  current = 0.0f;
-        uint16_t v_raw = (uint16_t)(voltage * 100.0f);
-        uint16_t i_raw = (uint16_t)(current * 100.0f);
-        buf_eps_voltage[0] = (uint8_t)(v_raw >> 8);
-        buf_eps_voltage[1] = (uint8_t)(v_raw & 0xFF);
-        buf_eps_default[0] = (uint8_t)(i_raw >> 8);
-        buf_eps_default[1] = (uint8_t)(i_raw & 0xFF);
+
+        /* Ruído de medição: σ_v=0.02V, σ_i=0.005A                       */
+        voltage += rand_gauss(0.0f, 0.02f);
+        current += rand_gauss(0.0f, 0.005f);
+
+        /* Hard clamps — limites seguros aceites pelo decoder OBC:
+         *   voltage ∈ [3.1, 6.4] V
+         *   current ∈ [1.0, 1.95] A                                     */
+        if (voltage < 3.1f) voltage = 3.1f;
+        if (voltage > 6.4f) voltage = 6.4f;
+        if (current < 1.0f) current = 1.0f;
+        if (current > 1.95f) current = 1.95f;
+
+        /* Encoding para buf[]:
+         *   buf[0] = (uint8_t)(voltage * 10)  → e.g. 5.8V → 58
+         *   buf[1] = (uint8_t)(current * 100) → e.g. 1.7A → 170
+         * Decoder OBC inverte: voltage = buf[0]/10, current = buf[1]/100 */
+        buf_eps_voltage[0] = (uint8_t)(voltage * 10.0f);
+        buf_eps_voltage[1] = (uint8_t)(current * 100.0f);
+
+        buf_eps_default[0] = 0x00;
+        buf_eps_default[1] = 0x00;
     }
 }
-
 static void init_sensor_data(void)
 {
     sim_time_s = 0.0f;
@@ -331,106 +405,51 @@ static void request_handler(uint8_t address)
 static void stop_handler(uint8_t length) { (void)length; }
 
 /* ==========================================================================
- * USB OTA RECEPTION
+ * USB ↔ UART PASSTHROUGH
  *
- * The dashboard sends:
- *   "OTA_BEGIN" (9 B) | size (4 B BE) | crc32 (4 B BE) | version (4 B BE)
- *   | <size raw firmware bytes>
+ * All TTC commands (CMD_REQUEST_DATA, CMD_START_OTA, OTA packets, …) now
+ * come from the dashboard via USB (COM6) and are forwarded byte-for-byte
+ * to the OBC on TTC_UART.  OBC responses travel in the opposite direction.
  *
- * This function is non-blocking unless it detects the magic — once the magic
- * is found it blocks until the full transfer is received (or it times out).
+ * This replaces the old approach where the Pico independently sent random
+ * commands and built OTA packets itself.
  * ========================================================================== */
 
 /**
- * @brief Read exactly @p n bytes from USB stdin (pico_stdio_usb path).
- *
- * Uses getchar_timeout_us(500) so that each call pumps the USB task and
- * waits up to 0.5 ms for a byte.  The overall @p timeout_ms deadline ensures
- * we don't wait forever if the transfer stalls.
- *
- * Requires the host to have asserted DTR before sending — the dashboard
- * does this via port.assertDTR() before writing any data.
- *
- * @return true if all @p n bytes were received within @p timeout_ms.
+ * @brief Forward any bytes waiting on USB stdin to TTC_UART (dashboard → OBC).
  */
-static bool usb_read_bytes(uint8_t *dst, uint32_t n, uint32_t timeout_ms)
+static void usb_to_uart(void)
 {
-    absolute_time_t deadline = make_timeout_time_ms(timeout_ms);
-    uint32_t i = 0;
-    while (i < n)
-    {
-        if (absolute_time_diff_us(deadline, get_absolute_time()) > 0)
-            return false;
-        /* 500 µs timeout: pumps the USB task and returns when a byte arrives */
-        int c = getchar_timeout_us(500);
-        if (c != PICO_ERROR_TIMEOUT)
-            dst[i++] = (uint8_t)c;
-    }
-    return true;
+    int c;
+    while ((c = getchar_timeout_us(0)) != PICO_ERROR_TIMEOUT)
+        uart_putc_raw(TTC_UART, (uint8_t)c);
 }
 
 /**
- * @brief Check USB stdin for an "OTA_BEGIN" transfer from the dashboard.
- *
- * Non-blocking unless the magic is detected — then blocks until the full
- * firmware transfer is received (or times out at 60 s).
- *
- * The dashboard asserts DTR before sending data (port.assertDTR()), which
- * makes tud_cdc_connected() return true on the Pico side so that
- * getchar_timeout_us() can receive data.
+ * @brief Forward any bytes waiting on TTC_UART to USB stdout (OBC → dashboard).
  */
-static void check_usb_ota(void)
+static void uart_to_usb(void) {
+    bool any = false;
+    while (uart_is_readable(TTC_UART)) { putchar_raw(uart_getc(TTC_UART)); any = true; }
+    if (any) stdio_flush();   // empurra já para o USB, sem esperar pelo buffer encher
+}
+
+/**
+ * @brief Forward any bytes waiting on BT_UART to TTC_UART (HC-05 → OBC).
+ */
+static void bt_to_uart(void)
 {
-    /* -----------------------------------------------------------------------
-     * NO printf() calls inside this function until AFTER all bytes are read.
-     *
-     * Reason: pico-sdk's stdio_usb uses a single mutex for both TX (printf)
-     * and RX (getchar_timeout_us).  If printf blocks waiting for TX buffer
-     * space (because nobody is reading the Pico's output), it holds that
-     * mutex and prevents getchar_timeout_us from running, creating a
-     * deadlock that starves the firmware reception loop.
-     * ----------------------------------------------------------------------- */
+    while (uart_is_readable(BT_UART))
+        uart_putc_raw(TTC_UART, uart_getc(BT_UART));
+}
 
-    /* Non-blocking scan for 'O' — start of "OTA_BEGIN" */
-    int c = getchar_timeout_us(0);
-    if (c == PICO_ERROR_TIMEOUT || (char)c != 'O')
-        return;
-
-    /* Read remaining 8 bytes of magic "TA_BEGIN" */
-    uint8_t rest[OTA_MAGIC_LEN - 1];
-    if (!usb_read_bytes(rest, OTA_MAGIC_LEN - 1, 500U))
-        return;
-    if (memcmp(rest, "TA_BEGIN", 8) != 0)
-        return;
-
-    /* Read 12-byte metadata: size(4B BE) + crc32(4B BE) + version(4B BE) */
-    uint8_t meta[12];
-    if (!usb_read_bytes(meta, 12U, 2000U))
-        return;
-
-    uint32_t fw_size    = ((uint32_t)meta[0]  << 24) | ((uint32_t)meta[1]  << 16)
-                        | ((uint32_t)meta[2]  <<  8) |  (uint32_t)meta[3];
-    uint32_t fw_crc32   = ((uint32_t)meta[4]  << 24) | ((uint32_t)meta[5]  << 16)
-                        | ((uint32_t)meta[6]  <<  8) |  (uint32_t)meta[7];
-    uint32_t fw_version = ((uint32_t)meta[8]  << 24) | ((uint32_t)meta[9]  << 16)
-                        | ((uint32_t)meta[10] <<  8) |  (uint32_t)meta[11];
-
-    if (fw_size == 0 || fw_size > OTA_FW_BUF_SIZE)
-        return;
-
-    /* Receive firmware — no printf during this phase to avoid mutex contention */
-    if (!usb_read_bytes(ota_fw_buf, fw_size, 60000U))
-        return;
-
-    /* All bytes received — safe to printf now (TX path no longer races RX) */
-    ota_fw_size    = fw_size;
-    ota_fw_crc32   = fw_crc32;
-    ota_fw_version = fw_version;
-    ota_fw_ready   = true;
-    ota_total      = (uint16_t)((fw_size + OTA_PACKET_SIZE - 1U) / OTA_PACKET_SIZE);
-
-    printf("[USB-OTA] OK: %lu B, crc=0x%08lX, %u pkts\n",
-           fw_size, fw_crc32, ota_total);
+/**
+ * @brief Forward any bytes waiting on TTC_UART to BT_UART (OBC → HC-05).
+ */
+static void uart_to_bt(void)
+{
+    while (uart_is_readable(TTC_UART))
+        uart_putc_raw(BT_UART, uart_getc(TTC_UART));
 }
 
 /* ==========================================================================
@@ -441,155 +460,6 @@ static void uart_flush_rx(void)
 {
     while (uart_is_readable(TTC_UART))
         (void)uart_getc(TTC_UART);
-}
-
-static void ttc_check_response(void)
-{
-    uint8_t idx = 0;
-    while (uart_is_readable(TTC_UART) && idx < sizeof(uart_rx_buf))
-        uart_rx_buf[idx++] = uart_getc(TTC_UART);
-
-    if (idx > 0)
-    {
-        printf("[TTC RX] %d bytes:", idx);
-        for (uint8_t i = 0; i < idx; i++)
-            printf(" %02X", uart_rx_buf[i]);
-        printf("\n");
-    }
-}
-
-static bool ttc_wait_for_ack(uint32_t timeout_ms)
-{
-    absolute_time_t deadline = make_timeout_time_ms(timeout_ms);
-    uint8_t ack_buf[TTC_CMD_LEN];
-    uint8_t ack_idx = 0;
-
-    while (absolute_time_diff_us(deadline, get_absolute_time()) < 0)
-    {
-        if (uart_is_readable(TTC_UART))
-        {
-            ack_buf[ack_idx++] = uart_getc(TTC_UART);
-            if (ack_idx >= 2 && ack_buf[0] == 0x10 && ack_buf[1] == OTA_ACK_BYTE)
-            {
-                while (ack_idx < TTC_CMD_LEN && uart_is_readable(TTC_UART))
-                    ack_buf[ack_idx++] = uart_getc(TTC_UART);
-                printf("[OTA] ACK received\n");
-                return true;
-            }
-            if (ack_idx >= TTC_CMD_LEN)
-                ack_idx = 0;
-        }
-        sleep_ms(OTA_ACK_POLL_MS);
-    }
-    return false;
-}
-
-static void ttc_send_command(void)
-{
-    uint8_t cmd[TTC_CMD_LEN];
-    uint32_t roll = rand() % 100;
-
-    if (roll < 85)
-    {
-        /* CMD_REQUEST_DATA (0x20) */
-        tlm_timestamp++;
-        cmd[0] = 0x20;
-        cmd[1] = (uint8_t)(5 + rand() % 31);
-        cmd[2] = (uint8_t)(tlm_timestamp >> 8);
-        cmd[3] = (uint8_t)(tlm_timestamp & 0xFF);
-        uart_write_blocking(TTC_UART, cmd, TTC_CMD_LEN);
-    }
-    else if (roll < 93)
-    {
-        /* CMD_ENTER_SAFE (0x01) */
-        cmd[0] = 0x01; cmd[1] = 0; cmd[2] = 0; cmd[3] = 0;
-        uart_write_blocking(TTC_UART, cmd, TTC_CMD_LEN);
-    }
-    else if (roll < 97)
-    {
-        /* CMD_REMOTE_CTRL (0x02) */
-        cmd[0] = 0x02; cmd[1] = 0; cmd[2] = 0; cmd[3] = 0;
-        uart_write_blocking(TTC_UART, cmd, TTC_CMD_LEN);
-    }
-    else
-    {
-        /* CMD_END_OTA (0x11) */
-        cmd[0] = 0x11; cmd[1] = 0; cmd[2] = 0; cmd[3] = 0;
-        uart_write_blocking(TTC_UART, cmd, TTC_CMD_LEN);
-    }
-}
-
-/**
- * @brief Send one OTA packet (or the END marker) over UART to the OBC.
- *
- * Uses real firmware data from ota_fw_buf received via USB.
- * END marker payload[0..11] = size(4B BE) + crc32(4B BE) + version(4B BE).
- */
-static void ota_send_packet(void)
-{
-    if (ota_seq >= ota_total)
-    {
-        /* END marker */
-        ota_packet_buf[0] = (uint8_t)(OTA_SYNC_WORD >> 8);
-        ota_packet_buf[1] = (uint8_t)(OTA_SYNC_WORD & 0xFF);
-        ota_packet_buf[2] = 0xFF;
-        ota_packet_buf[3] = 0xFF;
-        ota_packet_buf[4] = 0x00;
-        ota_packet_buf[5] = 0x0C;   /* payload_len = 12 bytes */
-
-        /* size (4 B BE) */
-        ota_packet_buf[OTA_HEADER_SIZE + 0] = (uint8_t)(ota_fw_size >> 24);
-        ota_packet_buf[OTA_HEADER_SIZE + 1] = (uint8_t)(ota_fw_size >> 16);
-        ota_packet_buf[OTA_HEADER_SIZE + 2] = (uint8_t)(ota_fw_size >>  8);
-        ota_packet_buf[OTA_HEADER_SIZE + 3] = (uint8_t)(ota_fw_size & 0xFF);
-
-        /* crc32 (4 B BE) */
-        ota_packet_buf[OTA_HEADER_SIZE + 4] = (uint8_t)(ota_fw_crc32 >> 24);
-        ota_packet_buf[OTA_HEADER_SIZE + 5] = (uint8_t)(ota_fw_crc32 >> 16);
-        ota_packet_buf[OTA_HEADER_SIZE + 6] = (uint8_t)(ota_fw_crc32 >>  8);
-        ota_packet_buf[OTA_HEADER_SIZE + 7] = (uint8_t)(ota_fw_crc32 & 0xFF);
-
-        /* version (4 B BE) */
-        ota_packet_buf[OTA_HEADER_SIZE + 8]  = (uint8_t)(ota_fw_version >> 24);
-        ota_packet_buf[OTA_HEADER_SIZE + 9]  = (uint8_t)(ota_fw_version >> 16);
-        ota_packet_buf[OTA_HEADER_SIZE + 10] = (uint8_t)(ota_fw_version >>  8);
-        ota_packet_buf[OTA_HEADER_SIZE + 11] = (uint8_t)(ota_fw_version & 0xFF);
-
-        memset(&ota_packet_buf[OTA_HEADER_SIZE + 12], 0x00, OTA_PACKET_SIZE - 12U);
-
-        uart_write_blocking(TTC_UART, ota_packet_buf,
-                            OTA_HEADER_SIZE + OTA_PACKET_SIZE);
-        printf("[OTA] Sent END marker — size=%lu crc32=0x%08lX ver=%lu\n",
-               ota_fw_size, ota_fw_crc32, ota_fw_version);
-
-        ota_active   = false;
-        ota_fw_ready = false;
-        ota_seq      = 0;
-        return;
-    }
-
-    /* Normal data packet — pull from firmware buffer */
-    uint32_t offset  = (uint32_t)ota_seq * OTA_PACKET_SIZE;
-    uint16_t pkt_len = OTA_PACKET_SIZE;
-    if (offset + pkt_len > ota_fw_size)
-        pkt_len = (uint16_t)(ota_fw_size - offset);
-
-    ota_packet_buf[0] = (uint8_t)(OTA_SYNC_WORD >> 8);
-    ota_packet_buf[1] = (uint8_t)(OTA_SYNC_WORD & 0xFF);
-    ota_packet_buf[2] = (uint8_t)(ota_seq >> 8);
-    ota_packet_buf[3] = (uint8_t)(ota_seq & 0xFF);
-    ota_packet_buf[4] = (uint8_t)(pkt_len >> 8);
-    ota_packet_buf[5] = (uint8_t)(pkt_len & 0xFF);
-
-    memcpy(&ota_packet_buf[OTA_HEADER_SIZE], &ota_fw_buf[offset], pkt_len);
-    if (pkt_len < OTA_PACKET_SIZE)
-        memset(&ota_packet_buf[OTA_HEADER_SIZE + pkt_len], 0xFF,
-               OTA_PACKET_SIZE - pkt_len);
-
-    uart_write_blocking(TTC_UART, ota_packet_buf,
-                        OTA_HEADER_SIZE + OTA_PACKET_SIZE);
-    printf("[OTA] Sent packet %u/%u\n", ota_seq + 1U, ota_total);
-    ota_seq++;
 }
 
 /* ==========================================================================
@@ -621,7 +491,7 @@ int main(void)
     i2c_multi_enable_address(ADDR_TEMPERATURE);
     i2c_multi_enable_address(ADDR_EPS);
 
-    /* ===== UART init ===== */
+    /* ===== UART init (TTC — OBC) ===== */
     uart_init(TTC_UART, TTC_BAUDRATE);
     gpio_set_function(TTC_TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(TTC_RX_PIN, GPIO_FUNC_UART);
@@ -630,17 +500,20 @@ int main(void)
     uart_set_fifo_enabled(TTC_UART, true);
     uart_flush_rx();
 
-    printf("========================================\n");
-    printf("  CubeSat Multi-Slave Simulator (PIO)\n");
-    printf("  Dynamic LEO Simulation Active\n");
-    printf("  GNSS=0x%02X IMU=0x%02X PRESS=0x%02X\n",
-           ADDR_GNSS, ADDR_IMU, ADDR_PRESSURE);
-    printf("  TEMP=0x%02X EPS=0x%02X\n",
-           ADDR_TEMPERATURE, ADDR_EPS);
-    printf("  SDA=GP%d SCL=GP%d\n", SDA_PIN, SDA_PIN + 1);
-    printf("  1 real sec = %.0f sim secs\n", SIM_TIME_SCALE);
-    printf("  OTA buffer: %u KB\n", OTA_FW_BUF_SIZE / 1024U);
-    printf("========================================\n");
+#if USE_BLUETOOTH
+    /* ===== UART0 init (HC-05 Bluetooth) ===== */
+    uart_init(BT_UART, BT_BAUDRATE);
+    gpio_set_function(BT_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(BT_RX_PIN, GPIO_FUNC_UART);
+    uart_set_hw_flow(BT_UART, false, false);
+    uart_set_format(BT_UART, DATA_BITS, STOP_BITS, PARITY);
+    uart_set_fifo_enabled(BT_UART, true);
+#endif
+
+
+#if USE_BLUETOOTH
+#else
+#endif
 
     for (int i = 0; i < 3; i++)
     {
@@ -648,110 +521,35 @@ int main(void)
         gpio_put(LED_PIN, 0); sleep_ms(100);
     }
 
-    /* ===== Handshake de sincronização com o OBC =====
-     *
-     * O Pico envia [0xAA][0x55][0xAA][0x55] em loop até o OBC responder
-     * com [0x55][0xAA][0x55][0xAA].  O OBC detecta a sequência lendo 1 byte
-     * de cada vez, por isso funciona mesmo que o OBC tenha arrancado a meio
-     * de um byte e esteja desalinhado.
-     * ================================================ */
-    {
-        const uint8_t sync_frame[4] = {0xAA, 0x55, 0xAA, 0x55};
-        uint8_t       resp[4]       = {0U, 0U, 0U, 0U};
-        bool          synced        = false;
+    /* Sync removed — OBC boots directly in command mode (sync_state = SYNC_DONE).
+     * Pico is now a pure passthrough: no sync ceremony needed. */
+    uart_flush_rx();
 
-        printf("[SYNC] A aguardar OBC...\n");
-        uart_flush_rx();
-
-        while (!synced)
-        {
-            uart_write_blocking(TTC_UART, sync_frame, sizeof(sync_frame));
-
-            /* Espera até 600 ms pela resposta [0x55][0xAA][0x55][0xAA] */
-            absolute_time_t deadline = make_timeout_time_ms(600);
-            uint8_t idx = 0U;
-            while (idx < 4U &&
-                   absolute_time_diff_us(deadline, get_absolute_time()) < 0)
-            {
-                if (uart_is_readable(TTC_UART))
-                    resp[idx++] = uart_getc(TTC_UART);
-            }
-
-            if (idx == 4U       &&
-                resp[0] == 0x55 && resp[1] == 0xAA &&
-                resp[2] == 0x55 && resp[3] == 0xAA)
-            {
-                synced = true;
-                printf("[SYNC] OBC pronto!\n");
-            }
-            else
-            {
-                printf("[SYNC] Sem resposta — a tentar de novo...\n");
-                sleep_ms(100);
-            }
-        }
-
-        uart_flush_rx();  /* descartar bytes residuais */
-    }
-
-    absolute_time_t next_cmd       = get_absolute_time();
     absolute_time_t next_sensor    = get_absolute_time();
-    absolute_time_t next_heartbeat = make_timeout_time_ms(10000); /* first beat in 10 s */
+    absolute_time_t next_heartbeat = make_timeout_time_ms(10000);
 
     while (true)
     {
-        /* Periodic alive print — helps confirm USB CDC is up and Pico is running */
+        /* Alive heartbeat */
         if (absolute_time_diff_us(next_heartbeat, get_absolute_time()) > 0)
         {
-            printf("[PICO] alive | ota_fw_ready=%d ota_active=%d\n",
-                   (int)ota_fw_ready, (int)ota_active);
             next_heartbeat = make_timeout_time_ms(10000);
         }
 
-        /* Check for firmware arriving from the dashboard via USB */
-        check_usb_ota();
+        /* Passthrough: dashboard ↔ OBC */
+#if USE_BLUETOOTH
+        bt_to_uart();
+        uart_to_bt();
+#else
+        usb_to_uart();
+        uart_to_usb();
+#endif
 
-        ttc_check_response();
-
-        /* Update sensor data periodically */
+        /* Update simulated sensor data periodically */
         if (absolute_time_diff_us(next_sensor, get_absolute_time()) > 0)
         {
             update_sensor_data();
             next_sensor = make_timeout_time_ms(SENSOR_UPDATE_MS);
-        }
-
-        if (ota_active)
-        {
-            /* Send next firmware packet to OBC */
-            ota_send_packet();
-            sleep_ms(OTA_PACKET_INTERVAL_MS);
-        }
-        else if (ota_fw_ready)
-        {
-            /* Firmware buffered — initiate OTA handshake with OBC */
-            uint8_t cmd[TTC_CMD_LEN] = {0x10, 0x01, 0x00, 0x00};
-            printf("[OTA] === Starting OTA handshake with OBC ===\n");
-            uart_flush_rx();
-            uart_write_blocking(TTC_UART, cmd, TTC_CMD_LEN);
-
-            if (ttc_wait_for_ack(OTA_ACK_WAIT_MS))
-            {
-                printf("[OTA] Handshake OK — sending %u packets\n", ota_total);
-                uart_flush_rx();
-                sleep_ms(500);
-                ota_active = true;
-                ota_seq    = 0;
-            }
-            else
-            {
-                printf("[OTA] ACK timeout — will retry next loop\n");
-                sleep_ms(1000);
-            }
-        }
-        else if (absolute_time_diff_us(next_cmd, get_absolute_time()) > 0)
-        {
-            ttc_send_command();
-            next_cmd = make_timeout_time_ms(TTC_INTERVAL_MS);
         }
     }
 
