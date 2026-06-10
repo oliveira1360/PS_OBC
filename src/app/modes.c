@@ -31,7 +31,7 @@ static uint32_t ota_crc32(uint32_t addr, uint32_t size);
 
 States otaMode(void)
 {
-    sensors_tick(); /* sensors_tick() já chama ExtMem_Tick() internamente */
+    sensors_tick();
 
     switch (s_state)
     {
@@ -78,12 +78,13 @@ States otaMode(void)
 
 States nominalMode(void)
 {
-    sensors_tick(); /* sensors_tick() já chama ExtMem_Tick() internamente */
+    sensors_tick();
     uint32_t now = hal_systick_get_ms();
 
     if ((now - s_print_last_ms) >= TIME_TO_UPDATE_VALUES)
     {
-        // sensors_print();
+        ttc_send_telemetry();
+        sensors_print();
         sensors_read_all();
         s_print_last_ms = now;
     }
@@ -93,7 +94,7 @@ States nominalMode(void)
 
 States communicationMode(void)
 {
-    sensors_tick(); /* sensors_tick() já chama ExtMem_Tick() internamente */
+    sensors_tick(); 
     return getMode(communication_mode);
 }
 
@@ -104,7 +105,8 @@ States safeMode(void)
 
     if ((now - s_print_last_ms) >= TIME_TO_UPDATE_VALUES)
     {
-        // sensors_print();
+        ttc_send_telemetry();
+        sensors_print();
         sensors_read_all();
         s_print_last_ms = now;
     }

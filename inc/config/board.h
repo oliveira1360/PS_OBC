@@ -15,7 +15,7 @@
 #define PRES_BUF_LEN 2
 #define TEMP_BUF_LEN 2
 #define EPS_BUF_LEN 2
-#define TTC_BUF_LEN 16U
+#define TTC_BUF_LEN 80U   /* frame de telemetria alargado: 0x20 + 18 floats + estado + checksum = 75 B */
 #define PROPULSOR_BUF_LEN 8
 
 /* OTA */

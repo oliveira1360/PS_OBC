@@ -37,10 +37,10 @@
 #define PIOA_PER        (*(volatile uint32_t *)(PIOA_BASE + 0x00U))
 #define PIOA_PDR        (*(volatile uint32_t *)(PIOA_BASE + 0x04U))
 #define PIOA_OER        (*(volatile uint32_t *)(PIOA_BASE + 0x10U))
-#define PIOA_ODR        (*(volatile uint32_t *)(PIOA_BASE + 0x14U)) /* <-- ADICIONAR ESTA LINHA */
+#define PIOA_ODR        (*(volatile uint32_t *)(PIOA_BASE + 0x14U)) 
 #define PIOA_SODR       (*(volatile uint32_t *)(PIOA_BASE + 0x30U))
 #define PIOA_CODR       (*(volatile uint32_t *)(PIOA_BASE + 0x34U))
-#define PIOA_PDSR       (*(volatile uint32_t *)(PIOA_BASE + 0x3CU)) /* <-- E ADICIONAR ESTA LINHA */
+#define PIOA_PDSR       (*(volatile uint32_t *)(PIOA_BASE + 0x3CU))
 #define PIOA_ABCDSR0    (*(volatile uint32_t *)(PIOA_BASE + 0x70U))
 #define PIOA_ABCDSR1    (*(volatile uint32_t *)(PIOA_BASE + 0x74U))
 

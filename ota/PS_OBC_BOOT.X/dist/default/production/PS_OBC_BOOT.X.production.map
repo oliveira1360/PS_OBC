@@ -3,7 +3,7 @@ Archive member included to satisfy reference by file (symbol)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
                               build/default/production/_ext/1191379593/startup_samv71.o (__pic32c_data_initialization)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o)
-                              C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o (__libc_init_array)
+                              C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o (__libc_init_array)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(libc.o)
                               C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o) (__progname_full)
 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__environ.o)
@@ -103,20 +103,20 @@ Discarded input sections
  .text          0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
  .data          0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
  .bss           0x00000000        0x0 build/default/production/_ext/1191379593/system_samv71.o
- .text          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
- .data          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
- .bss           0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+ .text          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
+ .data          0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
+ .bss           0x00000000        0x0 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .text.TCM_Disable
-                0x00000000       0x88 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+                0x00000000       0x88 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .text.Dummy_Handler
-                0x00000000        0x2 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+                0x00000000        0x2 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .text.Reset_Handler
-                0x00000000      0x128 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+                0x00000000      0x128 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .vectors.default
-                0x00000000      0x168 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
- .comment       0x00000000       0x36 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+                0x00000000      0x168 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
+ .comment       0x00000000       0x36 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .ARM.attributes
-                0x00000000       0x32 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+                0x00000000       0x32 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .text          0x00000000        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .data          0x00000000        0x0 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .xc_stack_usage
@@ -230,7 +230,7 @@ LOAD build/default/production/_ext/1191379593/startup_samv71.o
 LOAD build/default/production/_ext/1191379593/system_samv71.o
                 0x00000001                        __MPLAB_BUILD = 0x1
                 0x00000000                        _min_heap_size = 0x0
-LOAD C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+LOAD C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
 START GROUP
 LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a
 LOAD C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-size-musl.a
@@ -523,7 +523,7 @@ LOAD data_init
  .note          0x000000d4       0x18 build/default/production/_ext/1191379593/qspi_boot.o
  .note          0x000000ec       0x18 build/default/production/_ext/1191379593/startup_samv71.o
  .note          0x00000104       0x18 build/default/production/_ext/1191379593/system_samv71.o
- .note          0x0000011c       0x18 C:\Users\diogo\AppData\Local\Temp\ccgYVrcK.o
+ .note          0x0000011c       0x18 C:\Users\diogo\AppData\Local\Temp\ccLwHDDo.o
  .note          0x00000134       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libpic32c.a(data_init.o)
  .note          0x0000014c       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(__libc_start_main.o)
  .note          0x00000164       0x18 C:/Program Files/Microchip/xc32/v5.10/bin/bin/../../lib/gcc/pic32c/13.2.1/../../../../pic32c/lib/thumb/v7e-m+dp/hard\libc-musl.a(libc.o)

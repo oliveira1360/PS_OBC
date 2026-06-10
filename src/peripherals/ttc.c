@@ -84,8 +84,6 @@ static void on_ttc_sync_byte(int result)
     {
         sync_byte_cnt++;
 
-        /* --- Timeout: Pico já está em modo normal, nunca vai enviar o
-         *     padrão de sync. Entra directamente em modo de 4 bytes.    --- */
         if (sync_byte_cnt >= TTC_SYNC_TIMEOUT_BYTES)
         {
             sync_state = SYNC_DONE;
@@ -459,25 +457,50 @@ void ttc_tick(void)
 /**
  * @brief Envia frame de telemetria para a Ground Station.
  */
+/* Escreve um float em big-endian (o SAMV71 e little-endian, por isso inverte). */
+static void ttc_put_float_be(uint8_t *p, float v)
+{
+    union { float f; uint8_t b[4]; } u;
+    u.f = v;
+    p[0] = u.b[3];
+    p[1] = u.b[2];
+    p[2] = u.b[1];
+    p[3] = u.b[0];
+}
+
+/*
+ * Frame de telemetria alargado (75 bytes):
+ *   [0]      0x20  marcador (CMD_REQUEST_DATA)
+ *   [1..72]  18 floats big-endian, por esta ordem:
+ *            voltage, current, latitude, longitude, altitude, speed,
+ *            ax, ay, az, gx, gy, gz, mx, my, mz, pressure, temperature, doppler
+ *   [73]     estado do TT&C
+ *   [74]     checksum = XOR dos bytes [0..73]
+ */
 void ttc_send_telemetry(void)
 {
     uint8_t i = 0U;
 
     tx_buf[i++] = CMD_REQUEST_DATA;
-    tx_buf[i++] = (uint8_t)(eps.voltage * 10.0f);
-    tx_buf[i++] = (uint8_t)(eps.current * 100.0f);
-    tx_buf[i++] = (uint8_t)gnss.latitude;
-    tx_buf[i++] = (uint8_t)((gnss.latitude - (uint8_t)gnss.latitude) * 100.0f);
-    tx_buf[i++] = (uint8_t)gnss.longitude;
-    tx_buf[i++] = (uint8_t)((gnss.longitude - (uint8_t)gnss.longitude) * 100.0f);
 
-    uint16_t press = (uint16_t)pressure.pressure;
-    tx_buf[i++] = (uint8_t)(press >> 8U);
-    tx_buf[i++] = (uint8_t)(press & 0xFFU);
-
-    uint16_t temp = (uint16_t)temperature.temperature;
-    tx_buf[i++] = (uint8_t)(temp >> 8U);
-    tx_buf[i++] = (uint8_t)(temp & 0xFFU);
+    ttc_put_float_be(&tx_buf[i], eps.voltage);             i += 4U;
+    ttc_put_float_be(&tx_buf[i], eps.current);             i += 4U;
+    ttc_put_float_be(&tx_buf[i], gnss.latitude);           i += 4U;
+    ttc_put_float_be(&tx_buf[i], gnss.longitude);          i += 4U;
+    ttc_put_float_be(&tx_buf[i], gnss.altitude);           i += 4U;
+    ttc_put_float_be(&tx_buf[i], gnss.speed);              i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.ax);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.ay);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.az);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.gx);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.gy);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.gz);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.mx);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.my);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], imu.mz);                  i += 4U;
+    ttc_put_float_be(&tx_buf[i], pressure.pressure);       i += 4U;
+    ttc_put_float_be(&tx_buf[i], temperature.temperature); i += 4U;
+    ttc_put_float_be(&tx_buf[i], ttc.doppler);             i += 4U;
 
     tx_buf[i++] = ttc.current_state;
 

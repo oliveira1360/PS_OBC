@@ -13,9 +13,7 @@ int main(void)
     debug_uart_init();
 
     printf("\n === OBC BOOT === FW v3.91\n");
-    printf("we are the championsasdasdasdasdasdsdadas");
-    printf("\n big winner?  for real");
-    printf("\n big winner? for real");
+    printf("beta 1.100");
     
     for (size_t i = 0; i < 10; i++)
     {
