@@ -1,0 +1,61 @@
+services:
+  # ─── PostgreSQL ────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: satellite_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       satellite_dashboard
+      POSTGRES_USER:     satellite
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U satellite -d satellite_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Spring Boot Backend (só em produção / docker compose --profile full) ──
+  backend:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: satellite_backend
+    restart: unless-stopped
+    profiles: ["full"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/satellite_dashboard
+      SPRING_DATASOURCE_USERNAME: satellite
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      JWT_SECRET:                 ${JWT_SECRET:-super-secret-key-change-in-production}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ─── React Frontend (Nginx) ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # dev = backend no host; full = backend no Docker
+        NGINX_CONF: ${NGINX_CONF:-nginx.dev.conf}
+    container_name: satellite_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:

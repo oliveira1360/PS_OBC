@@ -1,0 +1,21 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #080d1a;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1526; }
+::-webkit-scrollbar-thumb { background: #2a3f60; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a5080; }
+
+button { cursor: pointer; font-family: inherit; }
+select, input { font-family: inherit; }
