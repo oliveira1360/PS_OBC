@@ -6,5 +6,9 @@
         "embedded-debug",
         "gdb",
         "mplab-core-da"
+    ],
+    "cmake.sourceDirectory": "C:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default",
+    "mplab.clangd.arguments": [
+        "--header-insertion=never"
     ]
 }

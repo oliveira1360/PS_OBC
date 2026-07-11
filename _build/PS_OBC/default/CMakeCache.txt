@@ -50,6 +50,9 @@ CMAKE_ASM_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 // MinSizeRel ...
 CMAKE_BUILD_TYPE:STRING=
 
+//Enable colored diagnostics throughout.
+CMAKE_COLOR_DIAGNOSTICS:BOOL=ON
+
 //CXX compiler
 CMAKE_CXX_COMPILER:STRING=c:/Program Files/Microchip/xc32/v5.10/bin/xc32-g++.exe
 

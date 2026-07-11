@@ -224,11 +224,6 @@ static void ttc_parse(uint8_t *buf)
         ttc_send_telemetry();
         break;
 
-    case CMD_ENTER_SAFE:
-        printf("cmd1\n");
-        ttc.cmd_status = ACK_SUCCESS;
-        break;
-
     case CMD_START_OTA:
         /* Reset completo do estado OTA (limpa sessão anterior).
          * Inclui a sub-FSM de modes.c: sem isto, uma tentativa anterior
@@ -254,11 +249,6 @@ static void ttc_parse(uint8_t *buf)
         ota_receiving = 0U;
         ota_data_started = 0U;
         ota_frame_state = OTA_FRAME_HUNT_AA;
-        break;
-
-    case CMD_REMOTE_CTRL:
-        printf("cmd5\n");
-        ttc.cmd_status = ACK_SUCCESS;
         break;
 
     case CMD_NONE:

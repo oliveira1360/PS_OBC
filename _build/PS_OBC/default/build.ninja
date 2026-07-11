@@ -47,7 +47,7 @@ build cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile: pho
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/init.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/init.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app\init.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app
@@ -58,7 +58,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/mission.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/mission.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app\mission.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app
@@ -69,7 +69,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/modeSelecter.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/modeSelecter.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app\modeSelecter.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app
@@ -80,7 +80,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/sensors.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/sensors.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app\sensors.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app
@@ -91,7 +91,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/stateCheck.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/app/stateCheck.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app\stateCheck.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\app
@@ -102,7 +102,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/i2c_driver.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/i2c_driver.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers\i2c_driver.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers
@@ -113,7 +113,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/qspi_driver.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/qspi_driver.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers\qspi_driver.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers
@@ -124,7 +124,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/spi_driver.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/spi_driver.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers\spi_driver.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers
@@ -135,7 +135,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/usart_driver.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/drivers/usart_driver.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers\usart_driver.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\drivers
@@ -146,7 +146,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_gpio.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_gpio.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_gpio.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -157,7 +157,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_i2c.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_i2c.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_i2c.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -168,7 +168,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_peripherals_init.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_peripherals_init.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_peripherals_init.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -179,7 +179,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_qspi.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_qspi.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_qspi.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -190,7 +190,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_spi.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_spi.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_spi.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -201,7 +201,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_system.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_system.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_system.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -212,7 +212,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_usart.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/hal/hal_usart.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal\hal_usart.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\hal
@@ -223,7 +223,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/main.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/main.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\main.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src
@@ -234,7 +234,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/eps.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/eps.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\eps.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -245,7 +245,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/flexiforce.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/flexiforce.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\flexiforce.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -256,7 +256,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/gnss.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/gnss.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\gnss.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -267,7 +267,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/imu.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/imu.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\imu.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -278,7 +278,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/pressure.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/pressure.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\pressure.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -289,7 +289,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/propulsor.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/propulsor.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\propulsor.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -300,7 +300,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/temperature.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/temperature.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\temperature.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals
@@ -311,7 +311,7 @@ build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/
 build CMakeFiles/PS_OBC_default_default_XC32_compile.dir/C_/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/ttc.c.o: C_COMPILER__PS_OBC_default_default_XC32_compile_unscanned_ C$:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/src/peripherals/ttc.c || cmake_object_order_depends_target_PS_OBC_default_default_XC32_compile
   DEFINES = -DXPRJ_default=default -D__DEBUG
   DEP_FILE = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals\ttc.c.o.d
-  FLAGS = -x c -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
+  FLAGS = -x c -fdiagnostics-color=always -g -x c -c -mprocessor=ATSAMV71Q21B -ffunction-sections -fdata-sections -mdfp=C:/Users/diogo/.mchp_packs/Microchip/SAMV71_DFP/4.12.237/samv71b
   INCLUDES = -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../.. -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/app -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/config -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/drivers -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/hal -IC:/Isel/3_ano/6_sem/PS/placa/PS_OBC.X/cmake/PS_OBC/default/../../../inc/peripherals -IC:/Users/diogo/.mchp_packs/ARM/CMSIS/5.4.0/CMSIS/Core/Include
   OBJECT_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir
   OBJECT_FILE_DIR = CMakeFiles\PS_OBC_default_default_XC32_compile.dir\C_\Isel\3_ano\6_sem\PS\placa\PS_OBC.X\src\peripherals

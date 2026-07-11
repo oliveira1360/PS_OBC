@@ -8,7 +8,7 @@
 #define SYST_CSR_TICKINT    (1UL << 1)
 #define SYST_CSR_CLKSOURCE  (1UL << 2)
 
-#define MCK_HZ  6250000UL
+#define MCK_HZ  12000000UL 
 
 static volatile uint32_t ms_counter = 0U;
 

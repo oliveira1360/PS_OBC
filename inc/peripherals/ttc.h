@@ -15,11 +15,8 @@
 typedef enum
 {
     CMD_NONE = 0x00,
-    CMD_ENTER_SAFE = 0x01,
-    CMD_REMOTE_CTRL = 0x02,
     CMD_START_OTA = 0x10,
     CMD_END_OTA = 0x11,
-    CMD_RECEIVING_OTA = 0x12,
     CMD_REQUEST_DATA = 0x20
 } ground_command_t;
 
