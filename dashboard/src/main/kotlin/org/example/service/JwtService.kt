@@ -12,6 +12,14 @@ import javax.crypto.SecretKey
 @Service
 class JwtService(@Value("\${jwt.secret}") secret: String) {
 
+    init {
+        // Falhar cedo e com mensagem clara: um segredo curto "esticado" com
+        // padding previsível enfraquece a chave HMAC sem ninguém dar conta.
+        require(secret.length >= 32) {
+            "jwt.secret deve ter pelo menos 32 caracteres (tem ${secret.length})"
+        }
+    }
+
     private val key: SecretKey = Keys.hmacShaKeyFor(secret.padEnd(64, '!').toByteArray())
     private val expirationMs = 8 * 60 * 60 * 1000L   // 8 horas
 

@@ -10,6 +10,8 @@ import org.example.service.codec.TelemetryCodec
 import org.example.service.codec.TelemetryCodecFactory
 import org.example.service.codec.TelemetrySink
 import org.example.websocket.SatelliteWebSocketHandler
+import jakarta.annotation.PreDestroy
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -31,6 +33,8 @@ class ComPortService(
     private val persistence: TelemetryPersistenceService,
     private val codecFactory: TelemetryCodecFactory
 ) : TelemetrySink {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     private var serialPort: SerialPort? = null
     private var readerFuture: Future<*>? = null
@@ -136,6 +140,15 @@ class ComPortService(
         wsHandler.broadcast(WsMessage(WsMessageType.LOG, entry))
     }
 
+    /** Encerramento limpo do serviço: fecha a porta e termina as threads. */
+    @PreDestroy
+    fun shutdown() {
+        if (serialPort?.isOpen == true) disconnect()
+        readerExecutor.shutdownNow()
+        processorExecutor.shutdownNow()
+        log.info("ComPortService encerrado")
+    }
+
     // ── Reader thread — lean: only reads raw bytes ─────────────────────────────
 
     private fun startReader(port: SerialPort) {
@@ -190,7 +203,8 @@ class ComPortService(
         val now = System.currentTimeMillis()
         if (now - lastEmitMs >= telemetryMinIntervalMs) {
             val span = if (lastEmitMs == 0L) 0 else now - lastEmitMs
-            println("[TELEM] $framesSinceEmit frames em ${span}ms  v=${merged.voltage} t=${merged.temperature} p=${merged.pressure}")
+            log.debug("[TELEM] {} frames em {}ms  v={} t={} p={}",
+                framesSinceEmit, span, merged.voltage, merged.temperature, merged.pressure)
             lastEmitMs = now
             framesSinceEmit = 0
             persistHistory(merged)

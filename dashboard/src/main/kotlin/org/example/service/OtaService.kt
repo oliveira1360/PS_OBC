@@ -8,9 +8,13 @@ import org.example.domain.WsMessage
 import org.example.domain.WsMessageType
 import org.example.repository.OtaRepository
 import org.example.websocket.SatelliteWebSocketHandler
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.util.zip.CRC32
+import kotlin.concurrent.thread
+
+/** Falha no protocolo OTA (timeout/NACK/READY inválido) — aborta a transferência. */
+class OtaProtocolException(message: String) : RuntimeException(message)
 
 /**
  * OTA firmware update service.
@@ -31,6 +35,8 @@ class OtaService(
     private val wsHandler: SatelliteWebSocketHandler
 ) {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     companion object {
         const val OTA_PKT_PAYLOAD  = 128          // firmware bytes per packet
         const val OTA_PKT_TOTAL    = 134          // 6-byte header + 128-byte payload
@@ -45,6 +51,9 @@ class OtaService(
 
         // CMD_START_OTA = 0x10  (ttc.h)
         val CMD_START_OTA = byteArrayOf(0x10, 0x00, 0x00, 0x00)
+
+        // CMD_END_OTA = 0x11  (ttc.h) — diz ao OBC para abortar/sair do modo OTA
+        val CMD_END_OTA = byteArrayOf(0x11, 0x00, 0x00, 0x00)
 
         /**
          * 134-byte OTA data packet.
@@ -130,10 +139,9 @@ class OtaService(
             )
 
         if (isBin) {
-            val bytes   = file.bytes
-            println("[KOTLIN] FW[0..7]: " + bytes.take(8).joinToString(" "){ "%02X".format(it) })
-            println("[KOTLIN] FW[128..135]: " + bytes.drop(128).take(8).joinToString(" "){ "%02X".format(it) })
-            // val crc     = CRC32().also { it.update(bytes) }.value
+            val bytes = file.bytes
+            log.debug("FW[0..7]: {}", bytes.take(8).toByteArray().toHex())
+            log.debug("FW[128..135]: {}", bytes.drop(128).take(8).toByteArray().toHex())
             val crc = calculateCustomCrc32(bytes)
             val version = System.currentTimeMillis() / 1000L and 0xFFFFFFFFL
             val chunks = bytes.toList().chunked(OTA_PKT_PAYLOAD).map { it.toByteArray() }
@@ -152,7 +160,7 @@ class OtaService(
                 type    = LogType.COMMAND
             ))
 
-            Thread {
+            thread(name = "ota-bin-sender", isDaemon = true) {
                 try {
                     try {
                         port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
@@ -162,14 +170,14 @@ class OtaService(
                             try { drained += maxOf(0, port.inputStream.read(stale, 0, stale.size)) }
                             catch (_: Exception) { }
                         }
-                        if (drained > 0) println("  [drain] $drained bytes stale descartados")
+                        if (drained > 0) log.debug("[drain] {} bytes stale descartados", drained)
                     } catch (_: Exception) { }
 
                     // Configura timeout de leitura bloqueante para ACKs
                     port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, ACK_TIMEOUT_MS.toInt(), 0)
 
                     // 1. CMD_START_OTA
-                    println("Sending START: ${CMD_START_OTA.toHex()}")
+                    log.info("Sending START: {}", CMD_START_OTA.toHex())
                     port.outputStream.write(CMD_START_OTA)
                     port.outputStream.flush()
 
@@ -192,14 +200,14 @@ class OtaService(
                     }
 
                     // 3. END packet (seq=0xFFFF) — também aguarda ACK
-                    println("Sending END: size=${bytes.size}, crc=0x%08X".format(crc))
+                    log.info("Sending END: size={}, crc=0x{}", bytes.size, "%08X".format(crc))
                     sendWithAck(port, buildEndPacket(bytes.size, crc, version), 0xFFFF, "END")
 
                     finishOta(port, filename, total, transportLabel)
                 } catch (e: Exception) {
                     failOta(port, e.message)
                 }
-            }.start()
+            }
 
             return otaRepository.getStatus()
         }
@@ -226,7 +234,7 @@ class OtaService(
             type    = LogType.COMMAND
         ))
 
-        Thread {
+        thread(name = "ota-hex-sender", isDaemon = true) {
             try {
                 records.forEachIndexed { index, record ->
                     port.outputStream.write((record + "\r\n").toByteArray(Charsets.US_ASCII))
@@ -246,7 +254,7 @@ class OtaService(
             } catch (e: Exception) {
                 failOta(port, e.message)
             }
-        }.start()
+        }
 
         return otaRepository.getStatus()
     }
@@ -278,8 +286,7 @@ class OtaService(
         }
         if (received < 4) return AckResult.TIMEOUT
 
-
-        println("  [readAck] Bytes recebidos para análise: ${buf.toHex()}")
+        log.debug("[readAck] Bytes recebidos: {}", buf.toHex())
 
         val code  = buf[0].toInt() and 0xFF
         val seqHi = buf[1].toInt() and 0xFF
@@ -305,16 +312,16 @@ class OtaService(
      */
     private fun sendWithAck(port: SerialPort, packet: ByteArray, expectedSeq: Int, label: String) {
         repeat(MAX_RETRIES) { attempt ->
-            println("Sending $label (tentativa ${attempt + 1}): ${packet.take(8).toByteArray().toHex()}…")
+            log.debug("Sending {} (tentativa {}): {}…", label, attempt + 1, packet.take(8).toByteArray().toHex())
             port.outputStream.write(packet)
 
             when (val result = readAck(port, expectedSeq)) {
                 AckResult.ACK -> {
-                    println("  ACK OK — $label confirmado")
+                    log.debug("ACK OK — {} confirmado", label)
                     return   // sucesso — sai da função
                 }
                 AckResult.NACK -> {
-                    println("  NACK recebido para $label — a retransmitir…")
+                    log.warn("NACK recebido para {} — a retransmitir…", label)
                     comPortService.log(SatelliteLog(
                         message = "OTA NACK: $label (tentativa ${attempt + 1}/$MAX_RETRIES)",
                         type    = LogType.ERROR
@@ -322,7 +329,7 @@ class OtaService(
                     // continua para próxima iteração (retransmissão)
                 }
                 else -> {
-                    println("  Resultado inesperado para $label: $result")
+                    log.warn("Resultado inesperado para {}: {}", label, result)
                     comPortService.log(SatelliteLog(
                         message = "OTA sem ACK válido para $label: $result (tentativa ${attempt + 1}/$MAX_RETRIES)",
                         type    = LogType.ERROR
@@ -330,7 +337,7 @@ class OtaService(
                 }
             }
         }
-        throw Exception("Sem ACK para $label após $MAX_RETRIES tentativas")
+        throw OtaProtocolException("Sem ACK para $label após $MAX_RETRIES tentativas")
     }
 
 
@@ -339,7 +346,7 @@ class OtaService(
      * Enviado por ttc_send_ota_ready() depois do erase da flash terminar.
      */
     private fun waitForOtaReady(port: SerialPort, timeoutMs: Long) {
-        println("  A aguardar que o satelite apague a Flash (timeout: ${timeoutMs / 1000}s)...")
+        log.info("A aguardar que o satélite apague a Flash (timeout: {}s)...", timeoutMs / 1000)
         port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, timeoutMs.toInt(), 0)
 
         val buf      = ByteArray(4)
@@ -354,16 +361,16 @@ class OtaService(
         } catch (_: Exception) { /* timeout ou erro — verificado abaixo */ }
 
         if (received < 4)
-            throw Exception("Timeout a aguardar READY do OBC (${received}/4 bytes)")
+            throw OtaProtocolException("Timeout a aguardar READY do OBC (${received}/4 bytes)")
 
         val valid = buf[0] == 0x10.toByte() &&
                     buf[1] == 0xAC.toByte() &&
                     buf[2] == 0x4B.toByte() &&
                     buf[3] == 0xF7.toByte()
         if (!valid)
-            throw Exception("Sinal READY invalido do OBC: ${buf.joinToString(" ") { "%02X".format(it) }}")
+            throw OtaProtocolException("Sinal READY inválido do OBC: ${buf.toHex()}")
 
-        println("  [OK] Satelite enviou ACK! Flash limpa. A iniciar pacotes...")
+        log.info("Satélite enviou READY — flash limpa, a iniciar pacotes")
         port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, ACK_TIMEOUT_MS.toInt(), 0)
     }
 
@@ -395,6 +402,20 @@ class OtaService(
     }
 
     private fun failOta(port: SerialPort, error: String?) {
+        // Avisa o OBC para abortar a sessão OTA (CMD_END_OTA). Sem isto, o
+        // OBC fica preso no estado em que estava (ex: OTA_SM_WAIT_PKT) e a
+        // próxima tentativa nunca mais recebe READY — é preciso reset da
+        // placa para recuperar. Best-effort: se a porta já estiver num
+        // estado mau, ignora a falha e fecha na mesma.
+        try {
+            port.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 500, 0)
+            port.outputStream.write(CMD_END_OTA)
+            port.outputStream.flush()
+            log.info("Enviado CMD_END_OTA após falha, para repor o OBC")
+        } catch (e: Exception) {
+            log.warn("Não foi possível enviar CMD_END_OTA após falha: {}", e.message)
+        }
+
         port.closePort()
         val err = OtaStatus(success = false, message = "Erro OTA: $error")
         otaRepository.save(err)
@@ -411,7 +432,7 @@ class OtaService(
      * Cálculo de CRC32 100% manual e idêntico à implementação em C na placa.
      * Substitui a biblioteca java.util.zip.CRC32 para garantir paridade absoluta.
      */
-        fun calculateCustomCrc32(bytes: ByteArray): Long {
+    fun calculateCustomCrc32(bytes: ByteArray): Long {
         var crc = 0xFFFFFFFFL
         val poly = 0xEDB88320L
         for (b in bytes) {

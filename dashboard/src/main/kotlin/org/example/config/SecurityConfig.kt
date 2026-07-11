@@ -1,5 +1,6 @@
 package org.example.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -20,7 +21,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)   // activa @PreAuthorize
 class SecurityConfig(
-    private val jwtFilter: JwtAuthFilter
+    private val jwtFilter: JwtAuthFilter,
+    /** Origens permitidas para CORS — em produção definir APP_CORS_ALLOWED_ORIGINS. */
+    @Value("\${app.cors.allowed-origins:*}") private val allowedOrigins: List<String>
 ) {
 
     @Bean
@@ -31,8 +34,9 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 // Endpoints públicos (autenticação + registo por convite)
+                // NOTA: /api/auth/me NÃO é público — precisa do principal autenticado,
+                // caso contrário rebentaria com 500 para pedidos anónimos.
                 auth.requestMatchers("/api/auth/login").permitAll()
-                auth.requestMatchers("/api/auth/me").permitAll()
                 auth.requestMatchers("/api/auth/signup").permitAll()
                 auth.requestMatchers("/api/auth/invites/check").permitAll()
                 auth.requestMatchers("/ws/**").permitAll()
@@ -55,7 +59,7 @@ class SecurityConfig(
     @Bean
     fun corsSource(): CorsConfigurationSource {
         val cfg = CorsConfiguration().apply {
-            allowedOriginPatterns = listOf("*")
+            allowedOriginPatterns = allowedOrigins
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true

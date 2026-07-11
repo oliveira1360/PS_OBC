@@ -6,6 +6,7 @@ import org.example.service.AuditAction
 import org.example.service.AuditService
 import org.example.service.ComPortService
 import org.example.domain.telemetry.TelemetryFormat
+import org.example.service.error.ValidationError
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -51,7 +52,12 @@ class ComPortController(
     @PostMapping("/send")
     @PreAuthorize("hasAuthority('commands:write')")
     fun sendRaw(@RequestBody body: SendRawRequest): ResponseEntity<Any> {
-        val bytes = body.hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        // Normaliza e valida antes de converter: hex inválido devolve 400 claro
+        // em vez de depender da NumberFormatException a rebentar a meio.
+        val hex = body.hex.replace(Regex("\\s"), "")
+        if (hex.isEmpty() || hex.length % 2 != 0 || !hex.all { it.isDigit() || it.lowercaseChar() in 'a'..'f' })
+            throw ValidationError("Hex inválido: deve ter comprimento par e apenas dígitos 0-9/A-F")
+        val bytes = hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
         val success = comPortService.sendBytes(bytes)
         auditService.record(AuditAction.COMMAND_SEND, target = "COM (raw)", details = body.hex, success = success)
         return if (success)
