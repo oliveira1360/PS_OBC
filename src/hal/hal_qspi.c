@@ -411,10 +411,54 @@ void hal_qspi_write_memory(uint32_t addr, const uint8_t *buf, uint32_t len)
     (void)QSPI_IFR;
 
     /* Desliga as interrupções (Assembly Bare-Metal) para garantir que o SysTick
-     * não interrompe o CPU a meio do memcpy, evitando FIFO underrun. */
+     * não interrompe o CPU a meio da cópia, evitando FIFO underrun. */
     __asm volatile("cpsid i" ::: "memory");
 
-    memcpy((void *)(QSPI_MEM_BASE + addr), buf, len);
+    /* Cópia word-a-word por ponteiro VOLATILE em vez de memcpy.
+     *
+     * PORQUÊ: o memcpy do xc32 copia em rajadas LDM/STM de 32 bytes.
+     * Nas escritas para a região SMM do QSPI, um beat da rajada AHB
+     * pode perder-se (sintoma observado no teste T3: 1 word perdida no
+     * byte 28 — última word da 1ª rajada — e todos os dados seguintes
+     * deslocados 4 bytes na flash). O ponteiro volatile força acessos
+     * únicos de 32 bits, em ordem de programa, sem merging nem bursts. */
+    {
+        volatile uint32_t *dst = (volatile uint32_t *)(QSPI_MEM_BASE + addr);
+        const uint8_t *src = buf;
+        uint32_t words = len / 4U;
+        uint32_t i;
+
+        for (i = 0U; i < words; i++)
+        {
+            uint32_t w;
+            memcpy(&w, &src[4U * i], 4U); /* junta 4 bytes (src pode ser desalinhado) */
+            dst[i] = w;
+
+            /* Compassa a escrita: espera que a FIFO TX + shifter esvaziem
+             * (TXEMPTY, bit 2) antes da próxima word. Sem isto a FIFO
+             * transborda a meio da página e perdem-se words (T3: 16 erros
+             * com shift de +8 a partir do byte 136). */
+            {
+                uint32_t _t = 0x40000U;
+                while (!(QSPI_SR & (1UL << 2)) && --_t)
+                    ;
+            }
+        }
+
+        /* resto (< 4 bytes), byte a byte, com o mesmo compasso */
+        {
+            volatile uint8_t *db = (volatile uint8_t *)&dst[words];
+            for (i = 0U; i < (len & 3U); i++)
+            {
+                db[i] = src[4U * words + i];
+                {
+                    uint32_t _t = 0x40000U;
+                    while (!(QSPI_SR & (1UL << 2)) && --_t)
+                        ;
+                }
+            }
+        }
+    }
     __asm volatile("dsb 0xF" ::: "memory");
 
     /* Volta a ligar as interrupções (Assembly Bare-Metal) */

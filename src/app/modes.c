@@ -215,9 +215,24 @@ static void ota_handle_wait_erase(void)
     }
 }
 
+/* Se nenhum pacote chegar durante este intervalo, a sessão OTA é
+ * considerada abandonada (ex: backend desistiu por timeout/NACKs e
+ * fechou a porta sem enviar CMD_END_OTA) e é abortada localmente.
+ * Sem isto, o OBC ficava preso em WAIT_PKT (e ota_data_started=1 no
+ * TTC) para sempre, e nenhum CMD_START_OTA seguinte conseguia sequer
+ * ser reconhecido — os bytes eram engolidos pelo frame scanner do
+ * OTA, que só é desligado por ttc_ota_abort(). */
+#define OTA_PKT_WAIT_TIMEOUT_MS 15000U
+
 static void ota_handle_wait_pkt(void)
 {
     static uint32_t s_pkt_dbg = 0U;
+    static uint32_t s_wait_start_ms = 0U;
+
+    if (s_wait_start_ms == 0U)
+    {
+        s_wait_start_ms = hal_systick_get_ms();
+    }
 
     if (++s_pkt_dbg >= 100000U)
     {
@@ -229,9 +244,18 @@ static void ota_handle_wait_pkt(void)
 
     if (!ttc_ota_packet_ready())
     {
+        if ((hal_systick_get_ms() - s_wait_start_ms) >= OTA_PKT_WAIT_TIMEOUT_MS)
+        {
+            printf("[OTA] Timeout (%lu ms) à espera de pacotes — sessao OTA "
+                   "abandonada pelo backend. A abortar.\n",
+                   (unsigned long)OTA_PKT_WAIT_TIMEOUT_MS);
+            s_wait_start_ms = 0U;
+            s_state = OTA_SM_ERROR;
+        }
         return; /* Ainda não chegou pacote */
     }
 
+    s_wait_start_ms = 0U; /* reinicia o relogio para o proximo pacote */
     s_pkt_dbg = 0U;
     s_pending_seq = ttc_ota_get_seq();
     s_pending_len = ttc_ota_get_payload_len();
@@ -428,6 +452,17 @@ static void ota_handle_error(void)
     s_state = OTA_SM_IDLE;
     ttc_ota_abort(); /* Repõe TTC para aceitar novo CMD_START_OTA */
     printf("[OTA] Abortado por erro. Voltando ao modo comunicacao.\n");
+}
+
+/**
+ * @brief Repõe a sub-FSM do OTA para OTA_SM_IDLE.
+ * Ver documentação em modes.h. Chamada por ttc.c quando um novo
+ * CMD_START_OTA é aceite, para descartar qualquer estado intermédio
+ * deixado por uma tentativa anterior interrompida pelo backend.
+ */
+void ota_fsm_reset(void)
+{
+    s_state = OTA_SM_IDLE;
 }
 
 static uint32_t ota_crc32(uint32_t addr, uint32_t size)

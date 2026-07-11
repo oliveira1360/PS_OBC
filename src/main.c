@@ -7,12 +7,15 @@
 #include "testsForBoard/deterministic_test.h"
 #include "testsForBoard/qspi_test.h"
 #include "testsForBoard/unit_tests.h"
+#include "testsForBoard/wcet_test.h"
+#include "testsForBoard/seu_injection_test.h"
+
 
 int main(void)
 {
     debug_uart_init();
 
-    printf("\n === OBC BOOT === FW v3.91\n");
+    printf("\n === OBC BOOT === FW TesteAONovo\n");
     printf("beta 1.100");
     
     for (size_t i = 0; i < 10; i++)
@@ -26,6 +29,8 @@ int main(void)
 
     // run_unit_tests();
     test_qspi_rw();
+    test_wcet();
+    test_seu_injection();
 
     ttc_read_async();
 

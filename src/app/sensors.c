@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "app/sensors.h"
 #include "app/mission.h"
+#include "app/seu_data.h"
 #include "peripherals/propulsor.h"
 
 
@@ -16,8 +17,28 @@ float BATTERY_STATUS = 100.0f;
 
 static uint8_t spi_turn = 0U;
 
+/* Regista as estruturas globais sob proteção TMR (uma vez, no 1º tick). */
+static void sensors_seu_register(void)
+{
+    static uint8_t done = 0U;
+    if (done) { return; }
+
+    (void)seu_data_protect(&gnss,           sizeof gnss,           "gnss");
+    (void)seu_data_protect(&imu,            sizeof imu,            "imu");
+    (void)seu_data_protect(&pressure,       sizeof pressure,       "pressure");
+    (void)seu_data_protect(&temperature,    sizeof temperature,    "temperature");
+    (void)seu_data_protect(&eps,            sizeof eps,            "eps");
+    (void)seu_data_protect(&propulsor,      sizeof propulsor,      "propulsor");
+    (void)seu_data_protect(&BATTERY_STATUS, sizeof BATTERY_STATUS, "battery");
+    done = 1U;
+}
+
 void sensors_tick(void)
 {
+    sensors_seu_register();
+
+    seu_data_scrub();   /* TMR: vota e repara SEUs desde o último commit */
+
     eps_tick();
     gnss_tick();
     imu_tick();
@@ -26,6 +47,8 @@ void sensors_tick(void)
     ttc_tick();
     propulsor_tick();
     ExtMem_Tick();
+
+    seu_data_commit();  /* TMR: consolida escritas legítimas nas 3 cópias */
 }
 
 void sensors_read_all(void)

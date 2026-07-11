@@ -230,8 +230,14 @@ static void ttc_parse(uint8_t *buf)
         break;
 
     case CMD_START_OTA:
-        /* Reset completo do estado OTA (limpa sessão anterior) */
+        /* Reset completo do estado OTA (limpa sessão anterior).
+         * Inclui a sub-FSM de modes.c: sem isto, uma tentativa anterior
+         * interrompida a meio (timeout/abort do backend) deixava s_state
+         * preso (ex: OTA_SM_WAIT_PKT), fazendo com que este novo START
+         * fosse ignorado pela FSM e o erase + READY nunca mais fossem
+         * repetidos. */
         ttc_ota_abort();
+        ota_fsm_reset();
         s_ota_pkt_seq = 0U;
         printf("[TTC] START_OTA recebido — a preparar memoria...\n");
         COMM_WINDOW_OPEN = 1;

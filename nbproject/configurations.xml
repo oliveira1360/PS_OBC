@@ -10,7 +10,9 @@
           <itemPath>inc/app/mission.h</itemPath>
           <itemPath>inc/app/modes.h</itemPath>
           <itemPath>inc/app/sensors.h</itemPath>
+          <itemPath>inc/app/seu.h</itemPath>
           <itemPath>inc/app/states.h</itemPath>
+          <itemPath>inc/app/seu_data.h</itemPath>
         </logicalFolder>
         <logicalFolder name="config" displayName="config" projectFiles="true">
           <itemPath>inc/config/board.h</itemPath>
@@ -47,6 +49,9 @@
           <itemPath>inc/testsForBoard/deterministic_test.h</itemPath>
           <itemPath>inc/testsForBoard/qspi_test.h</itemPath>
           <itemPath>inc/testsForBoard/unit_tests.h</itemPath>
+          <itemPath>inc/testsForBoard/value_dump.h</itemPath>
+          <itemPath>inc/testsForBoard/wcet_test.h</itemPath>
+          <itemPath>inc/testsForBoard/seu_injection_test.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -83,8 +88,10 @@
           <itemPath>src/app/mission.c</itemPath>
           <itemPath>src/app/modeSelecter.c</itemPath>
           <itemPath>src/app/sensors.c</itemPath>
+          <itemPath>src/app/seu.c</itemPath>
           <itemPath>src/app/stateCheck.c</itemPath>
           <itemPath>src/app/modes.c</itemPath>
+          <itemPath>src/app/seu_data.c</itemPath>
         </logicalFolder>
         <logicalFolder name="drivers" displayName="drivers" projectFiles="true">
           <itemPath>src/drivers/i2c_driver.c</itemPath>
@@ -118,6 +125,9 @@
           <itemPath>src/testsForBoard/deterministic_test.c</itemPath>
           <itemPath>src/testsForBoard/qspi_test.c</itemPath>
           <itemPath>src/testsForBoard/unit_tests.c</itemPath>
+          <itemPath>src/testsForBoard/value_dump.c</itemPath>
+          <itemPath>src/testsForBoard/wcet_test.c</itemPath>
+          <itemPath>src/testsForBoard/seu_injection_test.c</itemPath>
         </logicalFolder>
         <itemPath>src/main.c</itemPath>
       </logicalFolder>

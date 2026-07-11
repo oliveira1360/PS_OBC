@@ -60,4 +60,14 @@ States decommissioningMode(void);
 States getMode(States currentState);
 int isSystemSafe(void);
 
+/**
+ * @brief Repõe a sub-FSM do OTA para OTA_SM_IDLE.
+ *
+ * Deve ser chamada sempre que um novo CMD_START_OTA é aceite (ttc.c),
+ * para garantir que uma tentativa anterior deixada num estado
+ * intermédio (ex: OTA_SM_WAIT_PKT, por timeout/abort do backend) não
+ * impeça o erase + envio de READY na tentativa seguinte.
+ */
+void ota_fsm_reset(void);
+
 #endif
