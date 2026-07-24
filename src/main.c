@@ -13,32 +13,14 @@
 
 int main(void)
 {
+    hal_clock_init_300mhz();  
     debug_uart_init();
 
     printf("\n === OBC BOOT === FW TesteAONovo\n");
-    printf("beta 1.100");
-    
-    for (size_t i = 0; i < 10; i++)
-    {
-        printf("\n");
-    }
-    if (!system_init())
-    {
-        hal_system_reset();
-    }
+    printf("beta 1.100\n");
 
-    // run_unit_tests();
-    test_qspi_rw();
-    test_wcet();
-    test_seu_injection();
 
-    ttc_read_async();
+    system_lifecycle();
 
-    while (1)
-    {
-        mission_lifecycle();
-    }
-
-    
     return 0;
 }

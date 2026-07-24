@@ -41,8 +41,8 @@
 #define US_MR_CHMODE_NORMAL (0x0UL << 14)
 
 /* Baud rate: MCK / (16 × BRGR) = baudrate → BRGR = MCK / (16 × baudrate) */
-#define MCK_HZ 12000000UL
-#define USART_BRGR_VALUE (MCK_HZ / (16UL * USART_BAUDRATE))
+#define MCK_HZ SYS_MCK_HZ 
+#define USART_BRGR_VALUE USART_BRGR_FOR(USART_BAUDRATE)
 
 
 #endif /* USE_REAL_HW */

@@ -21,6 +21,9 @@ typedef struct
 
 extern init_status_t init_status;
 int system_init(void);
+void system_lifecycle(void);
+void lifecycle_request_reset(void);
+extern volatile uint8_t GROUND_CMD_RESET;
 
 
-#endif 
+#endif

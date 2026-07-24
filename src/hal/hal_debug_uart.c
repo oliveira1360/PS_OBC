@@ -14,6 +14,7 @@
  */
 
 #include <stdint.h>
+#include "config/board.h"
 
 #define DBG_REG(addr) (*(volatile uint32_t *)(addr))
 
@@ -61,8 +62,8 @@ void debug_uart_init(void)
     /* 7. Mode: 8N1 */
     DBG_REG(US1_MR_ADDR) = (0x3UL << 6) | (0x4UL << 9);
 
-    /* 8. Baud rate: divisor 78 (MCK ~4MHz, 9600 baud no PuTTY) */
-    DBG_REG(US1_BRGR_ADDR) = 78U;
+    /* 8. Baud rate 9600 derivado do MCK (fonte única em board.h) */
+    DBG_REG(US1_BRGR_ADDR) = USART_BRGR_FOR(9600UL);
 
     /* 9. Enable TX e RX */
     DBG_REG(US1_CR_ADDR) = (1UL << 4) | (1UL << 6);  /* RXEN | TXEN */

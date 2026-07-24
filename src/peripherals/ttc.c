@@ -11,6 +11,7 @@
 #include "config/board.h"
 #include "app/sensors.h"
 #include "app/mission.h"
+#include "app/init.h"    
 
 #define TTC_SYNC_A 0xAAU
 #define TTC_SYNC_B 0x55U
@@ -249,6 +250,12 @@ static void ttc_parse(uint8_t *buf)
         ota_receiving = 0U;
         ota_data_started = 0U;
         ota_frame_state = OTA_FRAME_HUNT_AA;
+        break;
+
+    case CMD_RESET:
+        printf("[TTC] CMD_RESET recebido — ground_cmd_reset -> BOOT\n");
+        ttc.cmd_status = ACK_SUCCESS;
+        lifecycle_request_reset();
         break;
 
     case CMD_NONE:

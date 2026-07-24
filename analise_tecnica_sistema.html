@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 22mm 18mm;
+    @bottom-center {
+      content: "Análise Técnica — Sistema CubeSat PS_OBC · " counter(page) " / " counter(pages);
+      font-size: 8pt; color: #8a94a6; font-family: 'Helvetica', sans-serif;
+    }
+  }
+  @page :first { margin: 0; @bottom-center { content: ""; } }
+
+  * { box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+         font-size: 10.2pt; line-height: 1.5; color: #1f2733; margin: 0; }
+
+  .cover { height: 297mm; background: linear-gradient(160deg,#0b1f3a 0%,#123a63 55%,#1f6091 100%);
+           color: #fff; padding: 45mm 22mm 22mm 22mm; position: relative; }
+  .cover .kicker { font-size: 11pt; letter-spacing: 5px; text-transform: uppercase; color: #9fd0ff; margin-bottom: 8mm;}
+  .cover h1 { font-size: 33pt; line-height: 1.08; margin: 0 0 6mm 0; font-weight: 700; }
+  .cover h2 { font-size: 15pt; font-weight: 400; color: #d6e7fb; margin: 0 0 18mm 0; }
+  .cover .chips { margin-top: 6mm; }
+  .cover .chip { display: inline-block; border: 1px solid rgba(255,255,255,.35); border-radius: 20px;
+                 padding: 3px 13px; font-size: 9pt; margin: 0 6px 8px 0; color:#eaf3ff;}
+  .cover .foot { position: absolute; bottom: 22mm; left: 22mm; right: 22mm; font-size: 9.5pt; color:#bcd6f2;
+                 border-top: 1px solid rgba(255,255,255,.25); padding-top: 6mm; }
+
+  h2.sec { font-size: 16pt; color: #0b2f57; margin: 0 0 3mm 0; padding-top: 2mm;
+           border-bottom: 3px solid #1f6091; padding-bottom: 2mm; }
+  .secnum { display:inline-block; background:#1f6091; color:#fff; font-size:11pt; width:26px; height:26px;
+            text-align:center; line-height:26px; border-radius:6px; margin-right:8px; vertical-align:2px;}
+  h3 { font-size: 12pt; color: #123a63; margin: 6mm 0 2mm 0; }
+  h4 { font-size: 10.5pt; color: #1f6091; margin: 4mm 0 1mm 0; }
+  p { margin: 0 0 3mm 0; text-align: justify; }
+  ul,ol { margin: 1mm 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.4mm; }
+  code { font-family: 'Courier New', monospace; font-size: 9pt; background: #eef2f7;
+         padding: 1px 4px; border-radius: 3px; color: #12304f; }
+  pre { background: #0e1c2b; color: #d7e4f2; font-family: 'Courier New', monospace; font-size: 8.3pt;
+        padding: 4mm 5mm; border-radius: 6px; line-height: 1.4; white-space: pre-wrap; margin: 2mm 0 4mm 0;}
+  pre .c { color: #6f8bab; }
+
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm 0; font-size: 8.9pt; }
+  th { background: #123a63; color: #fff; text-align: left; padding: 4px 7px; font-weight: 600; }
+  td { border: 1px solid #d3dbe6; padding: 4px 7px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f7fb; }
+
+  .box { border-radius: 7px; padding: 3mm 4mm; margin: 3mm 0; font-size: 9.6pt; }
+  .box.tip { background:#eaf6ee; border-left:4px solid #2e9e5b; }
+  .box.warn { background:#fdf0e8; border-left:4px solid #d97528; }
+  .box.info { background:#eaf1fb; border-left:4px solid #1f6091; }
+  .box b { color:#0b2f57; }
+
+  .prosecon { display:flex; gap:4mm; margin: 2mm 0 4mm 0; }
+  .prosecon > div { flex:1; border-radius:7px; padding:3mm 4mm; font-size:9.2pt; }
+  .pros { background:#eef8f1; border:1px solid #bfe3cc; }
+  .cons { background:#fdf1ec; border:1px solid #f2cdba; }
+  .pros h4 { color:#217a45; margin-top:0;} .cons h4 { color:#c05a25; margin-top:0;}
+  .pros ul, .cons ul { padding-left:5mm; margin:1mm 0;}
+
+  .section { page-break-before: always; }
+  .toc li { margin-bottom: 2mm; font-size: 10.5pt; }
+  .toc .n { display:inline-block; width:9mm; color:#1f6091; font-weight:700;}
+  .lead { font-size: 10.6pt; color:#33465c; }
+  .small { font-size: 8.6pt; color:#5b6b80; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">Análise Técnica Aprofundada</div>
+  <h1>Sistema de Nanossatélite<br>CubeSat &mdash; PS_OBC</h1>
+  <h2>Computador de bordo (OBC), ponte de comunicação e estação terrena de controlo</h2>
+  <div class="chips">
+    <span class="chip">ATSAMV71Q21 · Cortex-M7</span>
+    <span class="chip">Firmware bare-metal em C</span>
+    <span class="chip">RP2040 · Bridge/Simulador</span>
+    <span class="chip">Kotlin · Spring Boot</span>
+    <span class="chip">React · TypeScript</span>
+    <span class="chip">OTA · Bootloader dedicado</span>
+    <span class="chip">TMR / SEU</span>
+  </div>
+  <div class="foot">
+    Projeto e Seminário &mdash; Licenciatura em Engenharia Informática e de Computadores (ISEL)<br>
+    Repositórios analisados: <b>PS_OBC.X</b> (firmware OBC) · <b>solder_test</b> (RP2040) · <b>dashboard</b> (estação terrena)<br>
+    Documento gerado em 21 de julho de 2026
+  </div>
+</div>
+
+<div class="section">
+  <h2 class="sec">Índice</h2>
+  <ul class="toc" style="list-style:none; padding-left:0;">
+    <li><span class="n">1.</span> Visão geral do sistema</li>
+    <li><span class="n">2.</span> Tecnologias e linguagens utilizadas</li>
+    <li><span class="n">3.</span> Arquitetura de software</li>
+    <li><span class="n">4.</span> Interfaces de comunicação (I²C, SPI, UART, QSPI)</li>
+    <li><span class="n">5.</span> Hardware e respetivas especificações técnicas</li>
+    <li><span class="n">6.</span> Fluxo de dados e integração entre componentes</li>
+    <li><span class="n">7.</span> Forma de comunicação de cada periférico (protocolos)</li>
+    <li><span class="n">8.</span> Vantagens e desvantagens das abordagens (engenharia e prática)</li>
+  </ul>
+  <div class="box info"><b>Âmbito.</b> Esta análise cobre os três segmentos do sistema: o <b>segmento espacial</b>
+  (firmware do OBC + bootloader OTA), o <b>segmento de ponte/simulação</b> (RP2040) e o <b>segmento terreno</b>
+  (dashboard fullstack). A avaliação incide sobre arquitetura, protocolos de comunicação, robustez perante o
+  ambiente de radiação e os compromissos de engenharia assumidos em cada escolha.</div>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">1</span>Visão geral do sistema</h2>
+
+  <p class="lead">O projeto implementa a cadeia completa de um nanossatélite (classe CubeSat), desde o
+  computador de bordo em voo até à consola de operação em terra. É um sistema <b>ciber-físico distribuído</b>
+  composto por três segmentos que comunicam por ligações série heterogéneas.</p>
+
+  <table>
+    <tr><th style="width:22%">Segmento</th><th style="width:20%">Repositório</th><th>Papel no sistema</th></tr>
+    <tr><td><b>Espacial</b> (OBC)</td><td><code>PS_OBC.X</code></td>
+        <td>Firmware <i>bare-metal</i> do computador de bordo. Lê todos os sensores, gere os modos de missão,
+        controla energia e atitude, guarda telemetria em memória externa, envia telemetria por rádio e aceita
+        atualizações de firmware em voo (OTA). Inclui um <b>bootloader dedicado</b> separado.</td></tr>
+    <tr><td><b>Ponte / Simulação</b></td><td><code>solder_test</code></td>
+        <td>Firmware para RP2040 (Raspberry Pi Pico). Simula 5 sensores com dinâmica orbital LEO realista e
+        responde-lhes por I²C multi-endereço (via PIO). Serve ainda de <b>ponte transparente</b> (passthrough)
+        entre a estação terrena (USB/Bluetooth) e o OBC (UART TT&amp;C).</td></tr>
+    <tr><td><b>Terreno</b> (Ground Station)</td><td><code>dashboard</code></td>
+        <td>Aplicação fullstack de controlo de missão: backend Kotlin/Spring Boot (REST + WebSocket + série),
+        frontend React/TypeScript, base de dados PostgreSQL. Recebe telemetria em tempo real, mostra órbita,
+        estado dos subsistemas e logs, e envia firmware por OTA.</td></tr>
+  </table>
+
+  <h3>Cadeia de comunicação ponta-a-ponta</h3>
+  <pre><span class="c"># Downlink de telemetria e Uplink de comandos/OTA</span>
+ Sensores/Atuadores        OBC (Cortex-M7)          Ponte RP2040            Estacao Terrena
+ +--------------+  I2C     +--------------+  UART   +-----------+  USB/BT  +--------------+
+ | GNSS IMU EPS |&lt;-------&gt;|  Firmware    |&lt;------&gt;| Passthrough|&lt;-------&gt;| Kotlin backend|
+ | Press Temp   |  SPI     |  bare-metal  |  9600   |  + sim I2C |  serial  |  + React UI   |
+ | Propulsor    |&lt;-------&gt;|  FSM/super-  |  TT&amp;C   +-----------+         |  + PostgreSQL |
+ | W25Q128 QSPI |&lt;-------&gt;|  loop        |                                +--------------+
+ +--------------+          +--------------+          WebSocket --&gt; browser (tempo real)</pre>
+
+  <p>No fluxo típico, o OBC amostra os sensores, compõe uma trama de telemetria de 75 bytes e envia-a pela
+  UART de TT&amp;C. A ponte RP2040 reencaminha os bytes para o dashboard, que os descodifica, persiste em base de
+  dados e difunde para o browser por WebSocket. No sentido inverso, o operador envia comandos (4 bytes) ou uma
+  imagem de firmware que percorre o mesmo caminho até ao bootloader do OBC.</p>
+
+  <div class="box info"><b>Filosofia de conceção.</b> O firmware assume três princípios que atravessam todo o
+  código: <b>(i)</b> execução não-bloqueante (nenhuma operação de I/O pode travar o ciclo principal),
+  <b>(ii)</b> memória totalmente estática (zero <code>malloc</code>/heap) e <b>(iii)</b> tolerância a falhas de
+  radiação por redundância modular tripla (TMR) em software.</div>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">2</span>Tecnologias e linguagens utilizadas</h2>
+
+  <table>
+    <tr><th style="width:20%">Segmento</th><th style="width:26%">Linguagem / Runtime</th><th>Frameworks, bibliotecas e ferramentas</th></tr>
+    <tr><td>OBC (firmware)</td><td><b>C</b> (C99, bare-metal)</td>
+        <td>Toolchain <b>XC32</b> (GCC ARM), MPLAB X IDE, acesso direto a registos (sem Harmony em runtime).
+        CMake/Makefile auxiliares. ~10.600 linhas de C.</td></tr>
+    <tr><td>Bootloader OTA</td><td><b>C</b> + Assembly de arranque</td>
+        <td>Projeto MPLAB X separado, <i>linker scripts</i> próprios (<code>samv71q21_boot.ld</code> /
+        <code>_app.ld</code>), driver EFC (Embedded Flash Controller) e QSPI dedicados.</td></tr>
+    <tr><td>Ponte / Simulação</td><td><b>C</b> (Pico SDK)</td>
+        <td>Raspberry Pi <b>Pico SDK</b>, <b>PIO</b> (Programmable I/O) para escravo I²C multi-endereço,
+        <code>multicore</code>, <code>hardware/uart</code>. CMake.</td></tr>
+    <tr><td>Backend terreno</td><td><b>Kotlin 2.0.21</b> / JVM (Java 21)</td>
+        <td><b>Spring Boot 3.4.5</b> (Web, WebSocket, Actuator, Data JPA, Security), <b>jSerialComm 2.11.0</b>
+        (porta série), <b>JJWT 0.12.6</b> (JWT), Jackson, Gradle (wrapper).</td></tr>
+    <tr><td>Frontend terreno</td><td><b>TypeScript</b></td>
+        <td><b>React</b> + <b>Vite</b>, WebSocket cliente (hook <code>useWebSocket</code>), componentes de
+        telemetria, órbita, heatmap de sensores, OTA, auditoria e administração.</td></tr>
+    <tr><td>Persistência</td><td>SQL</td>
+        <td><b>PostgreSQL 16</b> (alpine), esquema via <code>init.sql</code>, Hibernate/JPA.</td></tr>
+    <tr><td>Infraestrutura</td><td>YAML / Docker</td>
+        <td><b>Docker Compose</b> (postgres + backend Spring + frontend Nginx), <i>healthchecks</i>, perfis
+        (<code>dev</code>/<code>full</code>). <b>Git</b> em cada repositório.</td></tr>
+  </table>
+
+  <div class="box info"><b>Poliglota por camada.</b> A escolha de linguagem segue a natureza de cada camada:
+  C para o metal (determinismo e controlo de registos), Kotlin/JVM para o backend (produtividade, concorrência e
+  ecossistema Spring) e TypeScript para a UI (segurança de tipos no browser). A fronteira entre elas é sempre um
+  <b>protocolo série binário/ASCII</b> bem definido, o que mantém as camadas desacopladas.</div>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">3</span>Arquitetura de software</h2>
+
+  <h3>3.1 Firmware do OBC — modelo de execução</h3>
+  <p>O firmware é <b>bare-metal, sem RTOS</b>. O <code>main()</code> inicializa o clock (300&nbsp;MHz), corre
+  testes de arranque e entra num <b>super-loop cooperativo</b> que chama <code>mission_lifecycle()</code>
+  indefinidamente. Cada iteração faz avançar as máquinas de estados de todos os subsistemas por «um passo»
+  (<i>tick</i>), sem nunca bloquear.</p>
+
+  <pre>int main(void) {
+    hal_clock_init_300mhz();     <span class="c">// PLL -&gt; 300 MHz</span>
+    debug_uart_init();
+    if (!system_init()) hal_system_reset();
+    test_qspi_rw(); test_wcet(); test_seu_injection();   <span class="c">// validacao em placa</span>
+    ttc_read_async();            <span class="c">// arranca RX assincrono do radio</span>
+    while (1) { mission_lifecycle(); }   <span class="c">// super-loop cooperativo</span>
+}</pre>
+
+  <h4>Organização em camadas</h4>
+  <table>
+    <tr><th style="width:16%">Camada</th><th style="width:24%">Pasta</th><th>Responsabilidade</th></tr>
+    <tr><td><b>Aplicação</b></td><td><code>src/app/</code></td>
+        <td>Lógica de missão, FSM de modos (<code>modeSelecter.c</code>, <code>modes.c</code>), agregação de
+        sensores (<code>sensors.c</code>), proteção SEU/TMR (<code>seu.c</code>, <code>seu_data.c</code>).</td></tr>
+    <tr><td><b>Periféricos</b></td><td><code>src/peripherals/</code></td>
+        <td>Módulos de alto nível por dispositivo (GNSS, IMU, EPS, pressão, temperatura, propulsor, memória
+        externa, TT&amp;C). Fazem <i>parsing</i> e preenchem estruturas globais; não tocam no hardware.</td></tr>
+    <tr><td><b>Drivers</b></td><td><code>src/drivers/</code></td>
+        <td>FSM não-bloqueantes por barramento: <code>i2c_driver</code>, <code>spi_driver</code>,
+        <code>usart_driver</code>, <code>qspi_driver</code>. Gerem <i>timeouts</i>, <i>retries</i> e callbacks.</td></tr>
+    <tr><td><b>HAL</b></td><td><code>src/hal/</code></td>
+        <td>Acesso direto a registos do MCU (clocks, GPIO, SysTick, TWIHS, SPI, QSPI, USART). Isola o silício
+        dos drivers.</td></tr>
+    <tr><td><b>Config</b></td><td><code>inc/config/board.h</code></td>
+        <td>Endereços I²C, tamanhos de buffer, parâmetros OTA/QSPI, <code>USE_REAL_HW</code> (real vs. simulado).</td></tr>
+  </table>
+
+  <p>A separação <b>periférico → driver → HAL</b> é rigorosa: por exemplo, <code>eps.c</code> só conhece o
+  <code>i2c_driver</code>, e o driver só conhece o <code>hal_i2c</code>. Isto permite trocar de MCU alterando
+  apenas a HAL, e testar a lógica com <i>mocks</i> (<code>USE_REAL_HW 0</code>).</p>
+
+  <h3>3.2 Máquina de estados de missão</h3>
+  <p>A missão é modelada como uma FSM de 6 modos. As transições são decididas de forma centralizada em
+  <code>getMode()</code>, com base na saúde do sistema (<code>isSystemSafe()</code>) e no nível de bateria.</p>
+
+  <pre>nominal --(!safe)--&gt; safe --(bateria&lt;15%)--&gt; ultra_low_power --(timeout)--&gt; decommissioning
+   |  ^                  |                            |
+   |(janela comms)       |(OTA &amp;&amp; bat&gt;70%)            |(recupera)
+   v  |                  v                            v
+communication &lt;------&gt; ota_mode                     safe</pre>
+
+  <table>
+    <tr><th>Modo</th><th>Comportamento</th><th>Condição de saída principal</th></tr>
+    <tr><td><code>nominal_mode</code></td><td>Amostra sensores, envia telemetria a cada 5&nbsp;s</td><td>Sistema inseguro → <code>safe</code>; janela aberta → <code>communication</code></td></tr>
+    <tr><td><code>communication_mode</code></td><td>Ativo durante janela de contacto com terra</td><td>OTA pedido e bateria&nbsp;&gt;70% → <code>ota</code></td></tr>
+    <tr><td><code>ota_mode</code></td><td>Sub-FSM de 11 estados grava firmware na flash externa</td><td>Fim/erro → <code>communication</code></td></tr>
+    <tr><td><code>safe_mode</code></td><td>Reduz atividade, mantém telemetria mínima</td><td>Recupera saúde → <code>nominal</code></td></tr>
+    <tr><td><code>ultra_low_power_mode</code></td><td>Bateria crítica (&lt;15%), corta consumos</td><td>Timeout de missão → <code>decommissioning</code></td></tr>
+    <tr><td><code>decommissioning_mode</code></td><td>Estado terminal (fim de vida)</td><td>—</td></tr>
+  </table>
+
+  <div class="box info"><b>Limiares de segurança</b> (de <code>mission.h</code>): tensão 3,1–6,5&nbsp;V ·
+  corrente 1,0–2,0&nbsp;A · temperatura −10…60&nbsp;°C · bateria segura ≥30% · crítica &lt;15% · OTA só com
+  bateria &gt;70%.</div>
+
+  <h3>3.3 Backend terreno — arquitetura em serviços</h3>
+  <p>O backend Spring segue uma arquitetura em camadas <b>Controller → Service → Repository</b> com forte uso de
+  padrões. O transporte série é deliberadamente «fino»: o <code>ComPortService</code> lê bytes crus, coloca-os
+  numa fila (<code>LinkedBlockingQueue</code>) e um segundo <i>thread</i> alimenta o <b>codec</b> selecionado
+  para a ligação.</p>
+  <ul>
+    <li><b>Strategy nos codecs:</b> <code>RawBinaryTelemetryCodec</code>, <code>AsciiTelemetryCodec</code> e
+    <code>AutoTelemetryCodec</code> implementam a mesma interface <code>TelemetryCodec</code>; uma
+    <i>factory</i> escolhe o codec (RAW/ASCII/AUTO) por ligação.</li>
+    <li><b>Transporte abstraído:</b> <code>ComPortService</code> e <code>BluetoothService</code> partilham a
+    mesma interface, pelo que trocar de meio físico não afeta as camadas superiores.</li>
+    <li><b>Segurança:</b> <code>SecurityConfig</code> + <code>JwtAuthFilter</code> (JWT via JJWT), com RBAC
+    (<code>Role</code>/<code>Permission</code>) e auditoria (<code>AuditService</code>).</li>
+    <li><b>Tempo real:</b> <code>SatelliteWebSocketHandler</code> difunde telemetria/estado/logs/progresso OTA
+    para o browser; persistência assíncrona em PostgreSQL via <code>TelemetryPersistenceService</code>.</li>
+    <li><b>Throttling:</b> a telemetria é limitada a 1 emissão/s para não inundar o WebSocket e a base de dados,
+    mantendo sempre o valor mais fresco em memória.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">4</span>Interfaces de comunicação (I²C, SPI, UART, QSPI)</h2>
+
+  <p class="lead">O OBC utiliza quatro barramentos distintos, todos implementados como <b>máquinas de estados
+  não-bloqueantes</b> com <i>timeout</i> e callback. Cada driver expõe uma API <code>*_async()</code> +
+  <code>*_tick()</code>, chamada uma vez por iteração do super-loop.</p>
+
+  <table>
+    <tr><th style="width:12%">Interface</th><th style="width:20%">Periférico(s)</th><th style="width:16%">Parâmetros</th><th>Notas de implementação</th></tr>
+    <tr><td><b>I²C</b> (TWIHS0)</td><td>GNSS, IMU, EPS, Pressão, Temperatura</td><td>25&nbsp;kHz, PA03=SDA, PA04=SCL</td>
+        <td>Hardware real via periférico TWIHS0 do SAMV71. FSM com <i>repeated start</i> para leitura por
+        registo e <b>bus recovery</b> automático após 3 erros consecutivos.</td></tr>
+    <tr><td><b>SPI</b></td><td>Propulsor (thruster)</td><td>Full-duplex, CS=pino 25, divisor 255</td>
+        <td>FSM com controlo explícito de <i>chip-select</i>, transferência byte-a-byte e verificação de
+        checksum XOR na trama de 9 bytes.</td></tr>
+    <tr><td><b>UART/USART</b></td><td>TT&amp;C (rádio) e Debug</td><td>TT&amp;C 9600 8N1 · Debug 115200 8N1</td>
+        <td>FSM de TX e RX separadas; RX byte-a-byte por interrupção (RXRDY) com buffer circular. Suporta
+        comandos de 4&nbsp;B, trama de telemetria de 75&nbsp;B e <i>frame scanner</i> OTA de 134&nbsp;B.</td></tr>
+    <tr><td><b>QSPI</b></td><td>Flash externa W25Q128 (16&nbsp;MB)</td><td>Alta velocidade, retry×3, timeout 5000</td>
+        <td>FSM com sequência Write-Enable → Check-WEL → comando → Wait-Busy. Escrita por página (≤256&nbsp;B),
+        <i>erase</i> por setor (4&nbsp;KB).</td></tr>
+  </table>
+
+  <h3>4.1 I²C — TWIHS0 e recuperação de barramento</h3>
+  <p>O <code>hal_i2c</code> configura o periférico TWIHS0 (pinos PA03/PA04 em função periférica A) e calcula os
+  divisores de clock a partir de MCK=150&nbsp;MHz. O <code>i2c_driver</code> implementa a FSM
+  (<code>STARTING → SELECT_MODE → RESTART → READ/WRITE → STOP</code>). O tratamento de erro é notável:</p>
+  <pre><span class="c">// Se falhar 3 vezes seguidas, o bus pode estar preso (escravo a segurar SDA)</span>
+if (h-&gt;error_count &gt;= 3) {
+    hal_i2c_bus_recovery();   <span class="c">// gera pulsos de clock para libertar o escravo</span>
+    h-&gt;error_count = 0;
+}</pre>
+
+  <h3>4.2 SPI — transferência full-duplex</h3>
+  <p>A FSM SPI (<code>IDLE → CS_LOW → TRANSFER → WAIT_TX → WAIT_RX → CS_HIGH → STOP</code>) transfere e recebe em
+  simultâneo (full-duplex). Envia bytes <i>dummy</i> (0x00) para «puxar» dados do escravo e valida cada
+  transferência com <i>timeout</i>, chamando o callback com 0 (sucesso) ou −1 (erro).</p>
+
+  <h3>4.3 UART/TT&amp;C — três protocolos sobre a mesma linha</h3>
+  <p>A mesma UART transporta três formatos consoante o modo: <b>(a)</b> comandos de 4&nbsp;bytes (uplink),
+  <b>(b)</b> trama de telemetria de 75&nbsp;bytes (downlink) e <b>(c)</b> pacotes OTA de 134&nbsp;bytes. Um
+  <i>handshake</i> de sincronização (<code>0xAA 0x55</code> repetido) e um <i>frame scanner</i> dedicado para o
+  OTA permitem multiplexar tudo num único canal a 9600&nbsp;baud.</p>
+
+  <h3>4.4 QSPI — flash NOR externa</h3>
+  <p>O driver QSPI abstrai os comandos da W25Q128 (Write-Enable, leitura do <i>status register</i>, <i>page
+  program</i>, <i>sector erase</i>) numa FSM que verifica o <b>Write-Enable-Latch</b> antes de escrever e espera
+  o fim de operação (bit BUSY) por <i>polling</i> não-bloqueante, com até 3 tentativas.</p>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">5</span>Hardware e respetivas especificações técnicas</h2>
+
+  <h3>5.1 Computador de bordo (OBC)</h3>
+  <table>
+    <tr><th style="width:26%">Componente</th><th>Especificação</th></tr>
+    <tr><td><b>MCU principal</b></td><td>Microchip <b>ATSAMV71Q21B</b> — ARM <b>Cortex-M7</b> a <b>300&nbsp;MHz</b>,
+        FPU de dupla precisão (FPv5-D16), 2&nbsp;MB de flash interna, 384&nbsp;KB SRAM, I-Cache/D-Cache.
+        MCK (clock de periféricos) = 150&nbsp;MHz.</td></tr>
+    <tr><td><b>Flash interna</b></td><td>2&nbsp;MB. Mapa: bootloader em 0x00400000–0x0040FFFF (64&nbsp;KB);
+        aplicação em 0x00410000–0x005FFFFF (~1984&nbsp;KB).</td></tr>
+    <tr><td><b>Flash externa</b></td><td><b>Winbond W25Q128</b> — 16&nbsp;MB NOR SPI/QSPI. Regiões: config
+        (64&nbsp;KB), logs de telemetria (~960&nbsp;KB), metadados OTA (0x100000) e imagem OTA (0x101000).</td></tr>
+    <tr><td><b>Programação/Debug</b></td><td>JTAG/SWD via ATMEL-ICE ou MPLAB PICkit&nbsp;4.</td></tr>
+  </table>
+
+  <h3>5.2 Periféricos de missão (payload e plataforma)</h3>
+  <table>
+    <tr><th style="width:20%">Periférico</th><th style="width:12%">Barramento</th><th style="width:12%">Endereço/CS</th><th>Grandezas medidas / função</th></tr>
+    <tr><td>GNSS (GPS)</td><td>I²C</td><td>0x42</td><td>Latitude, longitude, altitude, velocidade (posição orbital)</td></tr>
+    <tr><td>IMU</td><td>I²C</td><td>0x68</td><td>Aceleração (ax/ay/az), giroscópio (gx/gy/gz), magnetómetro (mx/my/mz) — atitude</td></tr>
+    <tr><td>Sensor de pressão</td><td>I²C</td><td>0x77</td><td>Pressão (hPa/bar)</td></tr>
+    <tr><td>Sensor de temperatura</td><td>I²C</td><td>0x48</td><td>Temperatura (°C)</td></tr>
+    <tr><td>EPS (energia)</td><td>I²C</td><td>0x60</td><td>Tensão e corrente do barramento de potência</td></tr>
+    <tr><td>Propulsor (cold-gas)</td><td>SPI</td><td>CS pino 25</td><td>Estado, pressão, temperatura, impulso (N), estado da válvula</td></tr>
+    <tr><td>FlexiForce</td><td>ADC</td><td>—</td><td>Força/pressão analógica (sensor de força)</td></tr>
+    <tr><td>Memória externa</td><td>QSPI</td><td>—</td><td>Registo persistente de telemetria e <i>staging</i> de firmware OTA</td></tr>
+    <tr><td>TT&amp;C (rádio)</td><td>UART</td><td>—</td><td>Telecomando, telemetria e rastreio (downlink/uplink)</td></tr>
+  </table>
+
+  <h3>5.3 Ponte RP2040 (banco de ensaio)</h3>
+  <p>O <b>Raspberry Pi Pico (RP2040, dual-core Cortex-M0+)</b> substitui, em bancada, todo o hardware de
+  sensores. Usa os blocos <b>PIO</b> para implementar um escravo I²C capaz de responder aos 5 endereços em
+  simultâneo, e simula dinâmica orbital LEO realista (órbita ~550&nbsp;km, inclinação 51,6°, período ~96&nbsp;min,
+  ciclo sol/eclipse −20…+45&nbsp;°C, tensão/corrente do EPS a seguir a iluminação solar). Reencaminha ainda a
+  UART de TT&amp;C entre a estação terrena (USB ou módulo Bluetooth HC-05) e o OBC.</p>
+
+  <h3>5.4 Infraestrutura da estação terrena</h3>
+  <p>Servidor JVM (Java 21) a correr o backend Spring na porta 8080, PostgreSQL 16 na 5432 e frontend Nginx na
+  porta 80/5173. A ligação física ao satélite (ou à ponte) faz-se por porta série COM através da biblioteca
+  jSerialComm. Todo o conjunto pode ser levantado com Docker Compose.</p>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">6</span>Fluxo de dados e integração entre componentes</h2>
+
+  <h3>6.1 Aquisição e agregação a bordo</h3>
+  <p>Em cada <i>tick</i>, <code>sensors_tick()</code> orquestra a leitura de todos os subsistemas e envolve o
+  ciclo em proteção TMR:</p>
+  <pre>void sensors_tick(void) {
+    sensors_seu_register();     <span class="c">// regista structs globais sob TMR (1a vez)</span>
+    seu_data_scrub();           <span class="c">// votacao 2-de-3 + reparacao de SEUs</span>
+    eps_tick(); gnss_tick(); imu_tick(); pressure_tick();
+    temperature_tick(); ttc_tick(); propulsor_tick(); ExtMem_Tick();
+    seu_data_commit();          <span class="c">// consolida escritas legitimas nas 3 copias</span>
+}</pre>
+  <p>Os periféricos I²C são lidos em bloco; o SPI (propulsor) alterna com os I²C via <code>spi_turn</code> para
+  não saturar um único <i>tick</i>. Cada callback de conclusão faz o <i>parsing</i> dos bytes crus e escreve na
+  respetiva estrutura global (<code>eps</code>, <code>imu</code>, …), que é a «fonte de verdade» partilhada.</p>
+
+  <h3>6.2 Telemetria: da RAM ao operador</h3>
+  <ol>
+    <li>A cada 5&nbsp;s (modo nominal), <code>ttc_send_telemetry()</code> serializa 18 <i>floats</i> em
+    <b>big-endian</b> numa trama de 75&nbsp;bytes com <i>checksum</i> XOR e envia-a pela UART.</li>
+    <li>Em paralelo, a telemetria é guardada na flash externa (<code>ExtMem_SaveTelemetryAsync</code>) num buffer
+    de logs, respeitando o limite de 256&nbsp;B por página.</li>
+    <li>A ponte RP2040 reencaminha os bytes para o dashboard.</li>
+    <li>O <code>ComPortService</code> descodifica (codec RAW/ASCII/AUTO), aplica <i>throttle</i> de 1/s, persiste
+    em PostgreSQL e difunde por WebSocket.</li>
+    <li>O frontend React atualiza painéis de telemetria, órbita, heatmap e logs em tempo real.</li>
+  </ol>
+
+  <h3>6.3 Atualização OTA — integração de ponta a ponta</h3>
+  <p>O OTA é o fluxo mais complexo por atravessar todos os segmentos e o bootloader. O
+  <code>OtaService</code> (Kotlin) constrói pacotes de 134&nbsp;bytes; o <code>otaMode()</code> (sub-FSM de 11
+  estados no OBC) grava-os na flash externa; o bootloader aplica-os no arranque seguinte.</p>
+  <pre><span class="c">Dashboard --&gt; Pico (passthrough) --&gt; OBC otaMode() --&gt; reboot --&gt; Bootloader</span>
+ 1. CMD_START_OTA (0x10)              4. grava firmware em 0x101000 (flash ext.)
+ 2. N x pacote [AA55][seq][len][128B] 5. verifica CRC32 na flash externa
+ 3. pacote END [seq=FFFF][size|crc|ver] 6. grava metadata (magic=0xAB12CD34) por ULTIMO
+                                       7. hal_system_reset()
+ Bootloader: le metadata --&gt; valida CRC --&gt; copia p/ flash interna (EFC) --&gt; salta p/ app</pre>
+  <p>O protocolo é <b>stop-and-wait com ACK/NACK</b>: o OBC responde <code>0xAC</code> (ACK) por pacote válido ou
+  <code>0x4E</code> (NACK) para pedir retransmissão; o backend tenta até 3 vezes por pacote, com <i>timeout</i> de
+  3&nbsp;s. A metadata só é escrita <b>depois</b> de o firmware estar completo e com CRC verificado — se algo
+  falhar a meio, o satélite arranca a versão anterior (rollback implícito).</p>
+
+  <div class="box tip"><b>Integração desacoplada.</b> Backend e firmware partilham apenas constantes de protocolo
+  (<code>CMD_START_OTA=0x10</code>, códigos ACK/NACK, tamanho de pacote 134&nbsp;B). Não há dependência de código
+  entre segmentos — a fronteira é o formato binário na linha série, o que permite evoluir cada lado de forma
+  independente (por exemplo, trocar a ponte USB por antenas reais sem mexer no OBC).</div>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">7</span>Forma de comunicação de cada periférico</h2>
+
+  <p class="lead">Cada periférico define o seu próprio «micro-protocolo» ao nível dos bytes: endereço/registo,
+  ordem e escala dos dados, e verificação de integridade. Segue-se o detalhe de cada um.</p>
+
+  <h3>7.1 EPS — Electrical Power System (I²C)</h3>
+  <p>Leitura por registo (<code>use_reg=1</code>): endereço 0x60, registo 0x09, 2 bytes. Conversão para
+  grandezas físicas por escala fixa:</p>
+  <pre>eps.voltage = buf[0] / 10.0f;    <span class="c">// 0xAA (170) -&gt; 17.0 V</span>
+eps.current = buf[1] / 100.0f;   <span class="c">// 0x01 (1)   -&gt; 0.01 A</span></pre>
+
+  <h3>7.2 GNSS e IMU (I²C, 18 bytes)</h3>
+  <p>GNSS (0x42) e IMU (0x68) devolvem blocos de 18 bytes descodificados em latitude/longitude/altitude/velocidade
+  e em aceleração/giroscópio/magnetómetro (3 eixos cada), respetivamente.</p>
+
+  <h3>7.3 Pressão e temperatura (I²C, 2 bytes)</h3>
+  <p>Sensores simples de 2 bytes: pressão em 0x77 e temperatura em 0x48, convertidos para hPa e °C por escala.</p>
+
+  <h3>7.4 Propulsor (SPI, trama de 9 bytes com checksum)</h3>
+  <p>O OBC envia um byte de comando (<code>0x01</code> = pedir telemetria; <code>0x02</code> = abrir válvula)
+  seguido de <i>dummies</i>, e lê uma trama de 9 bytes, validada por XOR:</p>
+  <pre><span class="c">// Frame (9 bytes):</span>
+[0]   STATUS   0x00=IDLE 0x01=FIRING 0x02=ERROR
+[1-2] PRESSURE raw/100 -&gt; bar          [5-6] THRUST raw/10 -&gt; N
+[3-4] TEMP     raw/10  -&gt; C            [7]   VALVE  0=fechada 1=aberta
+[8]   CHECKSUM = XOR de [0..7]</pre>
+
+  <h3>7.5 Memória externa W25Q128 (QSPI)</h3>
+  <p>Comunicação por comandos SPI-flash normalizados: <code>WREN</code> (Write-Enable), leitura do <i>status
+  register</i> (para confirmar WEL e bit BUSY), <i>page program</i> (≤256&nbsp;B), <i>sector erase</i>
+  (4&nbsp;KB) e leitura. O módulo <code>ext_memory.c</code> mantém um ponteiro de escrita circular na região de
+  logs e limpa a <i>write-protection</i> (WRSR) antes de operações OTA.</p>
+
+  <h3>7.6 TT&amp;C — três tramas sobre UART</h3>
+  <table>
+    <tr><th style="width:22%">Trama</th><th style="width:14%">Tamanho</th><th>Estrutura</th></tr>
+    <tr><td>Comando (uplink)</td><td>4 bytes</td><td>Código (ex.: <code>0x10</code> START_OTA, <code>0x11</code> END_OTA, <code>0x20</code> REQUEST_DATA) + argumentos</td></tr>
+    <tr><td>Telemetria (downlink)</td><td>75 bytes</td><td><code>[0x20]</code> + 18 floats big-endian (V, I, lat, lon, alt, spd, a×3, g×3, m×3, press, temp, doppler) + estado + <code>[XOR]</code></td></tr>
+    <tr><td>Pacote OTA</td><td>134 bytes</td><td><code>[0xAA][0x55]</code> + seq (2B BE) + len (2B BE) + payload 128&nbsp;B</td></tr>
+    <tr><td>ACK / NACK / READY</td><td>4 bytes</td><td><code>0xAC</code> (ok) / <code>0x4E</code> (retransmitir) / <code>0xE0</code> (flash apagada, pronto)</td></tr>
+  </table>
+
+  <h3>7.7 Simulação I²C na ponte (RP2040/PIO)</h3>
+  <p>Do lado do banco de ensaio, o RP2040 usa programas <b>PIO</b> para detetar condições de <i>start</i>/<i>stop</i>
+  e transacionar bytes, respondendo aos 5 endereços I²C como se fossem 5 escravos físicos independentes — permitindo
+  testar todo o firmware do OBC sem os sensores reais.</p>
+</div>
+
+<div class="section">
+  <h2 class="sec"><span class="secnum">8</span>Vantagens e desvantagens das abordagens</h2>
+  <p class="lead">Análise crítica das principais decisões de engenharia, contrastando o benefício teórico com o
+  custo prático observável no código.</p>
+
+  <h3>8.1 Super-loop cooperativo <i>bare-metal</i> (sem RTOS)</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Determinismo total: sem <i>scheduler</i>, o tempo de ciclo é previsível e mensurável (há
+      <code>wcet_test</code> para o comprovar).</li>
+      <li>Sem <i>overhead</i> de kernel nem risco de <i>deadlocks</i>/inversão de prioridade.</li>
+      <li>Footprint mínimo de RAM/flash — crítico num MCU.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Toda a lógica tem de ser fatiada em FSM não-bloqueantes: mais complexa de escrever e ler (a sub-FSM
+      OTA tem 11 estados).</li>
+      <li>Uma tarefa «mal comportada» que demore atrasa <i>todas</i> as outras — não há preempção.</li>
+      <li>Latência de resposta = pior caso da soma de todos os <i>ticks</i>.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.2 Drivers não-bloqueantes com callbacks</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Nenhum I/O trava o super-loop; um sensor avariado apenas expira por <i>timeout</i> em vez de congelar o
+      satélite.</li>
+      <li>API uniforme (<code>*_async</code> + <code>*_tick</code> + callback) em todos os barramentos.</li>
+      <li><b>Bus recovery</b> automático no I²C e <i>retries</i> no QSPI aumentam a robustez em voo.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Fluxo de controlo fragmentado por callbacks e estados — depuração mais difícil.</li>
+      <li>Estado espalhado por variáveis <code>static</code>: exige disciplina para evitar condições de corrida
+      lógicas entre <i>ticks</i>.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.3 Tolerância a radiação por TMR/SEU em software</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Protege dados críticos contra <i>Single Event Upsets</i> sem hardware <i>rad-hard</i> dispendioso —
+      votação 2-de-3 com reparação em cada <i>tick</i>.</li>
+      <li>Cópias em bancos de SRAM fisicamente separados reduzem a chance de um evento atingir duas cópias.</li>
+      <li>Injeção de falhas testável (<code>seu_injection_test</code>).</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Triplica o uso de RAM e adiciona custo de CPU por <i>scrub</i>/<i>commit</i> a cada ciclo.</li>
+      <li>Não protege a execução do próprio código nem os registos do CPU (só os dados registados).</li>
+      <li>A separação «física» das cópias depende do <i>layout</i> do linker, não é garantida por hardware.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.4 Integridade: XOR na telemetria vs. CRC32 no OTA</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>XOR é baríssimo em CPU e suficiente para detetar erros de bit isolados na telemetria de alta cadência.</li>
+      <li>CRC32 (poly 0xEDB88320) no OTA garante integridade forte onde ela é imprescindível (código executável).</li>
+      <li>Escolha proporcional ao risco: gasta-se cálculo onde importa.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>XOR não deteta erros de bits pares nem trocas de ordem — telemetria corrompida pode passar despercebida.</li>
+      <li>Dois esquemas diferentes aumentam a superfície de manutenção do protocolo.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.5 OTA com bootloader dedicado + <i>staging</i> em flash externa</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Atualização atómica e segura: a metadata (magic) é escrita por último e o CRC é verificado antes de
+      aplicar — falhas resultam em <b>rollback</b> para o firmware anterior.</li>
+      <li>O bootloader é pequeno e isolado (64&nbsp;KB), reduzindo o risco de se «entijolar» o satélite.</li>
+      <li>Resiliência: falha de escrita mantém a flag para <i>retry</i> na reinicialização seguinte.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Complexidade elevada: dois projetos MPLAB, <i>linker scripts</i> distintos e a app tem de arrancar de
+      0x00410000 (erro aqui = não arranca).</li>
+      <li>Consome ~1&nbsp;MB da flash externa e exige gestão cuidadosa de setores/páginas.</li>
+      <li>Protocolo <b>stop-and-wait</b> é simples mas lento a 9600&nbsp;baud (ver 8.6).</li>
+    </ul></div>
+  </div>
+
+  <h3>8.6 UART TT&amp;C a 9600 baud e I²C a 25 kHz</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Baixas velocidades toleram muito melhor ruído, atenuação e cabos longos — coerente com um enlace de
+      rádio real e com bancada de solda.</li>
+      <li>Reduzem erros de <i>bit</i> e simplificam a temporização dos <i>timeouts</i>.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>9600&nbsp;baud tornam o OTA moroso (uma imagem de ~200&nbsp;KB demora minutos com ACK por pacote).</li>
+      <li>Os 25&nbsp;kHz de I²C ficam muito abaixo dos 400&nbsp;kHz previstos no <i>roadmap</i> — limitam a
+      cadência de amostragem se os sensores forem muitos.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.7 Ponte RP2040 como simulador + passthrough</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Permite validar 100% do firmware do OBC sem os sensores reais nem o rádio, com dinâmica orbital
+      realista — excelente para desenvolvimento e demonstração.</li>
+      <li>O <i>passthrough</i> transparente desacopla a estação terrena do meio físico (USB, Bluetooth, antenas).</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Introduz um elo extra que pode mascarar problemas de temporização/ruído do hardware real.</li>
+      <li>A fidelidade da simulação limita a validação: comportamentos de sensores reais podem divergir do modelo.</li>
+    </ul></div>
+  </div>
+
+  <h3>8.8 Backend Kotlin/Spring modular (codecs + transporte abstraído)</h3>
+  <div class="prosecon">
+    <div class="pros"><h4>Vantagens</h4><ul>
+      <li>Padrão <i>Strategy</i> nos codecs e interface comum de transporte tornam trivial acrescentar formatos ou
+      meios (o próprio README prevê um <code>AntennaService</code> sem mexer no frontend).</li>
+      <li>WebSocket em <i>push</i> (em vez de <i>polling</i>) dá tempo real eficiente; JWT+RBAC e auditoria dão
+      segurança de nível profissional.</li>
+      <li><i>Throttling</i> e fila de bytes protegem a UI e a base de dados de rajadas.</li>
+    </ul></div>
+    <div class="cons"><h4>Desvantagens</h4><ul>
+      <li>Stack pesado (JVM + Spring + PostgreSQL + Docker) para um dispositivo de operador — mais recursos e
+      arranque mais lento que uma solução leve.</li>
+      <li>Concorrência com múltiplos <i>executors</i>/<i>threads</i> e fila exige cuidado para evitar
+      <i>backpressure</i> e perda de mensagens sob carga.</li>
+    </ul></div>
+  </div>
+
+  <div class="box tip" style="margin-top:5mm;"><b>Síntese.</b> As escolhas formam um conjunto coerente e maduro
+  para um projeto académico com ambição de voo: privilegiam <b>determinismo e robustez</b> a bordo (bare-metal,
+  FSM não-bloqueantes, TMR, OTA com rollback) e <b>produtividade e extensibilidade</b> em terra (Kotlin/Spring,
+  codecs, WebSocket). Os principais pontos a amadurecer são o débito das ligações série (9600&nbsp;baud / 25&nbsp;kHz),
+  a substituição do XOR por CRC na telemetria crítica e a redução da complexidade da cadeia OTA — todos
+  compromissos conscientes, não descuidos.</div>
+</div>
+
+</body>
+</html>

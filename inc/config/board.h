@@ -31,6 +31,13 @@
 /*SPI */
 #define PROPULSOR_CS_PIN 25U
 
+#define SYS_HCLK_HZ 300000000UL   /* clock do core (CPU / SysTick)        */
+#define SYS_MCK_HZ  150000000UL   /* clock dos periféricos (MCK = HCLK/2) */
+#define USART_BRGR_FOR(baud) ((SYS_MCK_HZ) / (16UL * (unsigned long)(baud)))
+#define FAST_BOOT 1 // 0 diagrma
+#define STABILIZE_TIMEOUT_MS 30000UL   /* espera pos-boot quando FAST_BOOT=0 */
+#define RUN_BOARD_TESTS 1              /* 1 = corre test_qspi/wcet/seu no 1o boot */
+
 #define USE_REAL_HW 1
 
 #endif

@@ -17,6 +17,7 @@ typedef enum
     CMD_NONE = 0x00,
     CMD_START_OTA = 0x10,
     CMD_END_OTA = 0x11,
+    CMD_RESET = 0x12,          /* reinicia a FSM de topo: Mission -> Boot */
     CMD_REQUEST_DATA = 0x20
 } ground_command_t;
 

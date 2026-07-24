@@ -6,8 +6,8 @@
 /* Nº de execuções por função (quanto mais, melhor a cobertura do pior caso) */
 #define WCET_N_RUNS      1000U
 
-/* Frequência do core (SysTick usa MCK = 6.25 MHz -> 1 ciclo = 160 ns) */
-#define WCET_CPU_HZ      12000000UL 
+/* Frequência do core (SysTick com CLKSOURCE=1 usa HCLK = 300 MHz) */
+#define WCET_CPU_HZ      300000000UL
 
 /* Deadline do super-loop: 1 tick = 1 ms */
 #define WCET_DEADLINE_CYCLES   (WCET_CPU_HZ / 1000UL)   /* 6250 ciclos */

@@ -57,11 +57,10 @@
 #define TWI_CWGR_CHDIV_SHIFT   8U
 #define TWI_CWGR_CLDIV_SHIFT   0U
 
-/* Clock: MCK ~4 MHz, CKDIV=0, CLDIV=CHDIV=39 → ~50 kHz */
-#define MCK_HZ              12000000UL
+#define MCK_HZ              SYS_MCK_HZ  
 #define I2C_SPEED_HZ        ((uint32_t)I2C_SPEED_KHZ * 1000UL)
-#define TWI_CKDIV           0UL
-#define TWI_CLDIV           ((MCK_HZ / (2UL * I2C_SPEED_HZ)) - 3UL)
+#define TWI_CKDIV           4UL
+#define TWI_CLDIV           (((MCK_HZ / (2UL * I2C_SPEED_HZ)) - 3UL) >> TWI_CKDIV)
 #define TWI_CHDIV           TWI_CLDIV
 
 #define TWI_CWGR_VALUE      ((TWI_CKDIV << TWI_CWGR_CKDIV_SHIFT) | \

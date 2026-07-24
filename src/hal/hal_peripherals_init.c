@@ -83,4 +83,5 @@ uint8_t hal_ttc_init(void)
 uint8_t hal_ext_memory_init(void)
 {
     ExtMem_Init();
+    return 1;
 }

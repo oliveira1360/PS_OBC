@@ -1,4 +1,5 @@
 #include "hal/hal_systick.h"
+#include "config/board.h"
 
 #define SYST_CSR   (*(volatile uint32_t *)0xE000E010UL)
 #define SYST_RVR   (*(volatile uint32_t *)0xE000E014UL)
@@ -8,7 +9,7 @@
 #define SYST_CSR_TICKINT    (1UL << 1)
 #define SYST_CSR_CLKSOURCE  (1UL << 2)
 
-#define MCK_HZ  12000000UL 
+#define MCK_HZ  SYS_HCLK_HZ
 
 static volatile uint32_t ms_counter = 0U;
 
