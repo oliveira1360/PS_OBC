@@ -1,46 +1,48 @@
-## 📅 Roadmap e Planeamento de Tarefas (To-Do)
+# PS_OBC — On-Board Computer de um CubeSat
 
-O desenvolvimento deste On-Board Computer (OBC) está dividido em 5 fases principais, alinhadas com os marcos de entrega (Milestones) do projeto. A arquitetura segue uma abordagem *bare-metal* rigorosa, assente em máquinas de estados e execução não-bloqueante.
+Firmware bare-metal em C para o computador de bordo (OBC) de um CubeSat, desenvolvido para o microcontrolador **ATSAMV71Q21B** (ARM Cortex-M7 a 300 MHz). Projeto final de curso em Engenharia (ISEL), com arquitetura orientada a sistemas embebidos críticos: sem SO, sem alocação dinâmica de memória, e execução determinística baseada num super-loop cooperativo.
 
-### Fase 1: Especificação, Clocks e Timers (Fev - Mar)
-**Objetivo:** Estabelecer a fundação bare-metal e garantir o determinismo do sistema.
-- [x] Seleção do Microcontrolador (ATSAMV71Q21 - Cortex-M7 a 300MHz).
-- [ ] Configuração do sistema de Clocks e PLLs do MCU.
-- [ ] Configuração dos Timers de hardware para base de tempo.
-- [ ] Implementação do ciclo principal de controlo (Super-loop / Cooperative Scheduler).
-- [ ] Garantir alocação estática de memória (Zero uso de `malloc`/heap).
-- 🚩 **M1: Entrega da Proposta - 09/03**
+Esta branch (`main`) contém o firmware de voo completo, o bootloader OTA e a documentação técnica do projeto.
 
-### Fase 2: Drivers de Baixo Nível (Mar - Abr)
-**Objetivo:** Desenvolver a Hardware Abstraction Layer (HAL) puramente não-bloqueante.
-- [ ] **UART:** Driver para sistema TT&C (Rádio) a 3.3/5V (até 1 MHz, amostragem 1 Hz).
-- [ ] **I2C:** Driver para GNSS (GPS) a 400 kHz (amostragem 1 Hz).
-- [ ] **I2C:** Driver para IMU a 400 kHz (amostragem 1-400 Hz).
-- [ ] **SPI:** Driver para o Propulsor a 12V (amostragem 10 Hz).
-- [ ] **QSPI:** Driver para Memória Externa a 10 MHz (amostragem 1 Hz).
-- [ ] **ADC:** Leitura analógica para sensores de pressão e força (FlexiForce).
-- [ ] Implementação de *timeouts* manuais em todas as operações de I/O para evitar bloqueios do ciclo principal.
-- 🚩 **M2: Relatório de Progresso - 27/04**
+## Arquitetura
 
-### Fase 3: Lógica de Controlo / FSM (Abr - Jun)
-**Objetivo:** Orquestrar a concorrência de periféricos em segurança.
-- [ ] Desenho das Máquinas de Estados Finitas (FSM) para cada periférico.
-- [ ] Implementação da lógica de gestão de concorrência cooperativa.
-- [ ] Priorização de tarefas críticas (Gestão de Energia e Controlo de Atitude).
-- [ ] Tratamento de exceções e prevenção de condições de corrida (*Race Conditions*).
+- **Bare-metal puro**: sem RTOS, zero `malloc`/heap, alocação estática de memória.
+- **Super-loop cooperativo**: cada periférico é gerido por uma máquina de estados finita (FSM) não-bloqueante, evitando qualquer ciclo de espera ativa no caminho crítico.
+- **Camadas separadas**: `hal/` (registos e periféricos do MCU) → `drivers/` (UART, I2C, SPI, QSPI) → `peripherals/` (GNSS, IMU, EPS, propulsor, sensores de pressão/temperatura, TT&C) → `app/` (lógica de missão, seleção de modos, deteção de SEU).
 
-### Fase 4: Integração e Telemetria (Mai - Jun)
-**Objetivo:** Unir os módulos e processar dados de missão.
-- [ ] Integração do módulo de recolha e envio de Telemetria (`ttc_data_t`).
-- [ ] Processamento e descodificação de comandos de voo (Uplink).
-- [ ] Implementação do sistema de monitorização da saúde do satélite (SOH).
-- [ ] Mecanismo de Atualização OTA (*Over-The-Air*).
-- 🚩 **M3: Versão Beta / Testes de Integração - 01/06**
+## Periféricos e interfaces suportadas
 
-### Fase 5: Validação e Relatório Final (Abr - Jul)
-**Objetivo:** Testes rigorosos e documentação.
-- [ ] Criação de *Mocks* de software para testar lógica quando o hardware real falhar ou não estiver disponível.
-- [ ] Validação de *Jitter* e deriva temporal das taxas de amostragem no super-loop.
-- [ ] Testes de robustez aos *timeouts* (simular falhas e ruído nos sensores I2C/SPI e UART).
-- [ ] Escrita e revisão do Relatório Final do Projeto.
-- 🚩 **M4: Entrega Final do Projeto - 11/07**
+| Interface | Uso                                | Nota                        |
+|-----------|-------------------------------------|------------------------------|
+| UART      | Rádio TT&C (uplink/downlink)        | até 1 MHz                    |
+| I2C       | GNSS, IMU                           | 400 kHz                      |
+| SPI       | Controlo do propulsor               | 12V                          |
+| QSPI      | Memória flash externa (W25Q128)     | logs, telemetria, firmware OTA |
+| ADC       | Sensores de pressão/força (FlexiForce) | —                          |
+
+## Destaques técnicos
+
+- **Bootloader OTA** (`ota/`): atualização de firmware over-the-air a partir de uma imagem gravada na flash externa, com verificação de integridade antes do salto para a aplicação.
+- **Tolerância a SEU** (Single Event Upset): proteção por redundância modular tripla (TMR) aplicada às estruturas de dados dos sensores, relevante no contexto de radiação espacial.
+- **Testes automatizados** (`tests/`): suite host-based (CTest) com mocks das camadas HAL para I2C, SPI, QSPI e UART, incluindo testes de stress e de tempo real.
+- **Análise de WCET**: medição do pior caso de tempo de execução das funções críticas do super-loop, para validar o cumprimento de deadlines temporais.
+- **Documentação de engenharia**: relatório técnico final, auditoria técnica cruzando o relatório com o código-fonte linha a linha, e preparação de defesa com mais de 100 perguntas técnicas antecipadas.
+
+## Estrutura do repositório
+
+```
+src/            Código-fonte da aplicação (hal, drivers, peripherals, app)
+inc/            Headers correspondentes
+tests/          Testes unitários e de integração (host-based, com mocks)
+ota/            Bootloader OTA e documentação do protocolo
+```
+
+## Stack
+
+C (bare-metal, sem SO) · ARM Cortex-M7 · Make/CMake · MPLAB X
+
+## Branches relacionadas
+
+- [`dashboard`](../../tree/dashboard): aplicação web fullstack (Kotlin + React) para monitorização em solo e envio de atualizações OTA.
+- [`pico_code`](../../tree/pico_code): simulador de sensores em Raspberry Pi Pico, usado como banco de testes de hardware na ausência do satélite real.
+- [`OBC_board`](../../tree/OBC_board): validação incremental dos drivers de baixo nível diretamente na placa física.
