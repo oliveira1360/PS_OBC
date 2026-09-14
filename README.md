@@ -1,127 +1,48 @@
-# Satellite Ground Control Dashboard
+# PS_OBC — Dashboard de Controlo em Solo
 
-Aplicação fullstack para monitorização e atualização OTA de satélites via porta COM (UART).
+Aplicação fullstack de ground control para o CubeSat PS_OBC: monitorização de telemetria em tempo real e envio de atualizações de firmware (OTA) via porta série (UART), com interface web.
 
----
+## Stack
 
-## Estrutura
+- **Backend**: Kotlin + Spring Boot (Gradle)
+- **Frontend**: React + TypeScript + Vite
+- **Comunicação em tempo real**: WebSocket
+- **Ligação ao satélite**: porta COM/UART (simulada via Raspberry Pi Pico em bancada — ver branch [`pico_code`](../../tree/pico_code))
+
+## Funcionalidades
+
+- **Telemetria em tempo real**: receção e descodificação de dados do satélite (temperatura, tensão, corrente, bateria, altitude, posição GNSS, RSSI), transmitidos via WebSocket ao frontend.
+- **Consola de logs**: distinção automática entre respostas normais, avisos e erros, a partir do stream série bruto.
+- **Atualização OTA**: upload de um ficheiro `.hex` gerado no MPLAB IDE, com envio automático registo a registo via UART e acompanhamento do progresso em tempo real.
+- **Gestão de porta COM**: listagem, ligação e desligamento de portas série diretamente pela interface, sem necessidade de ferramentas externas.
+- **API REST** documentada para controlo da ligação série, consulta de estado dos subsistemas e gestão do processo OTA.
+
+## Arquitetura
 
 ```
-dashboard/
-├── dashboard/    ← Backend (Kotlin + Spring Boot)
-├── frontend/     ← Frontend (React + Vite + TypeScript)
-└── README.md
+dashboard/    Backend (Kotlin + Spring Boot) — gestão da porta série, WebSocket, lógica OTA
+frontend/     Frontend (React + Vite + TypeScript) — consola de telemetria e logs
 ```
 
----
+O backend expõe a lógica de comunicação série por trás de uma interface de serviço (`ComPortService`), pensada para ser facilmente substituída por uma implementação equivalente quando o canal físico evoluir de UART por cabo para comunicação por antena, sem alterações no frontend.
 
-## Arrancar o Backend
+## Como correr localmente
 
-### Pré-requisitos
-- Java 21+
-- (o Gradle Wrapper está incluído — não precisas de instalar Gradle)
-
-### Passos
-
+**Backend** (Java 21+, Gradle Wrapper incluído):
 ```bash
 cd dashboard/dashboard
-./gradlew bootRun          # Linux/Mac
-gradlew.bat bootRun        # Windows
+./gradlew bootRun
 ```
 
-O backend fica disponível em `http://localhost:8080`.
-
----
-
-## Arrancar o Frontend
-
-### Pré-requisitos
-- Node.js 18+
-
-### Passos
-
+**Frontend** (Node.js 18+):
 ```bash
 cd dashboard/frontend
 npm install
 npm run dev
 ```
 
-O frontend fica disponível em `http://localhost:5173`.
+Frontend disponível em `http://localhost:5173`, com proxy automático de `/api/*` para o backend em `http://localhost:8080`.
 
-> O Vite faz proxy automático de `/api/*` para o backend em `:8080`.
+## Relação com o projeto principal
 
----
-
-## Ligar ao Satélite via COM
-
-1. Abre o browser em `http://localhost:5173`
-2. No painel **Porta COM**, clica em **↻ Actualizar** para listar as portas
-3. Seleciona a porta correta (ex: `COM3`) e o baud rate
-4. Clica em **⚡ Ligar**
-
-O dashboard começa a receber dados em tempo real via WebSocket.
-
----
-
-## Formato de dados esperado (UART)
-
-O backend aceita duas formas de dados enviados pelo satélite:
-
-### JSON (telemetria automática)
-```json
-{"temp": 23.4, "volt": 3.7, "curr": 0.15, "bat": 82, "alt": 400.0, "lat": 38.7, "lon": -9.1, "rssi": -87}
-```
-Campos suportados: `temp`/`temperature`, `volt`/`voltage`, `curr`/`current`, `bat`/`battery`, `alt`/`altitude`, `lat`, `lon`/`lng`, `rssi`/`signal`
-
-### Texto livre (logs)
-Qualquer linha que não seja JSON é tratada como log:
-- Linhas que começam por `ERR` ou `ERROR` → tipo ERROR (vermelho)
-- Linhas que começam por `WARN` → tipo WARNING (amarelo)
-- Restantes → tipo RESPONSE (verde)
-
----
-
-## OTA — Enviar Firmware
-
-1. Faz o build do firmware no MPLAB IDE
-2. Localiza o ficheiro `.hex` gerado
-3. No dashboard, abre o painel **OTA Update**
-4. Arrasta ou seleciona o ficheiro `.hex`
-5. Clica em **⬆ Enviar Firmware via OTA**
-
-O backend envia os registos Intel HEX linha a linha via UART (com delay de 20ms entre registos para o bootloader processar cada um).
-
----
-
-## API REST (porta 8080)
-
-| Método | Endpoint                | Descrição                        |
-|--------|-------------------------|----------------------------------|
-| GET    | `/api/com/ports`        | Lista portas COM disponíveis     |
-| POST   | `/api/com/connect`      | Liga à porta `{port, baudRate}`  |
-| POST   | `/api/com/disconnect`   | Desliga da porta atual           |
-| GET    | `/api/com/status`       | Estado da ligação COM            |
-| POST   | `/api/com/send`         | Envia bytes raw `{hex: "AABB…"}` |
-| GET    | `/api/satellite/status` | Estado dos subsistemas           |
-| GET    | `/api/satellite/telemetry` | Última telemetria             |
-| GET    | `/api/satellite/logs`   | Últimas 200 entradas do log      |
-| POST   | `/api/ota/upload`       | Upload e envio de firmware .hex  |
-| GET    | `/api/ota/status`       | Estado do OTA em curso           |
-
-## WebSocket
-
-`ws://localhost:8080/ws/satellite`
-
-Mensagens recebidas pelo frontend:
-```json
-{ "type": "TELEMETRY",    "data": { ... } }
-{ "type": "STATUS",       "data": { ... } }
-{ "type": "LOG",          "data": { ... } }
-{ "type": "OTA_PROGRESS", "data": { ... } }
-```
-
----
-
-## Próximos passos (antenas)
-
-Quando for adicionado o suporte por antenas, bastará criar um novo serviço (ex: `AntennaService.kt`) que reimplemente a mesma interface que o `ComPortService` e um novo controller. O frontend não precisará de alterações — os dados chegam pelo mesmo WebSocket.
+Este dashboard é a ferramenta de solo usada para testar e demonstrar o subsistema de telemetria e o bootloader OTA implementados no firmware do OBC, disponível na branch [`main`](../../tree/main).
